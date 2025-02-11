@@ -82,7 +82,8 @@ export default async function signUpController(request: Request, db: Db) {
       phoneNumber: data.phoneNo,
       currency: data.currency,
       password: hashedPassword,
-      roleId: userRole._id
+      roleId: userRole._id,
+      date: new Date()
     });
 
     if (!savedUser) {

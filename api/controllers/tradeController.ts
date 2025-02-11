@@ -4,7 +4,17 @@ const secretKey = "SECRET KEY";
 
 export default async function tradeController(request: Request, db: Db) {
   try {
-    if (request.method === "POST") {
+    if (request.method === "GET") {
+      const trades = await db.collection("trades").find();
+      console.log("============");
+      console.log(trades);
+      console.log("============");
+
+      return new Response(JSON.stringify({message: "GET trade"}), {
+        status: 200,
+        headers: {"Content-Type": "application/json"}
+      });
+    } else if (request.method === "POST") {
       const data = await request.json();
 
       // TODO: Check if these verifications are correct.

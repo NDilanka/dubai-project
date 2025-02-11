@@ -98,14 +98,6 @@ export default function SignInPage() {
             onChange={(e) => setSignInData({ ...signInFormData, password: e.target.value })}
           />
 
-          <FormGroup sx={{ marginLeft: "auto" }}>
-            <FormControlLabel
-              required
-              control={<Checkbox />}
-              label="Agree to terms and conditions"
-            />
-          </FormGroup>
-
           <Button variant="contained" type="submit">
             Sign In
           </Button>

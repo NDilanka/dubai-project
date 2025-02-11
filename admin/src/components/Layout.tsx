@@ -2,66 +2,55 @@ import { ArrowBack, Assessment, AttachMoney, Balance, Dashboard, Logout, Menu, P
          RequestQuote, SupervisorAccount } from "@mui/icons-material";
 import { Box, Container, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon,
          ListItemText, Typography, useTheme } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
+import { UserContext } from "../../../auth/src/context/UserContext";
 
 export default function Layout() {
-  const [showDrawer, setShowDrawer] = useState(false);
+  const [showDrawer, setShowDrawer] = useState(true);
   const drawerRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
   const [contentLeftMargin, setContentLeftMargin] = useState(0);
   const location = useLocation();
   const [title, setTitle] = useState("");
+  const userContext = useContext(UserContext);
+
+  useEffect(() => {
+    if (userContext && userContext.user) {
+      console.log(userContext.user);
+      //window.location.href = "/";
+    }
+  }, [userContext]);
 
   useEffect(() => {
     switch (location.pathname) {
-      case "/admin":
-        {
-          setTitle("Dashboard");
-        }
-        break;
+      case "/admin":{
+        setTitle("Dashboard");
+      } break;
 
-      case "/admin/admin-manager":
-        {
-          setTitle("Admin Manager");
-        }
-        break;
+      case "/admin/admin-manager": {
+        setTitle("Admin Manager");
+      } break;
 
-      case "/admin/users":
-        {
-          setTitle("Users");
-        }
-        break;
+      case "/admin/users": {
+        setTitle("Users");
+      } break;
 
-      case "/admin/change-balance":
-        {
-          setTitle("Change Balance");
-        }
-        break;
+      case "/admin/change-balance": {
+        setTitle("Change Balance");
+      } break;
 
-      case "/admin/deposite-requests":
-        {
-          setTitle("Deposite Requests");
-        }
-        break;
+      case "/admin/deposite-requests": {
+        setTitle("Deposite Requests");
+      } break;
 
-      case "/admin/withdraw-requests":
-        {
-          setTitle("Withdraw Requests");
-        }
-        break;
+      case "/admin/withdraw-requests": {
+        setTitle("Withdraw Requests");
+      } break;
 
-      case "/admin/trade-report":
-        {
-          setTitle("Trade Report");
-        }
-        break;
-
-      case "/admin/faq-messages":
-        {
-          setTitle("FAQs");
-        }
-        break;
+      case "/admin/trade-report": {
+        setTitle("Trade Report");
+      } break;
     }
   }, [location.pathname]);
 
@@ -95,7 +84,7 @@ export default function Layout() {
 
           <Divider />
 
-          <ListItem disablePadding component={Link} to="/admin">
+          <ListItem disablePadding component={Link} to="/admin" sx={{ color: theme.palette.text.primary }}>
             <ListItemButton selected={location.pathname === "/"}>
               <ListItemIcon>
                 <Dashboard />
@@ -105,7 +94,7 @@ export default function Layout() {
             </ListItemButton>
           </ListItem>
 
-          <ListItem disablePadding component={Link} to="/admin/admin-manager">
+          <ListItem disablePadding component={Link} to="/admin/admin-manager" sx={{ color: theme.palette.text.primary }}>
             <ListItemButton
               selected={location.pathname === "/admin/admin-manager"}
               href="/admin/admin-manager"
@@ -118,7 +107,7 @@ export default function Layout() {
             </ListItemButton>
           </ListItem>
 
-          <ListItem disablePadding component={Link} to="/admin/users">
+          <ListItem disablePadding component={Link} to="/admin/users" sx={{ color: theme.palette.text.primary }}>
             <ListItemButton
               selected={location.pathname === "/admin/users"}
               href="/admin/users"
@@ -131,7 +120,7 @@ export default function Layout() {
             </ListItemButton>
           </ListItem>
 
-          <ListItem disablePadding component={Link} to="/admin/change-balance">
+          <ListItem disablePadding component={Link} to="/admin/change-balance" sx={{ color: theme.palette.text.primary }}>
             <ListItemButton
               selected={location.pathname === "/admin/change-balance"}
               href="/change-balance"
@@ -144,7 +133,7 @@ export default function Layout() {
             </ListItemButton>
           </ListItem>
 
-          <ListItem disablePadding component={Link} to="/admin/deposite-requests">
+          <ListItem disablePadding component={Link} to="/admin/deposite-requests" sx={{ color: theme.palette.text.primary }}>
             <ListItemButton
               selected={location.pathname === "/admin/deposite-requests"}
               href="/admin/deposite-requests"
@@ -157,7 +146,7 @@ export default function Layout() {
             </ListItemButton>
           </ListItem>
 
-          <ListItem disablePadding component={Link} to="/admin/withdraw-requests">
+          <ListItem disablePadding component={Link} to="/admin/withdraw-requests" sx={{ color: theme.palette.text.primary }}>
             <ListItemButton
               selected={location.pathname === "/admin/withdraw-requests"}
               href="/admin/withdraw-requests"
@@ -170,7 +159,7 @@ export default function Layout() {
             </ListItemButton>
           </ListItem>
 
-          <ListItem disablePadding component={Link} to="/admin/trade-report">
+          <ListItem disablePadding component={Link} to="/admin/trade-report" sx={{ color: theme.palette.text.primary }}>
             <ListItemButton
               selected={location.pathname === "/admin/trade-report"}
               href="/admin/trade-report"
@@ -180,19 +169,6 @@ export default function Layout() {
               </ListItemIcon>
 
               <ListItemText primary="Trade Report" />
-            </ListItemButton>
-          </ListItem>
-
-          <ListItem disablePadding component={Link} to="/admin/faq-messages">
-            <ListItemButton
-              selected={location.pathname === "/admin/faq-messages"}
-              href="/admin/faq-messages"
-            >
-              <ListItemIcon>
-                <Quiz />
-              </ListItemIcon>
-
-              <ListItemText primary="FAQ Messages" />
             </ListItemButton>
           </ListItem>
         </List>

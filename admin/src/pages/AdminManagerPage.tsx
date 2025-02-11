@@ -1,111 +1,23 @@
-import {
-  Button,
-  Divider,
-  Paper,
-  Stack,
-  Switch,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
-  TextField,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  DialogContentText,
-} from "@mui/material";
-import { type ChangeEvent, useEffect, useState } from "react";
+import { Button, Divider, Paper, Stack, Switch, Table, TableBody, TableCell,
+         TableContainer, TableHead, TablePagination, TableRow, TextField, Dialog,
+         DialogTitle, DialogContent, DialogActions, DialogContentText } from "@mui/material";
+import { useEffect, useState } from "react";
+import type { ChangeEvent } from "react";
 
 interface ITableRow {
   id: string;
-  username: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  password: string;
+  phoneNumber: string;
+  date?: string;
 }
-
-const rows: ITableRow[] = [
-  {
-    id: "2341434",
-    username: "David Jones",
-    email: "david@test.com",
-    password: "qwerty",
-  },
-  {
-    id: "sdf2341434",
-    username: "David Jones",
-    email: "david@test.com",
-    password: "qwerty",
-  },
-  {
-    id: "2341434dfd",
-    username: "David Jones",
-    email: "david@test.com",
-    password: "qwerty",
-  },
-  {
-    id: "2sdf341434",
-    username: "David Jones",
-    email: "david@test.com",
-    password: "qwerty",
-  },
-  {
-    id: "sdf2341434;lsdkf",
-    username: "David Jones",
-    email: "david@test.com",
-    password: "qwerty",
-  },
-  {
-    id: "2341434deiwrfd",
-    username: "David Jones",
-    email: "david@test.com",
-    password: "qwerty",
-  },
-  {
-    id: "2341434ofdnv",
-    username: "David Jones",
-    email: "david@test.com",
-    password: "qwerty",
-  },
-  {
-    id: "sdf234143wet;'adf4",
-    username: "David Jones",
-    email: "david@test.com",
-    password: "qwerty",
-  },
-  {
-    id: "2341434dfdofofivnd",
-    username: "David Jones",
-    email: "david@test.com",
-    password: "qwerty",
-  },
-  {
-    id: "234143osdwe.sdf4",
-    username: "David Jones",
-    email: "david@test.com",
-    password: "qwerty",
-  },
-  {
-    id: "sfhbenerwdf2341434",
-    username: "David Jones",
-    email: "david@test.com",
-    password: "qwerty",
-  },
-  {
-    id: "2341434dfdgsdgs",
-    username: "David Jones",
-    email: "david@test.com",
-    password: "qwerty",
-  },
-];
 
 export default function AdminManagerPage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [tableData, setTableData] = useState<ITableRow[]>([]);
+  const [rows, setRows] = useState([]);
 
   const [open, setOpen] = useState(false);
   const handleClickOpen = () => {
@@ -116,15 +28,48 @@ export default function AdminManagerPage() {
   };
 
   useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  useEffect(() => {
     const visibleTableData = rows.filter((data, index) => {
-      console.log(page);
       if (index >= page * rowsPerPage && index < (page + 1) * rowsPerPage) {
         return data;
       }
     });
 
     setTableData(visibleTableData);
-  }, [rowsPerPage, page]);
+  }, [rowsPerPage, page, rows]);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch("/api/users?role=Admin");
+
+      if (response.ok) {
+        const data = await response.json();
+
+        const admins = data.map((admin: {
+          _id: string;
+          firstName: string;
+          lastName: string;
+          email: string;
+          phoneNumber: string;
+          date: string;
+        }) => ({
+          id: admin._id,
+          firstName: admin.firstName,
+          lastName: admin.lastName,
+          email: admin.email,
+          phoneNumber: admin.phoneNumber,
+          date: admin.date
+        }));
+
+        setRows(admins);
+      }
+    } catch (error: any) {
+      console.error(error);
+    }
+  };
 
   const handlePageChange = (_event: unknown, newPage: number) => {
     setPage(newPage);
@@ -133,6 +78,12 @@ export default function AdminManagerPage() {
   const handleRowsPerPageChange = (event: ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  const getDateString = (date: string) => {
+    const dateObj = new Date(date);
+
+    return `${dateObj.getDay()}/${dateObj.getMonth()}/${dateObj.getFullYear()}`;
   };
 
   return (
@@ -189,9 +140,11 @@ export default function AdminManagerPage() {
           <TableHead>
             <TableRow>
               <TableCell>ID</TableCell>
-              <TableCell>Username</TableCell>
+              <TableCell>First Name</TableCell>
+              <TableCell>Last Name</TableCell>
               <TableCell>Email</TableCell>
-              <TableCell>Password</TableCell>
+              <TableCell>Phone Number</TableCell>
+              <TableCell>Date</TableCell>
               <TableCell>Status</TableCell>
             </TableRow>
           </TableHead>
@@ -200,9 +153,11 @@ export default function AdminManagerPage() {
             {tableData.map((data) => (
               <TableRow key={data.id}>
                 <TableCell>{data.id}</TableCell>
-                <TableCell>{data.username}</TableCell>
+                <TableCell>{data.firstName}</TableCell>
+                <TableCell>{data.lastName}</TableCell>
                 <TableCell>{data.email}</TableCell>
-                <TableCell>{data.password}</TableCell>
+                <TableCell>{data.phoneNumber}</TableCell>
+                <TableCell>{getDateString(data.date || "")}</TableCell>
 
                 <TableCell>
                   <Switch />

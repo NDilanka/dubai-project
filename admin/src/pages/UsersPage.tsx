@@ -1,130 +1,83 @@
-import {
-  Divider,
-  Paper,
-  Stack,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
-  TextField,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-} from "@mui/material";
-import { type ChangeEvent, useEffect, useState } from "react";
+import { Divider, Paper, Stack, Button, Table, TableBody, TableCell, TableContainer,
+         TableHead, TablePagination, TableRow, TextField, Dialog, DialogTitle,
+         DialogContent, DialogContentText, DialogActions, FormControl, InputLabel,
+         MenuItem, Select } from "@mui/material";
+import { useEffect, useState } from "react";
+import type { ChangeEvent } from "react";
 
 interface ITableRow {
   id: string;
-  username: string;
+  firstName: string;
+  lastName: string;
   email: string;
   date?: string;
 }
-
-const rows: ITableRow[] = [
-  {
-    id: "2341434",
-    username: "David Jones",
-    email: "david@test.com",
-    date: "12/27/2024",
-  },
-  {
-    id: "sdf2341434",
-    username: "David Jones",
-    email: "david@test.com",
-    date: "12/27/2024",
-  },
-  {
-    id: "2341434dfd",
-    username: "David Jones",
-    email: "david@test.com",
-    date: "12/27/2024",
-  },
-  {
-    id: "2sdf341434",
-    username: "David Jones",
-    email: "david@test.com",
-    date: "12/27/2024",
-  },
-  {
-    id: "sdf2341434;lsdkf",
-    username: "David Jones",
-    email: "david@test.com",
-    date: "12/27/2024",
-  },
-  {
-    id: "2341434deiwrfd",
-    username: "David Jones",
-    email: "david@test.com",
-    date: "12/27/2024",
-  },
-  {
-    id: "2341434ofdnv",
-    username: "David Jones",
-    email: "david@test.com",
-    date: "12/27/2024",
-  },
-  {
-    id: "sdf234143wet;'adf4",
-    username: "David Jones",
-    email: "david@test.com",
-    date: "12/27/2024",
-  },
-  {
-    id: "2341434dfdofofivnd",
-    username: "David Jones",
-    email: "david@test.com",
-    date: "12/27/2024",
-  },
-  {
-    id: "234143osdwe.sdf4",
-    username: "David Jones",
-    email: "david@test.com",
-    date: "12/27/2024",
-  },
-  {
-    id: "sfhbenerwdf2341434",
-    username: "David Jones",
-    email: "david@test.com",
-    date: "12/27/2024",
-  },
-  {
-    id: "2341434dfdgsdgs",
-    username: "David Jones",
-    email: "david@test.com",
-    date: "12/27/2024",
-  },
-];
 
 export default function UserPage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [tableData, setTableData] = useState<ITableRow[]>([]);
-  const [newPassword, setNewPassword] = useState("");
   const [currency, setCurrency] = useState("")
+  const [open, setOpen] = useState(false);
+  const [rows, setRows] = useState([]);
+  const [editUser, setEditUser] = useState({
+    id: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    date: "",
+  });
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   useEffect(() => {
     const visibleTableData = rows.filter((data, index) => {
-      console.log(page);
       if (index >= page * rowsPerPage && index < (page + 1) * rowsPerPage) {
         return data;
       }
     });
 
     setTableData(visibleTableData);
-  }, [rowsPerPage, page]);
+  }, [rowsPerPage, page, rows]);
 
-  const [open, setOpen] = useState(false);
-  const handleClickOpen = () => {
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch("/api/users?role=User");
+
+      if (response.ok) {
+        const data = await response.json();
+
+        const users = data.map((user: {
+          _id: string;
+          firstName: string;
+          lastName: string;
+          email: string;
+          phoneNumber: string;
+        }) => ({
+          id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          phoneNumber: user.phoneNumber
+        }));
+
+        setRows(users);
+      }
+    } catch (error: any) {
+      console.error(error);
+    }
+  };
+
+  const handleClickOpen = (tableRow: ITableRow) => {
+    setEditUser({
+      id: tableRow.id,
+      firstName: tableRow.firstName,
+      lastName: tableRow.lastName,
+      email: tableRow.email,
+      date: tableRow.date || ""
+    });
     setOpen(true);
   };
   const handleClose = () => {
@@ -148,51 +101,64 @@ export default function UserPage() {
           <TextField label="Property" size="small" />
         </Stack>
 
-
         <Dialog open={open} onClose={handleClose}>
-          <DialogTitle>Add New Admin</DialogTitle>
           <DialogContent>
-            <DialogContentText>
-              To add a new admin, please fill out the form below.
-            </DialogContentText>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="name"
-              label="Current Password"
-              type="text"
-              fullWidth
-              value="currentpassword"
-              InputProps={{
-                readOnly: true,
-              }}
-            />
-            <TextField
-              margin="dense"
-              id="email"
-              label="New Password"
-              type="text"
-              fullWidth
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-            <FormControl fullWidth margin="dense">
-              <InputLabel id="currency-select-label">Currency</InputLabel>
-              <Select
-                labelId="currency-select-label"
-                id="currency-select"
-                value={currency}
-                onChange={(event) => setCurrency(event.target.value)}
-              >
-                <MenuItem value="admin">USD</MenuItem>
-                <MenuItem value="moderator">CAD</MenuItem>
-                <MenuItem value="user">INR</MenuItem>
-              </Select>
-            </FormControl>
+            <Stack gap={2}>
+              <TextField
+                autoFocus
+                label="ID"
+                type="text"
+                fullWidth
+                value={editUser.id}
+              />
+
+              <TextField
+                autoFocus
+                label="First Name"
+                type="text"
+                fullWidth
+                value={editUser.firstName}
+                onChange={(e) => setEditUser({...editUser, firstName: e.target.value})}
+              />
+
+              <TextField
+                autoFocus
+                label="Last Name"
+                type="text"
+                fullWidth
+                value={editUser.lastName}
+                onChange={(e) => setEditUser({...editUser, lastName: e.target.value})}
+              />
+
+              <TextField
+                autoFocus
+                label="Email"
+                type="email"
+                fullWidth
+                value={editUser.email}
+                onChange={(e) => setEditUser({...editUser, email: e.target.value})}
+              />
+
+              <FormControl fullWidth>
+                <InputLabel id="currency-select-label">Currency</InputLabel>
+
+                <Select
+                  labelId="currency-select-label"
+                  id="currency-select"
+                  value={currency}
+                  onChange={(event) => setCurrency(event.target.value)}
+                >
+                  <MenuItem value="admin">USD</MenuItem>
+                  <MenuItem value="moderator">CAD</MenuItem>
+                  <MenuItem value="user">INR</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
           </DialogContent>
+
           <DialogActions>
-            <Button onClick={handleClose}>Cancel</Button>
-            <Button onClick={handleClose}>Submit</Button>
+            <Button variant="contained" onClick={handleClose}>Save Changes</Button>
+            <Button variant="outlined" onClick={handleClose}>Reset</Button>
           </DialogActions>
         </Dialog>
 
@@ -205,7 +171,8 @@ export default function UserPage() {
           <TableHead>
             <TableRow>
               <TableCell>ID</TableCell>
-              <TableCell>Username</TableCell>
+              <TableCell>First Name</TableCell>
+              <TableCell>Last Name</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Date</TableCell>
               <TableCell>Action</TableCell>
@@ -216,12 +183,13 @@ export default function UserPage() {
             {tableData.map((data) => (
               <TableRow key={data.id}>
                 <TableCell>{data.id}</TableCell>
-                <TableCell>{data.username}</TableCell>
+                <TableCell>{data.firstName}</TableCell>
+                <TableCell>{data.lastName}</TableCell>
                 <TableCell>{data.email}</TableCell>
                 <TableCell>{data.date}</TableCell>
 
                 <TableCell>
-                  <Button onClick={handleClickOpen}>Edit</Button>
+                  <Button variant="contained" onClick={() => handleClickOpen(data)}>Edit</Button>
                 </TableCell>
               </TableRow>
             ))}

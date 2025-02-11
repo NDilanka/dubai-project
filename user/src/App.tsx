@@ -2,8 +2,6 @@ import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import ProfilePage from "./pages/ProfilePage";
 import WalletPage from "./pages/WalletPage";
-import SignInPage from "./pages/SignInPage";
-import SignUpPage from "./pages/SignUpPage";
 import Navbar from "./components/Navbar/Navbar";
 import { Container, createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 import Footer from "./components/Footer";

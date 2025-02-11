@@ -38,7 +38,7 @@ export default function SignUpPage() {
         setShowPopUp(false);
 
         setTimeout(() => {
-          navigate("/", { replace: true });
+          window.location.href = "/";
         }, 1000);
       }, 1000);
     }
