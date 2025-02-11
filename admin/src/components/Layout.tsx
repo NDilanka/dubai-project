@@ -205,7 +205,7 @@ export default function Layout() {
           </IconButton>
         )}
 
-        <Container maxWidth="md" sx={{ marginY: 16 }}>
+        <Container  sx={{ marginY: 16 }}>
           <Typography component="h1" fontSize={36}>
             {title}
           </Typography>

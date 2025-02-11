@@ -1,6 +1,8 @@
-import { Button, Divider, Paper, Stack, Switch, Table, TableBody, TableCell,
+import { Box, Button, Divider, Paper, Stack, Switch, Table, TableBody, TableCell,
          TableContainer, TableHead, TablePagination, TableRow, TextField, Dialog,
-         DialogTitle, DialogContent, DialogActions, DialogContentText } from "@mui/material";
+         DialogTitle, DialogContent, DialogActions, DialogContentText, Menu, MenuItem,
+         IconButton, } from "@mui/material";
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
 
@@ -88,12 +90,8 @@ export default function AdminManagerPage() {
 
   return (
     <Paper variant="outlined">
-      <Stack direction="row" margin={2}>
-        <Stack direction="row" gap={1} mr="auto">
-          <TextField label="Search" size="small" />
-          <TextField label="Property" size="small" />
-        </Stack>
-
+      <Stack direction="row" margin={2} justifyContent="space-between">
+        <TextField label="Search" size="small" />
         <Button variant="outlined" onClick={handleClickOpen}>Add New Admin</Button>
 
         <Dialog open={open} onClose={handleClose}>
@@ -130,7 +128,6 @@ export default function AdminManagerPage() {
             <Button onClick={handleClose}>Add</Button>
           </DialogActions>
         </Dialog>
-
       </Stack>
 
       <Divider />
@@ -146,6 +143,7 @@ export default function AdminManagerPage() {
               <TableCell>Phone Number</TableCell>
               <TableCell>Date</TableCell>
               <TableCell>Status</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
 
@@ -158,9 +156,12 @@ export default function AdminManagerPage() {
                 <TableCell>{data.email}</TableCell>
                 <TableCell>{data.phoneNumber}</TableCell>
                 <TableCell>{getDateString(data.date || "")}</TableCell>
-
                 <TableCell>
                   <Switch />
+                </TableCell>
+
+                <TableCell>
+                  <Actions />
                 </TableCell>
               </TableRow>
             ))}
@@ -178,5 +179,42 @@ export default function AdminManagerPage() {
         onRowsPerPageChange={handleRowsPerPageChange}
       />
     </Paper>
+  );
+}
+
+function Actions() {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  return (
+    <Box>
+      <IconButton
+        id="basic-button"
+        aria-controls={open ? 'basic-menu' : undefined}
+        aria-haspopup="true"
+        aria-expanded={open ? 'true' : undefined}
+        onClick={handleClick}
+      >
+        <MoreVertIcon />
+      </IconButton>
+      <Menu
+        id="basic-menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        MenuListProps={{
+          'aria-labelledby': 'basic-button',
+        }}
+      >
+        <MenuItem onClick={handleClose}>Edit</MenuItem>
+        <MenuItem onClick={handleClose}>Disable</MenuItem>
+      </Menu>
+    </Box>
   );
 }
