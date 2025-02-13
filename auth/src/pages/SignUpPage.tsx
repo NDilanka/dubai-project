@@ -2,7 +2,7 @@ import { Alert, Box, Button, Checkbox, FormControlLabel, FormGroup, Slide, TextF
          MenuItem, InputLabel, FormControl, IconButton, Typography } from "@mui/material";
 import { useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { signUp } from "../services/authService";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
@@ -87,6 +87,9 @@ export default function SignUpPage() {
           }}
           onSubmit={handleSubmit}
         >
+          <Typography variant="h2" fontWeight="bold" textAlign="center"
+            mb={4}>Create New AutoFX account</Typography>
+
           <TextField
             label="First Name"
             variant="outlined"
@@ -166,9 +169,11 @@ export default function SignUpPage() {
 
           <Typography mx="auto">Already have an account?</Typography>
 
-          <Button variant="outlined">
-            Sign In
-          </Button>
+          <Link to="/sign-in">
+              <Button variant="outlined" fullWidth>
+                Sign In
+              </Button>
+          </Link>
         </Box>
       </Box>
     </>

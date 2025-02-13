@@ -1,9 +1,12 @@
 import { Box, useTheme } from "@mui/material";
 import HeaderTag from "./HeaderTag";
 import { Link } from "react-router-dom";
+import { useContext } from "react";
+import { UserContext } from "../../../../auth/src/context/UserContext";
 
 export default function Header() {
   const theme = useTheme();
+  const userContext = useContext(UserContext);
 
   return (
     <Box
@@ -132,35 +135,37 @@ export default function Header() {
           Start Trading
         </Box>
 
-        <Box
-          component={Link}
-          to="/sign-in"
-          paddingX={2.5}
-          paddingY={1.5}
-          borderRadius={999}
-          border={1}
-          borderColor="#333"
-          bgcolor="transparent"
-          color="white"
-          fontSize={18}
-          display="flex"
-          alignItems="center"
-          gap={1}
-          sx={{
-            textDecoration: "none",
-            "&:hover": {
-              border: `0.0625rem solid ${theme.palette.primary.main}`,
-            },
-            [theme.breakpoints.down("sm")]: {
-              fontSize: 14,
-              paddingX: 1.5,
-              paddingY: 1,
-            },
-          }}
-        >
-          <Box component="img" src="svgs/63011d2ad7739c0ae2d6a345_gift.svg" />
-          Sign In
-        </Box>
+        {!userContext?.user &&
+          <Box
+            component={Link}
+            to="/sign-in"
+            paddingX={2.5}
+            paddingY={1.5}
+            borderRadius={999}
+            border={1}
+            borderColor="#333"
+            bgcolor="transparent"
+            color="white"
+            fontSize={18}
+            display="flex"
+            alignItems="center"
+            gap={1}
+            sx={{
+              textDecoration: "none",
+              "&:hover": {
+                border: `0.0625rem solid ${theme.palette.primary.main}`,
+              },
+              [theme.breakpoints.down("sm")]: {
+                fontSize: 14,
+                paddingX: 1.5,
+                paddingY: 1,
+              },
+            }}
+          >
+            <Box component="img" src="svgs/63011d2ad7739c0ae2d6a345_gift.svg" />
+            Sign In
+          </Box>
+        }
       </Box>
     </Box>
   );

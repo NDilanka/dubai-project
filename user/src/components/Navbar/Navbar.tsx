@@ -5,16 +5,19 @@ import {
   MenuItem,
   useTheme,
 } from "@mui/material";
-import NavListItem from "./NavListItem";
-import { type MouseEvent, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
+import NavListItem from "./NavListItem";
+import { useContext, useState } from "react";
+import type { MouseEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import { UserContext } from "../../../../auth/src/context/UserContext";
 
 export default function Navbar() {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const isDropdownOpen = Boolean(anchorEl);
   const navigate = useNavigate();
+  const userContext = useContext(UserContext);
 
   const handleClickMenuButton = (event: MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -69,34 +72,36 @@ export default function Navbar() {
         <NavListItem href="/wallet" title="Wallet" />
       </Box>
 
-      <Box
-        component="a"
-        href="/sign-in"
-        display="flex"
-        fontSize={18}
-        alignItems="center"
-        gap={1}
-        paddingY={2}
-        paddingX={4}
-        borderRadius={999}
-        border={1}
-        color="white"
-        sx={{
-          background: `radial-gradient(ellipse 8rem 4rem at center, ${theme.palette.background.default}, ${theme.palette.primary.main})`,
-          borderImage: `linear-gradient(0deg, ${theme.palette.background.default}, ${theme.palette.primary.main}) 1`,
-          mask: `linear-gradient(${theme.palette.background.default} 0 0)`,
-          maskComposite: "exclude",
-          textDecoration: "none",
-          "&:hover": {
-            background: `radial-gradient(ellipse 4rem 2rem at center, ${theme.palette.background.default}, ${theme.palette.primary.main})`,
-          },
-          [theme.breakpoints.down("sm")]: {
-            display: "none",
-          },
-        }}
-      >
-        Sign In
-      </Box>
+      {!userContext?.user &&
+        <Box
+          component="a"
+          href="/sign-in"
+          display="flex"
+          fontSize={18}
+          alignItems="center"
+          gap={1}
+          paddingY={2}
+          paddingX={4}
+          borderRadius={999}
+          border={1}
+          color="white"
+          sx={{
+            background: `radial-gradient(ellipse 8rem 4rem at center, ${theme.palette.background.default}, ${theme.palette.primary.main})`,
+            borderImage: `linear-gradient(0deg, ${theme.palette.background.default}, ${theme.palette.primary.main}) 1`,
+            mask: `linear-gradient(${theme.palette.background.default} 0 0)`,
+            maskComposite: "exclude",
+            textDecoration: "none",
+            "&:hover": {
+              background: `radial-gradient(ellipse 4rem 2rem at center, ${theme.palette.background.default}, ${theme.palette.primary.main})`,
+            },
+            [theme.breakpoints.down("sm")]: {
+              display: "none",
+            },
+          }}
+        >
+          Sign In
+        </Box>
+      }
 
       <IconButton
         onClick={handleClickMenuButton}

@@ -73,8 +73,8 @@ export default function SignInPage() {
           <ArrowBackIcon />
         </IconButton>
 
-        <form
-          style={{
+        <Box component="form"
+          sx={{
             display: "flex",
             flexDirection: "column",
             gap: "1rem",
@@ -82,6 +82,9 @@ export default function SignInPage() {
           }}
           onSubmit={handleSubmit}
         >
+          <Typography variant="h2" fontWeight="bold" textAlign="center"
+            mb={4}>Sign Into AutoFX</Typography>
+
           <TextField
             label="Email"
             variant="outlined"
@@ -107,7 +110,7 @@ export default function SignInPage() {
           <Button component={Link} variant="outlined" to="/sign-up">
             Sign Up
           </Button>
-        </form>
+        </Box>
       </Box>
     </>
   );

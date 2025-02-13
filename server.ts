@@ -1,3 +1,4 @@
+import { db_uri, db_name, port } from "./consts.ts";
 import userPage from "./user/public/index.html";
 import adminPage from "./admin/public/index.html";
 import authPage from "./auth/public/index.html";
@@ -8,11 +9,11 @@ import tradeController from "./api/controllers/tradeController.ts";
 import userController from "./api/controllers/userController.ts";
 import { MongoClient, Db } from "mongodb";
 
-const client: MongoClient = await MongoClient.connect("mongodb://localhost:27017");
-const db: Db = client.db("dubai");
+const client: MongoClient = await MongoClient.connect(db_uri);
+const db: Db = client.db(db_name);
 
 const server = Bun.serve({
-  port: 8000,
+  port: port,
   static: {
     "/sign-up": authPage,
     "/sign-in": authPage,

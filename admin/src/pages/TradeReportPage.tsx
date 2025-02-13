@@ -156,26 +156,7 @@ export default function TradeReportPage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [tableData, setTableData] = useState<ITableRow[]>([]);
-  const [btc1, setbtc1] = useState(0)
-  const [btc2, setbtc2] = useState(0)
-  const [btc3, setbtc3] = useState(0)
-  const [btc4, setbtc4] = useState(0)
-  const [btc5, setbtc5] = useState(0)
-  const [amount, setamount] = useState(0)
-
   const [open, setOpen] = useState(false);
-  const handleClickOpen = () => {
-    setOpen(true);
-    console.log("----------------OPEN----------------");
-    console.log(open);
-    console.log("----------------OPEN----------------");
-  };
-  const handleClose = () => {
-    setOpen(false);
-    console.log("----------------CLOSE---------------");
-    console.log(open);
-    console.log("----------------CLOSE----------------");
-  };
 
   useEffect(() => {
     const visibleTableData = rows.filter((data, index) => {
@@ -187,6 +168,14 @@ export default function TradeReportPage() {
 
     setTableData(visibleTableData);
   }, [rowsPerPage, page]);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   const handlePageChange = (_event: unknown, newPage: number) => {
     setPage(newPage);
@@ -200,81 +189,9 @@ export default function TradeReportPage() {
   return (
     <Paper variant="outlined">
       <Stack direction="row" margin={2}>
-        <Stack direction="row" gap={1} mr="auto">
-          <TextField label="Search" size="small" />
-          <TextField label="Property" size="small" />
-        </Stack>
+        <TextField label="Search" size="small" />
 
-        <Dialog open={open} onClose={handleClose}>
-          <DialogTitle>Add New Admin</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              To add a new admin, please fill out the form below.
-            </DialogContentText>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="name"
-              label="BTC 1"
-              type="number"
-              fullWidth
-              value={btc1}
-              onChange={(event) => setbtc1(parseFloat(event.target.value))}
-            />
-            <TextField
-              margin="dense"
-              id="email"
-              label="BTC 2"
-              type="number"
-              fullWidth
-              value={btc2}
-              onChange={(event) => setbtc2(parseFloat(event.target.value))}
-            />
-            <TextField
-              autoFocus
-              margin="dense"
-              id="name"
-              label="BTC 3"
-              type="number"
-              fullWidth
-              value={btc3}
-              onChange={(event) => setbtc3(parseFloat(event.target.value))}
-            />
-            <TextField
-              margin="dense"
-              id="email"
-              label="BTC 4"
-              type="number"
-              fullWidth
-              value={btc4}
-              onChange={(event) => setbtc4(parseFloat(event.target.value))}
-            />
-            <TextField
-              autoFocus
-              margin="dense"
-              id="name"
-              label="BTC 5"
-              type="number"
-              fullWidth
-              value={btc5}
-              onChange={(event) => setbtc5(parseFloat(event.target.value))}
-            />
-            <TextField
-              margin="dense"
-              id="email"
-              label="Amount"
-              type="number"
-              fullWidth
-              value={amount}
-              onChange={(event) => setamount(parseFloat(event.target.value))}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose}>Cancel</Button>
-            <Button onClick={handleClose}>Update</Button>
-          </DialogActions>
-        </Dialog>
-
+        <EditForm open={open} onClose={handleClose} />
       </Stack>
 
       <Divider />
@@ -333,3 +250,103 @@ export default function TradeReportPage() {
   );
 }
 
+function EditForm({ open, onClose }: { open: boolean; onClose: () => void; }) {
+  const [tradeFormData, setTradeFormData] = useState({
+    btc1: "",
+    btc2: "",
+    btc3: "",
+    btc4: "",
+    btc5: "",
+    amount: "",
+    remarks: "",
+  });
+
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>Add New Admin</DialogTitle>
+
+      <DialogContent>
+        <DialogContentText>
+          To add a new admin, please fill out the form below.
+        </DialogContentText>
+
+        <TextField
+          autoFocus
+          margin="dense"
+          label="BTC 1"
+          type="number"
+          fullWidth
+          value={tradeFormData.btc1}
+          onChange={(event) => setTradeFormData({ ...tradeFormData, btc1: event.target.value })}
+        />
+
+        <TextField
+          autoFocus
+          margin="dense"
+          label="BTC 2"
+          type="number"
+          fullWidth
+          value={tradeFormData.btc2}
+          onChange={(event) => setTradeFormData({ ...tradeFormData, btc2: event.target.value })}
+        />
+
+        <TextField
+          autoFocus
+          margin="dense"
+          label="BTC 3"
+          type="number"
+          fullWidth
+          value={tradeFormData.btc3}
+          onChange={(event) => setTradeFormData({ ...tradeFormData, btc3: event.target.value })}
+        />
+
+        <TextField
+          autoFocus
+          margin="dense"
+          label="BTC 4"
+          type="number"
+          fullWidth
+          value={tradeFormData.btc4}
+          onChange={(event) => setTradeFormData({ ...tradeFormData, btc4: event.target.value })}
+        />
+
+        <TextField
+          autoFocus
+          margin="dense"
+          label="BTC 5"
+          type="number"
+          fullWidth
+          value={tradeFormData.btc5}
+          onChange={(event) => setTradeFormData({ ...tradeFormData, btc5: event.target.value })}
+        />
+
+        <TextField
+          autoFocus
+          margin="dense"
+          label="Amount"
+          type="number"
+          fullWidth
+          value={tradeFormData.amount}
+          onChange={(event) => setTradeFormData({ ...tradeFormData, amount: event.target.value })}
+        />
+
+        <TextField
+          autoFocus
+          multiline
+          margin="dense"
+          label="Remarks"
+          type="text"
+          fullWidth
+          value={tradeFormData.remarks}
+          onChange={(event) => setTradeFormData({ ...tradeFormData, remarks: event.target.value })}
+        />
+
+      </DialogContent>
+
+      <DialogActions>
+        <Button variant="contained" onClick={onClose}>Update</Button>
+        <Button variant="outlined" onClick={onClose}>Cancel</Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
