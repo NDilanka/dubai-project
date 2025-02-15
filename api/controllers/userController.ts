@@ -1,4 +1,4 @@
-import { Db } from "mongodb";
+import { Db, ObjectId } from "mongodb";
 
 const secretKey = "SECRET KEY";
 
@@ -130,6 +130,100 @@ export default async function userController(request: Request, db: Db) {
 
       return new Response(JSON.stringify({message: "Admin created successfully!"}), {
         status: 201,
+        headers: {"Content-Type": "application/json"}
+      });
+    } else if (request.method === "PUT") {
+      const data = await request.json();
+
+      if (data.id.length === 0) {
+        return new Response(JSON.stringify({message: "User id must be provided!"}), {
+          status: 400,
+          headers: {"Content-Type": "application/json"}
+        });
+      }
+
+      if (data.firstName.length === 0) {
+        return new Response(JSON.stringify({message: "Please enter the first name!"}), {
+          status: 400,
+          headers: {"Content-Type": "application/json"}
+        });
+      }
+
+      if (data.lastName.length === 0) {
+        return new Response(JSON.stringify({message: "Please enter the last name!"}), {
+          status: 400,
+          headers: {"Content-Type": "application/json"}
+        });
+      }
+
+      if (data.email.length === 0) {
+        return new Response(JSON.stringify({message: "Please enter the email!"}), {
+          status: 400,
+          headers: {"Content-Type": "application/json"}
+        });
+      }
+
+      if (data.phoneNumber.length === 0) {
+        return new Response(JSON.stringify({message: "Please enter the phone number!"}), {
+          status: 400,
+          headers: {"Content-Type": "application/json"}
+        });
+      }
+
+      // Update the user data.
+      const result = await db.collection("users").updateOne({ _id: new ObjectId(`${data.id}`) }, {
+        $set: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phoneNumber: data.phoneNumber
+        }
+      });
+
+      if (result.modifiedCount === 1) {
+        return new Response(JSON.stringify({message: "Admin data updated successfully!"}), {
+          status: 200,
+          headers: {"Content-Type": "application/json"}
+        });
+      }
+
+      return new Response(JSON.stringify({message: "Failed to update admin data!"}), {
+        status: 500,
+        headers: {"Content-Type": "application/json"}
+      });
+    } else if (request.method === "PATCH") {
+      const data = await request.json();
+
+      if (data.id.length === 0) {
+        return new Response(JSON.stringify({message: "User id must be provided!"}), {
+          status: 400,
+          headers: {"Content-Type": "application/json"}
+        });
+      }
+
+      if (data.newState.length === 0) {
+        return new Response(JSON.stringify({message: "Please enter the phone number!"}), {
+          status: 400,
+          headers: {"Content-Type": "application/json"}
+        });
+      }
+
+      // Update the user state.
+      const result = await db.collection("users").updateOne({ _id: new ObjectId(`${data.id}`) }, {
+        $set: {
+          active: data.newState
+        }
+      });
+
+      if (result.modifiedCount === 1) {
+        return new Response(JSON.stringify({message: "Admin state updated successfully!"}), {
+          status: 200,
+          headers: {"Content-Type": "application/json"}
+        });
+      }
+
+      return new Response(JSON.stringify({message: "Failed to update admin state!"}), {
+        status: 500,
         headers: {"Content-Type": "application/json"}
       });
     } else {

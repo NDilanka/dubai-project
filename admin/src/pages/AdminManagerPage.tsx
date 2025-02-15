@@ -13,6 +13,7 @@ interface ITableRow {
   email: string;
   phoneNumber: string;
   date?: string;
+  active: boolean;
 }
 
 export default function AdminManagerPage() {
@@ -24,6 +25,8 @@ export default function AdminManagerPage() {
   const [openEditAdminFormModel, setOpenEditAdminFormModel] = useState(false);
   const containerRef = useRef<HTMLElement>(null);
   const [showPopUp, setShowPopUp] = useState(false);
+  const [popUpMessage, setPopUpMessage] = useState("");
+  const [selectedRowIndex, setSelectedRowIndex] = useState(-1);
 
   useEffect(() => {
     fetchUsers();
@@ -61,13 +64,15 @@ export default function AdminManagerPage() {
           email: string;
           phoneNumber: string;
           date: string;
+          active: boolean;
         }) => ({
           id: admin._id,
           firstName: admin.firstName,
           lastName: admin.lastName,
           email: admin.email,
           phoneNumber: admin.phoneNumber,
-          date: admin.date
+          date: admin.date,
+          active: admin.active
         }));
 
         setRows(admins);
@@ -96,19 +101,52 @@ export default function AdminManagerPage() {
     setOpenEditAdminFormModel(true);
   };
 
-  const handleClickDisable = () => {
+  const handleClickToggleStatus = async (id: string, newState: boolean) => {
+    try {
+      const response = await fetch("/api/users", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({id, newState})
+      });
 
+      if (response.ok) {
+        fetchUsers();
+      } else {
+        // TODO: Display an alert.
+      }
+    } catch (error: any) {
+      console.error(error);
+    }
   };
 
   const handleCloseEditAdminModel = () => {
     setOpenEditAdminFormModel(false);
   };
 
+  const handleSelectedRowIndex = (index: number) => {
+    setSelectedRowIndex(index);
+  };
+
+  const handleFinishAddAdmin = () => {
+    fetchUsers();
+  };
+
+  const handleFinishEditAdmin = (message: string) => {
+    setPopUpMessage(message);
+    setShowPopUp(true);
+    setTimeout(() => {
+      setShowPopUp(false);
+    }, 3000);
+    fetchUsers();
+  };
+
   return (
     <>
       <Box sx={{ position: "absolute", left: "50%", top: 0, transform: "translateX(-50%)" }}>
         <Slide in={showPopUp} container={containerRef.current}>
-          <Alert severity="success">New admin created succussfully!</Alert>
+          <Alert severity="success">{popUpMessage}</Alert>
         </Slide>
       </Box>
 
@@ -117,8 +155,9 @@ export default function AdminManagerPage() {
           <TextField label="Search" size="small" />
           <Button variant="outlined" onClick={handleClickOpen}>Add New Admin</Button>
 
-          <NewAdminForm open={openModel} onClose={handleClose} />
-          <EditAdminForm open={openEditAdminFormModel} onClose={handleCloseEditAdminModel} />
+          <NewAdminForm open={openModel} onClose={handleClose} onFinish={handleFinishAddAdmin} />
+          <EditAdminForm open={openEditAdminFormModel} onClose={handleCloseEditAdminModel} 
+            selectedRow={tableData[selectedRowIndex]} onFinish={handleFinishEditAdmin} />
         </Stack>
 
         <Divider />
@@ -133,24 +172,30 @@ export default function AdminManagerPage() {
                 <TableCell>Email</TableCell>
                 <TableCell>Phone Number</TableCell>
                 <TableCell>Date</TableCell>
-                <TableCell>Status</TableCell>
+                <TableCell>State</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
 
             <TableBody>
-              {tableData.map((data) => (
-                <TableRow key={data.id}>
+              {tableData.map((data, index) => (
+                <TableRow key={data.id} sx={{bgcolor: data.active ? "" : "#ff8888"}}>
                   <TableCell>{data.id}</TableCell>
                   <TableCell>{data.firstName}</TableCell>
                   <TableCell>{data.lastName}</TableCell>
                   <TableCell>{data.email}</TableCell>
                   <TableCell>{data.phoneNumber}</TableCell>
                   <TableCell>{getDateString(data.date || "")}</TableCell>
-                  <TableCell>Active</TableCell>
+                  <TableCell>{data.active ? "Active" : "Inactive"}</TableCell>
 
                   <TableCell>
-                    <Actions onClickEdit={handleClickEdit} onClickDisable={handleClickDisable} />
+                    <Actions 
+                      onClickEdit={handleClickEdit} 
+                      onClickToggleStatus={(newState: boolean) => handleClickToggleStatus(data.id, newState)} 
+                      selectedRowIndex={index} 
+                      onSelectedRowIndex={handleSelectedRowIndex} 
+                      state={data.active}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
@@ -173,15 +218,22 @@ export default function AdminManagerPage() {
 }
 
 function Actions({ 
-  onClickEdit, 
-  onClickDisable 
+  onClickEdit,
+  onClickToggleStatus,
+  selectedRowIndex,
+  onSelectedRowIndex,
+  state
 }: { 
   onClickEdit: () => void; 
-  onClickDisable: () => void;
+  onClickToggleStatus: (newState: boolean) => void;
+  selectedRowIndex: number;
+  onSelectedRowIndex: (index: number) => void;
+  state: boolean; // true -> Active, false -> Inactive
 }) 
 {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openModel = Boolean(anchorEl);
+  const [statusActive, setStatusActive] = useState(state);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -192,12 +244,14 @@ function Actions({
   };
 
   const handleClickEdit = () => {
+    onSelectedRowIndex(selectedRowIndex);
     onClickEdit();
     handleClose();
   };
 
-  const handleClickDisable = () => {
-    onClickDisable();
+  const handleClickToggleStatus = () => {
+    onClickToggleStatus(!state);
+    setStatusActive(!state);
     handleClose();
   };
 
@@ -223,14 +277,24 @@ function Actions({
         }}
       >
         <MenuItem onClick={handleClickEdit}>Edit</MenuItem>
-        <MenuItem onClick={handleClickDisable}>Disable</MenuItem>
+
+        <MenuItem onClick={handleClickToggleStatus}>
+          {statusActive ? "Deactivate" : "Activate"}
+        </MenuItem>
       </Menu>
     </Box>
   );
 }
 
-function NewAdminForm({ open, onClose }: 
-                      { open: boolean, onClose?: () => void; }) {
+function NewAdminForm({ 
+  open,
+  onClose,
+  onFinish
+}: { 
+  open: boolean; 
+  onClose?: () => void; 
+  onFinish: () => void;
+}) {
   const [adminFormData, setAdminFormData] = useState({
     firstName: "",
     lastName: "",
@@ -252,6 +316,7 @@ function NewAdminForm({ open, onClose }:
       if (response.ok) {
         // TODO: Show an alert or something.
         if (onClose) {
+          onFinish();
           onClose();
         }
       } else {
@@ -328,38 +393,65 @@ function NewAdminForm({ open, onClose }:
   );
 }
 
-function EditAdminForm({ open, onClose }: 
-                      { open: boolean, onClose?: () => void; }) {
+function EditAdminForm({ 
+  open, 
+  onClose, 
+  selectedRow, 
+  onFinish
+}: { 
+  open: boolean; 
+  onClose?: () => void; 
+  selectedRow: ITableRow; 
+  onFinish: (message: string) => void;
+}) {
   const [adminFormData, setAdminFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     phoneNumber: "",
-    password: ""
   });
 
-  const handleClickAdd = async () => {
+  useEffect(() => {
+    if (selectedRow) {
+      setAdminFormData({
+        firstName: selectedRow.firstName,
+        lastName: selectedRow.lastName,
+        email: selectedRow.email,
+        phoneNumber: selectedRow.phoneNumber,
+      });
+    }
+  }, [selectedRow]);
+
+  const handleClickSaveChanges = async () => {
     try {
       const response = await fetch("/api/users?role=Admin", {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(adminFormData)
+        body: JSON.stringify({
+          id: selectedRow.id,
+          firstName: adminFormData.firstName,
+          lastName: adminFormData.lastName,
+          email: adminFormData.email,
+          phoneNumber: adminFormData.phoneNumber
+        })
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        // TODO: Show an alert or something.
         if (onClose) {
+          onFinish(data.message);
           onClose();
         }
       } else {
-        // TODO: Show an alert or something.
+        onFinish(data.message);
       }
     } catch (error: any) {
       console.error(error);
 
-      // TODO: Show an alert or something.
+      onFinish("Something went wrong!");
     }
   };
 
@@ -408,19 +500,10 @@ function EditAdminForm({ open, onClose }:
           onChange={e => setAdminFormData({ ...adminFormData, phoneNumber: e.target.value })}
         />
 
-        <TextField
-          margin="dense"
-          label="Password"
-          type="password"
-          fullWidth
-          value={adminFormData.password}
-          onChange={e => setAdminFormData({ ...adminFormData, password: e.target.value })}
-        />
-
       </DialogContent>
 
       <DialogActions>
-        <Button variant="contained" onClick={handleClickAdd}>Save Changes</Button>
+        <Button variant="contained" onClick={handleClickSaveChanges}>Save Changes</Button>
         <Button variant="outlined" onClick={onClose}>Cancel</Button>
       </DialogActions>
     </Dialog>
