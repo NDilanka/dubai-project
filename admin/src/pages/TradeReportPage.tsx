@@ -157,6 +157,10 @@ export default function TradeReportPage() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [tableData, setTableData] = useState<ITableRow[]>([]);
   const [open, setOpen] = useState(false);
+  
+  useEffect(() => {
+    fetchTradeReport();
+  }, []);
 
   useEffect(() => {
     const visibleTableData = rows.filter((data, index) => {
@@ -168,6 +172,46 @@ export default function TradeReportPage() {
 
     setTableData(visibleTableData);
   }, [rowsPerPage, page]);
+
+  const fetchTradeReport = async () => {
+    try {
+      const response = await fetch("/api/trades");
+
+      if (response.ok) {
+        const data = await response.json();
+
+        const trades = data.map((trade: {
+          _id: string;
+          amount: number;
+          btc1: number;
+          btc2: number;
+          btc3: number;
+          btc4: number;
+          btc5: number;
+          createdAt: string;
+          updatedAt: string;
+          user: {
+            _id: string;
+            firstName: string;
+            lastName: string;
+            email: string;
+            phoneNumber: string;
+            currencty: string;
+            roleId: string;
+            date: string;
+            active: boolean;
+          }}) => ({
+            id: trade._id,
+            // TODO: Refere AdmainManagerPage.tsx to do this.
+          })
+        );
+      } else {
+        // TODO: Add an alert.
+      }
+    } catch (error: any) {
+      console.error(error);
+    }
+  };
 
   const handleClickOpen = () => {
     setOpen(true);

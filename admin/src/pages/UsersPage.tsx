@@ -80,6 +80,7 @@ export default function UserPage() {
     });
     setOpen(true);
   };
+
   const handleClose = () => {
     setOpen(false);
   };

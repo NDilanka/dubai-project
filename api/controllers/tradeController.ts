@@ -5,12 +5,29 @@ const secretKey = "SECRET KEY";
 export default async function tradeController(request: Request, db: Db) {
   try {
     if (request.method === "GET") {
-      const trades = await db.collection("trades").find();
-      console.log("============");
-      console.log(trades);
-      console.log("============");
+      const trades = await db.collection("trades").aggregate([
+        {
+          $lookup: {
+            from: "users",
+            localField: "userId",
+            foreignField: "_id",
+            as: "user"
+          }
+        },
+        {
+          $unwind: "$user"
+        },
+        {
+          $project: {
+            userId: 0,
+            user: {
+              password: 0
+            }
+          }
+        }
+      ]).toArray();
 
-      return new Response(JSON.stringify({message: "GET trade"}), {
+      return new Response(JSON.stringify(trades), {
         status: 200,
         headers: {"Content-Type": "application/json"}
       });
