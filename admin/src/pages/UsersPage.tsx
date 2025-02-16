@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
 
 interface ITableRow {
+  currency: string;
   id: string;
   firstName: string;
   lastName: string;
@@ -26,6 +27,7 @@ export default function UserPage() {
     lastName: "",
     email: "",
     date: "",
+    currency: ""
   });
 
   useEffect(() => {
@@ -54,13 +56,15 @@ export default function UserPage() {
           firstName: string;
           lastName: string;
           email: string;
-          phoneNumber: string;
+          date: string;
+          currency: string;
         }) => ({
           id: user._id,
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
-          phoneNumber: user.phoneNumber
+          date: user.date,
+          currency: user.currency
         }));
 
         setRows(users);
@@ -76,7 +80,8 @@ export default function UserPage() {
       firstName: tableRow.firstName,
       lastName: tableRow.lastName,
       email: tableRow.email,
-      date: tableRow.date || ""
+      date: tableRow.date || "",
+      currency: tableRow.currency
     });
     setOpen(true);
   };
@@ -149,9 +154,9 @@ export default function UserPage() {
                   value={currency}
                   onChange={(event) => setCurrency(event.target.value)}
                 >
-                  <MenuItem value="admin">USD</MenuItem>
-                  <MenuItem value="moderator">CAD</MenuItem>
-                  <MenuItem value="user">INR</MenuItem>
+                  <MenuItem value="USD">USD</MenuItem>
+                  <MenuItem value="CAD">CAD</MenuItem>
+                  <MenuItem value="INR">INR</MenuItem>
                 </Select>
               </FormControl>
             </Stack>
@@ -176,6 +181,7 @@ export default function UserPage() {
               <TableCell>Last Name</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Date</TableCell>
+              <TableCell>Currency</TableCell>
               <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
@@ -188,6 +194,7 @@ export default function UserPage() {
                 <TableCell>{data.lastName}</TableCell>
                 <TableCell>{data.email}</TableCell>
                 <TableCell>{data.date}</TableCell>
+                <TableCell>{data.currency}</TableCell>
 
                 <TableCell>
                   <Button variant="contained" onClick={() => handleClickOpen(data)}>Edit</Button>
