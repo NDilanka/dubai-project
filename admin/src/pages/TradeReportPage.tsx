@@ -1,161 +1,37 @@
-import { Divider, Paper, Stack, Button, Table, TableBody, TableCell, TableContainer, TableHead,
-         TablePagination, TableRow, TextField, Dialog, DialogTitle, DialogContent, DialogActions,
-         DialogContentText,
-       } from "@mui/material";
+import { Divider, Paper, Stack, Button, Table, TableBody, TableCell, TableContainer, 
+         TableHead, TablePagination, TableRow, TextField, Dialog, DialogTitle, 
+         DialogContent, DialogActions, DialogContentText } from "@mui/material";
 import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
 
 interface ITableRow {
-  id: string;
-  username: string;
-  email: string;
+  _id: string;
+  amount: number;
   btc1: number;
   btc2: number;
   btc3: number;
   btc4: number;
   btc5: number;
-  amount: number;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+    currencty: string;
+    roleId: string;
+    date: string;
+    active: boolean;
+  }
 }
-
-const rows: ITableRow[] = [
-  {
-    id: "1",
-    username: "David Jones",
-    email: "david@test.com",
-    btc1: 10,
-    btc2: 10,
-    btc3: 10,
-    btc4: 10,
-    btc5: 10,
-    amount: 50,
-  },
-  {
-    id: "2",
-    username: "David Jones",
-    email: "david@test.com",
-    btc1: 10,
-    btc2: 10,
-    btc3: 10,
-    btc4: 10,
-    btc5: 10,
-    amount: 50,
-  },
-  {
-    id: "3",
-    username: "David Jones",
-    email: "david@test.com",
-    btc1: 10,
-    btc2: 10,
-    btc3: 10,
-    btc4: 10,
-    btc5: 10,
-    amount: 50,
-  },
-  {
-    id: "4",
-    username: "David Jones",
-    email: "david@test.com",
-    btc1: 10,
-    btc2: 10,
-    btc3: 10,
-    btc4: 10,
-    btc5: 10,
-    amount: 50,
-  },
-  {
-    id: "5",
-    username: "David Jones",
-    email: "david@test.com",
-    btc1: 10,
-    btc2: 10,
-    btc3: 10,
-    btc4: 10,
-    btc5: 10,
-    amount: 50,
-  },
-  {
-    id: "6",
-    username: "David Jones",
-    email: "david@test.com",
-    btc1: 10,
-    btc2: 10,
-    btc3: 10,
-    btc4: 10,
-    btc5: 10,
-    amount: 50,
-  },
-  {
-    id: "7",
-    username: "David Jones",
-    email: "david@test.com",
-    btc1: 10,
-    btc2: 10,
-    btc3: 10,
-    btc4: 10,
-    btc5: 10,
-    amount: 50,
-  },
-  {
-    id: "8",
-    username: "David Jones",
-    email: "david@test.com",
-    btc1: 10,
-    btc2: 10,
-    btc3: 10,
-    btc4: 10,
-    btc5: 10,
-    amount: 50,
-  },
-  {
-    id: "9",
-    username: "David Jones",
-    email: "david@test.com",
-    btc1: 10,
-    btc2: 10,
-    btc3: 10,
-    btc4: 10,
-    btc5: 10,
-    amount: 50,
-  },
-  {
-    id: "10",
-    username: "David Jones",
-    email: "david@test.com",
-    btc1: 10,
-    btc2: 10,
-    btc3: 10,
-    btc4: 10,
-    btc5: 10,
-    amount: 50,
-  },
-  {
-    id: "11",
-    username: "David Jones",
-    email: "david@test.com",
-    btc1: 10,
-    btc2: 10,
-    btc3: 10,
-    btc4: 10,
-    btc5: 10,
-    amount: 50,
-  },
-  {
-    id: "12",
-    username: "David Jones",
-    email: "david@test.com",
-    btc1: 10,
-    btc2: 10,
-    btc3: 10,
-    btc4: 10,
-    btc5: 10,
-    amount: 50,
-  },
-];
 
 export default function TradeReportPage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [tableData, setTableData] = useState<ITableRow[]>([]);
+  const [rows, setRows] = useState<ITableRow[]>([]);
   const [open, setOpen] = useState(false);
   
   useEffect(() => {
@@ -171,7 +47,7 @@ export default function TradeReportPage() {
     });
 
     setTableData(visibleTableData);
-  }, [rowsPerPage, page]);
+  }, [rowsPerPage, page, rows]);
 
   const fetchTradeReport = async () => {
     try {
@@ -180,31 +56,9 @@ export default function TradeReportPage() {
       if (response.ok) {
         const data = await response.json();
 
-        const trades = data.map((trade: {
-          _id: string;
-          amount: number;
-          btc1: number;
-          btc2: number;
-          btc3: number;
-          btc4: number;
-          btc5: number;
-          createdAt: string;
-          updatedAt: string;
-          user: {
-            _id: string;
-            firstName: string;
-            lastName: string;
-            email: string;
-            phoneNumber: string;
-            currencty: string;
-            roleId: string;
-            date: string;
-            active: boolean;
-          }}) => ({
-            id: trade._id,
-            // TODO: Refere AdmainManagerPage.tsx to do this.
-          })
-        );
+        const trades = data.map((trade: ITableRow) => (trade));
+
+          setRows(trades);
       } else {
         // TODO: Add an alert.
       }
@@ -245,7 +99,8 @@ export default function TradeReportPage() {
           <TableHead>
             <TableRow>
               <TableCell>ID</TableCell>
-              <TableCell>Username</TableCell>
+              <TableCell>First Name</TableCell>
+              <TableCell>Last Name</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>BTC1</TableCell>
               <TableCell>BTC2</TableCell>
@@ -259,10 +114,11 @@ export default function TradeReportPage() {
 
           <TableBody>
             {tableData.map((data) => (
-              <TableRow key={data.id}>
-                <TableCell>{data.id}</TableCell>
-                <TableCell>{data.username}</TableCell>
-                <TableCell>{data.email}</TableCell>
+              <TableRow key={data._id}>
+                <TableCell>{data._id}</TableCell>
+                <TableCell>{data.user.firstName}</TableCell>
+                <TableCell>{data.user.lastName}</TableCell>
+                <TableCell>{data.user.email}</TableCell>
                 <TableCell>{data.btc1}</TableCell>
                 <TableCell>{data.btc2}</TableCell>
                 <TableCell>{data.btc3}</TableCell>
