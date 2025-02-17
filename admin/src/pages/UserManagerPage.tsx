@@ -22,7 +22,6 @@ import {
 import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
 
-// Updated interface includes phoneNumber
 interface ITableRow {
   currency: string;
   id: string;
@@ -65,7 +64,7 @@ export default function UserPage() {
       const response = await fetch("/api/users?role=User");
       if (response.ok) {
         const data = await response.json();
-        // Include phoneNumber from the fetched data
+        
         const users = data.map((user: {
           _id: string;
           firstName: string;
@@ -96,7 +95,7 @@ export default function UserPage() {
       firstName: tableRow.firstName,
       lastName: tableRow.lastName,
       email: tableRow.email,
-      phoneNumber: tableRow.phoneNumber, // include phoneNumber here
+      phoneNumber: tableRow.phoneNumber,
       date: tableRow.date || "",
       currency: tableRow.currency,
     });
@@ -116,9 +115,9 @@ export default function UserPage() {
     setPage(0);
   };
 
-  // Updated function with safe JSON parsing based on content type.
+  
   const handleSaveChanges = async () => {
-    console.log("Save Changes clicked", editUser); // Debug log
+    console.log("Save Changes clicked", editUser);
     try {
       const response = await fetch(`/api/users/${editUser.id}`, {
         method: "PUT",
@@ -133,7 +132,7 @@ export default function UserPage() {
         const contentType = response.headers.get("Content-Type") || "";
         if (contentType.includes("application/json")) {
           updatedUser = await response.json();
-          // Map _id to id if necessary
+          
           if (!updatedUser.id && updatedUser._id) {
             updatedUser = { ...updatedUser, id: updatedUser._id };
           }
@@ -205,7 +204,6 @@ export default function UserPage() {
                 }
               />
 
-              {/* New Phone Number field */}
               <TextField
                 label="Phone Number"
                 type="text"
