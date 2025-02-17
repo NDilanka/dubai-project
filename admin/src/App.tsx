@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 import DashboardPage from "./pages/DashboardPage";
 import AdminManagerPage from "./pages/AdminManagerPage";
-import UserPage from "./pages/UsersPage";
+import UserPage from "./pages/UserManagerPage";
 import ChangeBalancePage from "./pages/ChangeBalancePage";
 import TradeReportPage from "./pages/TradeReportPage";
 import Layout from "./components/Layout";
