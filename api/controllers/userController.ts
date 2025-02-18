@@ -176,7 +176,8 @@ export default async function userController(request: Request, db: Db) {
           firstName: data.firstName,
           lastName: data.lastName,
           email: data.email,
-          phoneNumber: data.phoneNumber
+          phoneNumber: data.phoneNumber,
+          currency: data.currency
         }
       });
 
