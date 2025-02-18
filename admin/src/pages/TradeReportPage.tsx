@@ -12,6 +12,7 @@ interface ITableRow {
   btc3: number;
   btc4: number;
   btc5: number;
+  remarks: string;
   createdAt: string;
   updatedAt: string;
   user: {
@@ -33,6 +34,7 @@ export default function TradeReportPage() {
   const [tableData, setTableData] = useState<ITableRow[]>([]);
   const [rows, setRows] = useState<ITableRow[]>([]);
   const [open, setOpen] = useState(false);
+  const [selectedRowIndex, setSelectedRowIndex] = useState(-1);
   
   useEffect(() => {
     fetchTradeReport();
@@ -84,12 +86,21 @@ export default function TradeReportPage() {
     setPage(0);
   };
 
+  const handleClickEdit = (selectedIndex: number) => {
+    setSelectedRowIndex(selectedIndex);
+    handleClickOpen();
+  };
+
+  const handleFinishEdit = () => {
+    fetchTradeReport();
+  };
+
   return (
     <Paper variant="outlined">
       <Stack direction="row" margin={2}>
         <TextField label="Search" size="small" />
 
-        <EditForm open={open} onClose={handleClose} />
+        <EditForm open={open} onClose={handleClose} onFinish={handleFinishEdit} data={tableData} selectedRowIndex={selectedRowIndex} />
       </Stack>
 
       <Divider />
@@ -113,7 +124,7 @@ export default function TradeReportPage() {
           </TableHead>
 
           <TableBody>
-            {tableData.map((data) => (
+            {tableData.map((data, index) => (
               <TableRow key={data._id}>
                 <TableCell>{data._id}</TableCell>
                 <TableCell>{data.user.firstName}</TableCell>
@@ -127,7 +138,7 @@ export default function TradeReportPage() {
                 <TableCell>{data.amount}</TableCell>
 
                 <TableCell>
-                  <Button variant="contained" color="primary" onClick={handleClickOpen}>
+                  <Button variant="contained" color="primary" onClick={() => handleClickEdit(index)}>
                     Edit
                   </Button>
                 </TableCell>
@@ -150,7 +161,19 @@ export default function TradeReportPage() {
   );
 }
 
-function EditForm({ open, onClose }: { open: boolean; onClose: () => void; }) {
+function EditForm({ 
+  open,
+  onClose,
+  data,
+  selectedRowIndex,
+  onFinish
+}: { 
+  open: boolean;
+  onClose: () => void;
+  data: ITableRow[];
+  selectedRowIndex: number;
+  onFinish: () => void;
+}) {
   const [tradeFormData, setTradeFormData] = useState({
     btc1: "",
     btc2: "",
@@ -160,6 +183,50 @@ function EditForm({ open, onClose }: { open: boolean; onClose: () => void; }) {
     amount: "",
     remarks: "",
   });
+
+  useEffect(() => {
+    if (selectedRowIndex !== -1) {
+      setTradeFormData({
+        btc1: data[selectedRowIndex].btc1.toString(),
+        btc2: data[selectedRowIndex].btc2.toString(),
+        btc3: data[selectedRowIndex].btc3.toString(),
+        btc4: data[selectedRowIndex].btc4.toString(),
+        btc5: data[selectedRowIndex].btc5.toString(),
+        amount: data[selectedRowIndex].amount.toString(),
+        remarks: data[selectedRowIndex].remarks.toString()
+      });
+    }
+  }, [open]);
+
+  const handleClickUpdate = async () => {
+    try {
+      const response = await fetch("/api/trades", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          id: data[selectedRowIndex]._id,
+          btc1: tradeFormData.btc1,
+          btc2: tradeFormData.btc2,
+          btc3: tradeFormData.btc3,
+          btc4: tradeFormData.btc4,
+          btc5: tradeFormData.btc5,
+          amount: tradeFormData.amount,
+          //remarks: tradeFormData.remarks
+        })
+      });
+
+      if (response.ok) {
+        onFinish();
+        onClose();
+      } else {
+        console.log(await response.json());
+      }
+    } catch (error: any) {
+      console.error(error);
+    }
+  };
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -230,7 +297,7 @@ function EditForm({ open, onClose }: { open: boolean; onClose: () => void; }) {
           onChange={(event) => setTradeFormData({ ...tradeFormData, amount: event.target.value })}
         />
 
-        <TextField
+        {/*<TextField
           autoFocus
           multiline
           margin="dense"
@@ -239,12 +306,12 @@ function EditForm({ open, onClose }: { open: boolean; onClose: () => void; }) {
           fullWidth
           value={tradeFormData.remarks}
           onChange={(event) => setTradeFormData({ ...tradeFormData, remarks: event.target.value })}
-        />
+        />*/}
 
       </DialogContent>
 
       <DialogActions>
-        <Button variant="contained" onClick={onClose}>Update</Button>
+        <Button variant="contained" onClick={handleClickUpdate}>Update</Button>
         <Button variant="outlined" onClick={onClose}>Cancel</Button>
       </DialogActions>
     </Dialog>
