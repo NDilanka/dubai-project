@@ -6,7 +6,7 @@ import signUpController from "./api/controllers/signUpController.ts";
 import signInController from "./api/controllers/signInController.ts";
 import verifyTokenController from "./api/controllers/verifyTokenController.ts";
 import tradeController from "./api/controllers/tradeController.ts";
-import userController from "./api/controllers/userController.ts";
+import userController, { saveUserChanges } from "./api/controllers/userController.ts";
 import { MongoClient, Db } from "mongodb";
 
 const client: MongoClient = await MongoClient.connect(db_uri);
@@ -51,6 +51,11 @@ const server = Bun.serve({
 
         case "/api/verify-token": {
           return await verifyTokenController(req);
+        }
+
+        case "/api/users/save-changes": {
+          // New endpoint for saving user changes
+          return await saveUserChanges(req, db);
         }
 
         case "/api/users": {
