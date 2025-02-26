@@ -33,7 +33,7 @@ export default function Layout() {
       } break;
 
       case "/admin/users": {
-        setTitle("Users");
+        setTitle("User Manager");
       } break;
 
       case "/admin/change-balance": {
@@ -116,7 +116,7 @@ export default function Layout() {
                 <PeopleOutline />
               </ListItemIcon>
 
-              <ListItemText primary="Users" />
+              <ListItemText primary="User manager" />
             </ListItemButton>
           </ListItem>
 
