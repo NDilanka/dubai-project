@@ -1,11 +1,11 @@
 import { Box, Button, Stack, TextField } from "@mui/material";
-import { type FormEvent, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import postTradeService from "../services/tradeService";
 import { UserContext } from "../../../auth/src/context/UserContext";
 
 export default function TradePage() {
-  const [page, _setPage] = useState(0);
-  const [rowsPerPage, _setRowsPerPage] = useState(5);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [tradeData, setTradeData] = useState({
     btc1: "0",
     btc2: "0",

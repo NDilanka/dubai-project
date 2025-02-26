@@ -6,6 +6,7 @@ import signUpController from "./api/controllers/signUpController.ts";
 import signInController from "./api/controllers/signInController.ts";
 import verifyTokenController from "./api/controllers/verifyTokenController.ts";
 import tradeController from "./api/controllers/tradeController.ts";
+import walletController from "./api/controllers/walletController.ts";
 import userController, { saveUserChanges } from "./api/controllers/userController.ts";
 import { MongoClient, Db } from "mongodb";
 
@@ -34,7 +35,7 @@ const server = Bun.serve({
   },
   development: true,
   websocket: {
-    message: () => {}
+    message: () => { }
   },
   async fetch(req) {
     const url = new URL(req.url);
@@ -62,6 +63,10 @@ const server = Bun.serve({
           return await userController(req, db);
         }
 
+        case "/api/wallet": {
+          return await walletController(req, db);
+        }
+
         case "/api/trades": {
           return await tradeController(req, db);
         }
@@ -79,7 +84,7 @@ const server = Bun.serve({
 
       if (await file.exists()) {
         return new Response(file, {
-          headers: {"Content-Type": "image/svg+xml"}
+          headers: { "Content-Type": "image/svg+xml" }
         });
       }
 

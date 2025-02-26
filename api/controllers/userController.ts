@@ -113,6 +113,8 @@ export default async function userController(request: Request, db: Db) {
           lastName: data.lastName,
           email: data.email,
           phoneNumber: data.phoneNumber,
+          currencty: null,
+          balance: 0,
           password: hashedPassword,
           roleId: adminRole._id,
           date: new Date()
