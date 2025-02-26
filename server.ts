@@ -7,6 +7,7 @@ import signInController from "./api/controllers/signInController.ts";
 import verifyTokenController from "./api/controllers/verifyTokenController.ts";
 import tradeController from "./api/controllers/tradeController.ts";
 import walletController from "./api/controllers/walletController.ts";
+import signoutController from "./api/controllers/signoutController.ts";
 import userController, { saveUserChanges } from "./api/controllers/userController.ts";
 import { MongoClient, Db } from "mongodb";
 
@@ -41,7 +42,10 @@ const server = Bun.serve({
     const url = new URL(req.url);
 
     if (url.pathname.startsWith("/api")) {
-      switch (url.pathname) {
+      switch (url.pathname) {      
+        case "/api/sign-out": {
+          return await signoutController(req);
+        }
         case "/api/sign-up": {
           return await signUpController(req, db);
         }
