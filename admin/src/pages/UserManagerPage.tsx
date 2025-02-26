@@ -119,7 +119,7 @@ export default function UserPage() {
   const handleSaveChanges = async () => {
     console.log("Save Changes clicked", editUser);
     try {
-      const response = await fetch(`/api/users/${editUser.id}`, {
+      const response = await fetch(`/api/users/save-changes`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -128,21 +128,13 @@ export default function UserPage() {
       });
 
       if (response.ok) {
-        let updatedUser;
-        const contentType = response.headers.get("Content-Type") || "";
-        if (contentType.includes("application/json")) {
-          updatedUser = await response.json();
-          
-          if (!updatedUser.id && updatedUser._id) {
-            updatedUser = { ...updatedUser, id: updatedUser._id };
-          }
-        } else {
-          updatedUser = editUser;
-        }
+        const result = await response.json();
+        
+        const updatedUser = result.updatedUser ? result.updatedUser : editUser;
 
         setRows((prevRows) =>
           prevRows.map((user) =>
-            user.id === updatedUser.id ? updatedUser : user
+            user.id === updatedUser.id ? { ...user, ...updatedUser } : user
           )
         );
         setOpen(false);

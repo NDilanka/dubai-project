@@ -172,6 +172,8 @@ export default async function userController(request: Request, db: Db) {
         });
       }
 
+      
+
       // Update the user data.
       const result = await db.collection("users").updateOne({ _id: new ObjectId(`${data.id}`) }, {
         $set: {
@@ -241,6 +243,85 @@ export default async function userController(request: Request, db: Db) {
     return new Response(JSON.stringify({message: "Somethong went wrong!"}), {
       status: 500,
       headers: {"Content-Type": "application/json"}
+    });
+
+    
+  }
+}
+
+
+export async function saveUserChanges(request: Request, db: Db) {
+  if (request.method !== "PUT") {
+    return new Response(JSON.stringify({ message: "Method Not Allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+  try {
+    const data = await request.json();
+
+    if (!data.id || data.id.length === 0) {
+      return new Response(JSON.stringify({ message: "User id must be provided!" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    if (!data.firstName || data.firstName.length === 0) {
+      return new Response(JSON.stringify({ message: "Please enter the first name!" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    if (!data.lastName || data.lastName.length === 0) {
+      return new Response(JSON.stringify({ message: "Please enter the last name!" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    if (!data.email || data.email.length === 0) {
+      return new Response(JSON.stringify({ message: "Please enter the email!" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    if (!data.phoneNumber || data.phoneNumber.length === 0) {
+      return new Response(JSON.stringify({ message: "Please enter the phone number!" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    // Update the user data.
+    const result = await db.collection("users").updateOne(
+      { _id: new ObjectId(data.id) },
+      {
+        $set: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phoneNumber: data.phoneNumber,
+          currency: data.currency,
+          date: data.date || new Date().toISOString()
+        }
+      }
+    );
+
+    if (result.modifiedCount === 1) {
+      return new Response(JSON.stringify({ message: "User updated successfully!", updatedUser: data }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    return new Response(JSON.stringify({ message: "Failed to update user data!" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (error: any) {
+    console.error(error);
+    return new Response(JSON.stringify({ message: "Something went wrong!", error }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
     });
   }
 }
