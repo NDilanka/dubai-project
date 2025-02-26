@@ -2,7 +2,6 @@ import {
   Button,
   Divider,
   Paper,
-  Stack,
   Table,
   TableBody,
   TableCell,
@@ -16,95 +15,32 @@ import {
   DialogContent,
   DialogActions,
   DialogContentText,
+  Box,
+  Slide,
+  Alert,
 } from "@mui/material";
-import { type ChangeEvent, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { ChangeEvent } from "react";
 
 interface ITableRow {
   id: string;
-  username: string;
   email: string;
   balance: number;
 }
-
-const rows: ITableRow[] = [
-  {
-    id: "2341434",
-    username: "David Jones",
-    email: "david@test.com",
-    balance: 100,
-  },
-  {
-    id: "sdf2341434",
-    username: "David Jones",
-    email: "david@test.com",
-    balance: 100,
-  },
-  {
-    id: "2341434dfd",
-    username: "David Jones",
-    email: "david@test.com",
-    balance: 100,
-  },
-  {
-    id: "2sdf341434",
-    username: "David Jones",
-    email: "david@test.com",
-    balance: 100,
-  },
-  {
-    id: "sdf2341434;lsdkf",
-    username: "David Jones",
-    email: "david@test.com",
-    balance: 100,
-  },
-  {
-    id: "2341434deiwrfd",
-    username: "David Jones",
-    email: "david@test.com",
-    balance: 100,
-  },
-  {
-    id: "2341434ofdnv",
-    username: "David Jones",
-    email: "david@test.com",
-    balance: 100,
-  },
-  {
-    id: "sdf234143wet;'adf4",
-    username: "David Jones",
-    email: "david@test.com",
-    balance: 100,
-  },
-  {
-    id: "2341434dfdofofivnd",
-    username: "David Jones",
-    email: "david@test.com",
-    balance: 100,
-  },
-  {
-    id: "234143osdwe.sdf4",
-    username: "David Jones",
-    email: "david@test.com",
-    balance: 100,
-  },
-  {
-    id: "sfhbenerwdf2341434",
-    username: "David Jones",
-    email: "david@test.com",
-    balance: 100,
-  },
-  {
-    id: "2341434dfdgsdgs",
-    username: "David Jones",
-    email: "david@test.com",
-    balance: 100,
-  },
-];
 
 export default function ChangeBalancePage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [tableData, setTableData] = useState<ITableRow[]>([]);
+  const [rows, setRows] = useState([]);
+  const [selectedRowIndex, setSelectedRowIndex] = useState(-1);
+  const containerRef = useRef<HTMLElement>(null);
+  const [showPopUp, setShowPopUp] = useState(false);
+  const [popUpMessage, setPopUpMessage] = useState("");
+
+  useEffect(() => {
+    fetchUserBalances();
+  }, []);
 
   useEffect(() => {
     const visibleTableData = rows.filter((data, index) => {
@@ -115,7 +51,33 @@ export default function ChangeBalancePage() {
     });
 
     setTableData(visibleTableData);
-  }, [rowsPerPage, page]);
+  }, [rowsPerPage, page, rows]);
+
+  const fetchUserBalances = async () => {
+    try {
+      const response = await fetch("/api/wallet");
+
+      if (response.ok) {
+        const data = await response.json();
+
+        const usersBalance = data.map((userBalance: {
+          _id: string;
+          email: string;
+          currency: string;
+          balance: number;
+        }) => ({
+          id: userBalance._id,
+          email: userBalance.email,
+          currency: userBalance.currency,
+          balance: userBalance.balance
+        }));
+
+        setRows(usersBalance);
+      }
+    } catch (error: any) {
+      console.error(error);
+    }
+  };
 
   const handlePageChange = (_event: unknown, newPage: number) => {
     setPage(newPage);
@@ -127,81 +89,161 @@ export default function ChangeBalancePage() {
   };
 
   const [open, setOpen] = useState(false);
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
+
   const handleClose = () => {
     setOpen(false);
   };
 
+  const handleClickChange = (rowIndex: number) => {
+    setOpen(true);
+    setSelectedRowIndex(rowIndex);
+  };
+
+  const handleFinish = (message: string) => {
+    setPopUpMessage(message);
+    setShowPopUp(true);
+    fetchUserBalances();
+  };
+
   return (
-    <Paper variant="outlined">
-      <Stack direction="row" margin={2} gap={1}>
-        <TextField label="Search" size="small" />
-        <TextField label="Property" size="small" />
-      </Stack>
+    <>
+      <Box sx={{ position: "absolute", left: "50%", top: 0, transform: "translateX(-50%)" }}>
+        <Slide in={showPopUp} container={containerRef.current}>
+          <Alert severity="success">{popUpMessage}</Alert>
+        </Slide>
+      </Box>
 
-      <Divider />
+      <Paper variant="outlined">
+        <Box margin={2}>
+          <TextField label="Search" size="small" />
+        </Box>
 
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Username</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Balance</TableCell>
-              <TableCell>Status</TableCell>
-            </TableRow>
-          </TableHead>
+        <Divider />
 
-          <TableBody>
-            {tableData.map((data) => (
-              <TableRow key={data.id}>
-                <TableCell>{data.id}</TableCell>
-                <TableCell>{data.username}</TableCell>
-                <TableCell>{data.email}</TableCell>
-                <TableCell>{data.balance}.00$</TableCell>
-
-                <TableCell>
-                  <Button onClick={handleClickOpen}>Change</Button>
-
-                </TableCell>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Balance</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
 
-      <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
-        component="div"
-        count={rows.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handlePageChange}
-        onRowsPerPageChange={handleRowsPerPageChange}
-      />
+            <TableBody>
+              {tableData.map((data, index) => (
+                <TableRow key={data.id}>
+                  <TableCell>{data.id}</TableCell>
+                  <TableCell>{data.email}</TableCell>
+                  <TableCell>{data.balance.toFixed(2)}$</TableCell>
 
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Change Balance</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Change the balance of the user
-          </DialogContentText>
-          <TextField
-            label="Balance"
-            type="number"
-            fullWidth
-            variant="outlined"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleClose}>Save</Button>
-        </DialogActions>
-      </Dialog>
-    </Paper>
+                  <TableCell>
+                    <Button 
+                    variant="contained" 
+                    onClick={() => handleClickChange(index)}
+                  >
+                    Change
+                  </Button>
 
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={rows.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handlePageChange}
+          onRowsPerPageChange={handleRowsPerPageChange}
+        />
+
+        <EditForm 
+          open={open} 
+          onClose={handleClose} 
+          rows={rows} 
+          selectedRowIndex={selectedRowIndex} 
+          onFinish={handleFinish}
+        />
+      </Paper>
+    </>
+  );
+}
+
+function EditForm({
+  open,
+  onClose,
+  rows,
+  selectedRowIndex,
+  onFinish
+}: {
+  open: boolean;
+  onClose: () => void;
+  rows: ITableRow[];
+  selectedRowIndex: number;
+  onFinish: (message: string) => void;
+}) {
+  const [balance, setBalance] = useState("");
+
+  useEffect(() => {
+    if (selectedRowIndex === -1) {
+      setBalance("0");
+    } else {
+      setBalance(rows[selectedRowIndex].balance.toString());
+    }
+  }, [open]);
+
+  const handleClickSave = async () => {
+    onClose();
+
+    try {
+      const response = await fetch("/api/wallet", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          id: rows[selectedRowIndex].id,
+          balance: parseFloat(balance)
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // TDOO: Give success of falid data and display an alert accourdingly.
+        onFinish(data.message);
+      }
+    } catch (error: any) {
+      console.error(error);
+    }
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>Change Balance</DialogTitle>
+
+      <DialogContent>
+        <DialogContentText>Change the balance of the user</DialogContentText>
+
+        <TextField
+          label="Balance"
+          type="number"
+          fullWidth
+          variant="outlined"
+          value={balance}
+          onChange={(e) => setBalance(e.target.value)}
+        />
+      </DialogContent>
+
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={handleClickSave}>Save</Button>
+      </DialogActions>
+    </Dialog>
   );
 }

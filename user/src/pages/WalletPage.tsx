@@ -18,7 +18,9 @@ import {
   DialogContent,
   Button,
 } from "@mui/material";
-import { type ChangeEvent, type SyntheticEvent, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import type { ChangeEvent, SyntheticEvent } from "react";
+import { UserContext } from "../../../auth/src/context/UserContext";
 
 // Updated interface with new attributes: id, date, amount, and status
 interface ITableRow {
@@ -49,11 +51,22 @@ export default function WalletPage() {
   const [tabIndex, setTabIndex] = useState(0);
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [dialogTabIndex, setDialogTabIndex] = useState(0);
+  const userContext = useContext(UserContext);
+  const [balance, setBalance] = useState({
+    value: "0",
+    symbol: "$"
+  });
 
   useEffect(() => {
     const visibleTableData = rows.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
     setTableData(visibleTableData);
   }, [rowsPerPage, page]);
+
+  useEffect(() => {
+    if (userContext?.user) {
+      fetchBalance(userContext.user?._id);
+    }
+  }, [userContext?.user]);
 
   const handlePageChange = (_event: unknown, newPage: number) => {
     setPage(newPage);
@@ -76,11 +89,27 @@ export default function WalletPage() {
     setDialogOpen(false);
   };
 
+  const fetchBalance = async (userId: string) => {
+    try {
+      const response = await fetch(`/api/wallet?userId=${userId}`);
+
+      if (response.ok) {
+        const data = await response.json();
+        setBalance({
+          value: data.balance,
+          symbol: "$"
+        });
+      }
+    } catch (error: any) {
+      console.error(error);
+    }
+  };
+
   return (
     <Box>
-
       <Dialog open={isDialogOpen} onClose={handleCloseDialog} fullWidth maxWidth="sm">
-        <DialogTitle>Depoist</DialogTitle>
+        <DialogTitle>Deposit</DialogTitle>
+
         <Tabs
           value={dialogTabIndex}
           onChange={(_event: SyntheticEvent, value: number) => setDialogTabIndex(value)}
@@ -92,6 +121,7 @@ export default function WalletPage() {
           <Tab label="Bank Transfer" />
           <Tab label="Cart" />
         </Tabs>
+
         <DialogContent sx={{ padding: "24px" }}>
           {dialogTabIndex === 0 && (
             <Box sx={{display: 'flex', flexDirection: 'column',  gap: '2rem'}}>
@@ -129,6 +159,7 @@ export default function WalletPage() {
                 <Typography variant="body1" gutterBottom>
                   Upload Slip:
                 </Typography>
+
                 <Button
                   variant="outlined"
                   component="label"
@@ -139,6 +170,7 @@ export default function WalletPage() {
                   <input type="file" hidden accept="image/*,application/pdf" />
                 </Button>
               </Box>
+
               <Button variant="contained" color="primary" fullWidth>
                 Submit Deposit
               </Button>
@@ -151,7 +183,6 @@ export default function WalletPage() {
           )}
         </DialogContent>
       </Dialog>
-
 
       <Stack direction="column" alignItems="center">
         <Typography
@@ -175,7 +206,7 @@ export default function WalletPage() {
             },
           }}
         >
-          $ 7,610.00
+         {balance.symbol} {parseFloat(balance.value).toFixed(2)}
         </Typography>
 
         <Stack direction="row" gap={2} paddingTop={2.5} paddingBottom={6}>

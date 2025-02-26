@@ -7,6 +7,7 @@ import signInController from "./api/controllers/signInController.ts";
 import verifyTokenController from "./api/controllers/verifyTokenController.ts";
 import tradeController from "./api/controllers/tradeController.ts";
 import userController from "./api/controllers/userController.ts";
+import walletController from "./api/controllers/walletController.ts";
 import { MongoClient, Db } from "mongodb";
 
 const client: MongoClient = await MongoClient.connect(db_uri);
@@ -55,6 +56,10 @@ const server = Bun.serve({
 
         case "/api/users": {
           return await userController(req, db);
+        }
+
+        case "/api/wallet": {
+          return await walletController(req, db);
         }
 
         case "/api/trades": {

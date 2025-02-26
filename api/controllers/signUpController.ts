@@ -81,6 +81,7 @@ export default async function signUpController(request: Request, db: Db) {
       email: data.email,
       phoneNumber: data.phoneNo,
       currency: data.currency,
+      balance: 0,
       password: hashedPassword,
       roleId: userRole._id,
       date: new Date()
