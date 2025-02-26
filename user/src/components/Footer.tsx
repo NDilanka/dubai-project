@@ -26,9 +26,17 @@ export default function Footer() {
       <Box sx={{display: "flex", flexDirection: "column", alignItems: "flex-end"}}>
         <Box component="h3">AutoFX</Box>
         <Box>
-          <Button sx={{color: "white"}} LinkComponent={Link} to="/">Home</Button>
-          <Button sx={{color: "white"}} LinkComponent={Link} to="/trade">Trade</Button>
-          <Button sx={{color: "white"}} LinkComponent={Link} to="/wallet">Wallet</Button>
+          <Link to="/">
+            <Button sx={{color: "white"}}>Home</Button>
+          </Link>
+
+          <Link to="/trade">
+            <Button sx={{color: "white"}}>Trade</Button>
+          </Link>
+
+          <Link to="/wallet">
+            <Button sx={{color: "white"}}>Wallet</Button>
+          </Link>
         </Box>
       </Box>
     </Box>

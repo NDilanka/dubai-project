@@ -1,4 +1,5 @@
 import { Box, Button } from "@mui/material";
+import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
@@ -14,7 +15,7 @@ export default function Footer() {
       }}
     >
       <Box>
-        <Box component="h3">Header</Box>
+        <Box component="h3">AutoFX</Box>
         <Box component="p" sx={{width: "400px"}}>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ornare
           cursus sed nunc eget dictum Sed ornare cursus sed nunc eget dictumd
@@ -23,12 +24,19 @@ export default function Footer() {
       </Box>
 
       <Box sx={{display: "flex", flexDirection: "column", alignItems: "flex-end"}}>
-        <Box component="h3">Header Text</Box>
+        <Box component="h3">AutoFX</Box>
         <Box>
-          <Button sx={{color: "white"}}>Button 2</Button>
-          <Button sx={{color: "white"}}>Button 2</Button>
-          <Button sx={{color: "white"}}>Button 2</Button>
-          <Button sx={{color: "white"}}>Button 2</Button>
+          <Link to="/">
+            <Button sx={{color: "white"}}>Home</Button>
+          </Link>
+
+          <Link to="/trade">
+            <Button sx={{color: "white"}}>Trade</Button>
+          </Link>
+
+          <Link to="/wallet">
+            <Button sx={{color: "white"}}>Wallet</Button>
+          </Link>
         </Box>
       </Box>
     </Box>
