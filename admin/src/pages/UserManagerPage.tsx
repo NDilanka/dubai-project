@@ -115,6 +115,11 @@ export default function UserPage() {
     setPage(0);
   };
 
+  const getDateString = (date: string) => {
+    const dateObj = new Date(date);
+
+    return `${dateObj.getDay()}/${dateObj.getMonth()}/${dateObj.getFullYear()}`;
+  };
   
   const handleSaveChanges = async () => {
     console.log("Save Changes clicked", editUser);
@@ -151,7 +156,6 @@ export default function UserPage() {
       <Stack direction="row" margin={2}>
         <Stack direction="row" gap={1} mr="auto">
           <TextField label="Search" size="small" />
-          <TextField label="Property" size="small" />
         </Stack>
 
         <Dialog open={open} onClose={handleClose}>
@@ -261,7 +265,7 @@ export default function UserPage() {
                 <TableCell>{data.lastName}</TableCell>
                 <TableCell>{data.email}</TableCell>
                 <TableCell>{data.phoneNumber}</TableCell>
-                <TableCell>{data.date}</TableCell>
+                <TableCell>{getDateString(data.date || "")}</TableCell>
                 <TableCell>{data.currency}</TableCell>
                 <TableCell>
                   <Button variant="contained" onClick={() => handleClickOpen(data)}>

@@ -33,7 +33,7 @@ export default function Layout() {
       } break;
 
       case "/admin/users": {
-        setTitle("Users");
+        setTitle("User Manager");
       } break;
 
       case "/admin/change-balance": {
@@ -62,6 +62,22 @@ export default function Layout() {
       );
     }
   }, [drawerRef.current]);
+
+  const handleSignOut = async () => {
+    try {
+      const res = await fetch('/api/sign-out', { method: 'POST' });
+      if (res.ok) {
+        // Optionally, clear your user context if needed:
+        // userContext.setUser(null);
+        window.location.href = '/'; // redirect to sign in page after sign out
+      } else {
+        console.error('Sign out failed.');
+      }
+    } catch (error) {
+      console.error('Error during sign out:', error);
+    }
+  };
+  
 
   return (
     <Box>
@@ -116,7 +132,7 @@ export default function Layout() {
                 <PeopleOutline />
               </ListItemIcon>
 
-              <ListItemText primary="Users" />
+              <ListItemText primary="User manager" />
             </ListItemButton>
           </ListItem>
 
@@ -176,7 +192,7 @@ export default function Layout() {
         <Divider />
 
         <ListItem disablePadding component={Link} to="#">
-          <ListItemButton>
+          <ListItemButton onClick={handleSignOut}>
             <ListItemIcon>
               <Logout />
             </ListItemIcon>

@@ -7,6 +7,7 @@ import signInController from "./api/controllers/signInController.ts";
 import verifyTokenController from "./api/controllers/verifyTokenController.ts";
 import tradeController from "./api/controllers/tradeController.ts";
 import walletController from "./api/controllers/walletController.ts";
+import signoutController from "./api/controllers/signoutController.ts";
 import userController, { saveUserChanges } from "./api/controllers/userController.ts";
 import depositController from "./api/controllers/depositeController.ts";
 import withdrawController from "./api/controllers/withdrawController.ts";
@@ -47,6 +48,8 @@ const server = Bun.serve({
           return await signUpController(req, db);
       } else if (url.pathname === "/api/sign-in") {
           return await signInController(req, db);
+      } else if (url.pathname === "/api/sign-out") {
+        return await signoutController(req);
       } else if (url.pathname === "/api/verify-token") {
           return await verifyTokenController(req);
       } else if (url.pathname === "/api/users/save-changes") {

@@ -16,11 +16,13 @@ export default function SignUpPage() {
     password: "",
     currency: "",
   });
+  const [loading, setLoading] = useState(false);
   const containerRef = useRef<HTMLElement>(null);
   const [showPopUp, setShowPopUp] = useState(false);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    setLoading(true);
 
     const result = await signUp({
       firstName: signUpFormData.firstName,
@@ -41,6 +43,9 @@ export default function SignUpPage() {
           window.location.href = "/";
         }, 1000);
       }, 1000);
+    }else {
+      setLoading(false);
+      alert(result.message);
     }
   };
 
@@ -163,7 +168,7 @@ export default function SignUpPage() {
             />
           </FormGroup>
 
-          <Button variant="contained" type="submit">
+          <Button variant="contained" type="submit" loading={loading}>
             Sign Up
           </Button>
 

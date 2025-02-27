@@ -13,6 +13,7 @@ export default function SignInPage() {
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
   const containerRef = useRef<HTMLElement>(null);
   const [showPopUp, setShowPopUp] = useState(false);
   const userContext = useContext(UserContext);
@@ -25,6 +26,7 @@ export default function SignInPage() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    setLoading(true);
     const response = await signIn(signInFormData);
 
     if (response.success) {
@@ -37,6 +39,9 @@ export default function SignInPage() {
           window.location.href = "/";
         }, 1000);
       }, 1000);
+    } else {
+      setLoading(false);
+      alert(response.message);
     }
   };
 
@@ -101,7 +106,7 @@ export default function SignInPage() {
             onChange={(e) => setSignInData({ ...signInFormData, password: e.target.value })}
           />
 
-          <Button variant="contained" type="submit">
+          <Button variant="contained" type="submit" loading={loading}>
             Sign In
           </Button>
 
