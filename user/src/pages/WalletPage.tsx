@@ -275,6 +275,7 @@ export default function WalletPage() {
         setShowPopUp(true);
         setUsdtDepositFile(null);
         setDialogOpen(false);
+        await fetchDeposits(userContext.user._id);
       } else {
         // TODO: Display an error.
       }
@@ -320,6 +321,7 @@ export default function WalletPage() {
         setShowPopUp(true);
         setUsdtDepositFile(null);
         setDialogOpen(false);
+        await fetchDeposits(userContext.user._id);
       } else {
         // TODO: Display an error.
       }
@@ -362,6 +364,7 @@ export default function WalletPage() {
         setPopUpMessage(data.message);
         setShowPopUp(true);
         setDialogOpen(false);
+        await fetchWithdrawals(userContext.user._id);
       } else {
         // TODO: Display an error.
       }
