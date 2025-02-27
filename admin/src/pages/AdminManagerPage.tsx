@@ -76,6 +76,8 @@ export default function AdminManagerPage() {
         }));
 
         setRows(admins);
+      } else {
+        // TODO: Display an error message.
       }
     } catch (error: any) {
       console.error(error);

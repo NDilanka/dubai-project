@@ -8,6 +8,8 @@ import verifyTokenController from "./api/controllers/verifyTokenController.ts";
 import tradeController from "./api/controllers/tradeController.ts";
 import walletController from "./api/controllers/walletController.ts";
 import userController, { saveUserChanges } from "./api/controllers/userController.ts";
+import depositController from "./api/controllers/depositeController.ts";
+import withdrawController from "./api/controllers/withdrawController.ts";
 import { MongoClient, Db } from "mongodb";
 
 const client: MongoClient = await MongoClient.connect(db_uri);
@@ -41,39 +43,27 @@ const server = Bun.serve({
     const url = new URL(req.url);
 
     if (url.pathname.startsWith("/api")) {
-      switch (url.pathname) {
-        case "/api/sign-up": {
+      if (url.pathname === "/api/sign-up") {
           return await signUpController(req, db);
-        }
-
-        case "/api/sign-in": {
+      } else if (url.pathname === "/api/sign-in") {
           return await signInController(req, db);
-        }
-
-        case "/api/verify-token": {
+      } else if (url.pathname === "/api/verify-token") {
           return await verifyTokenController(req);
-        }
-
-        case "/api/users/save-changes": {
+      } else if (url.pathname === "/api/users/save-changes") {
           // New endpoint for saving user changes
           return await saveUserChanges(req, db);
-        }
-
-        case "/api/users": {
+      } else if (url.pathname === "/api/users") {
           return await userController(req, db);
-        }
-
-        case "/api/wallet": {
+      } else if (url.pathname === "/api/wallet") {
           return await walletController(req, db);
-        }
-
-        case "/api/trades": {
+      } else if (url.pathname === "/api/trades") {
           return await tradeController(req, db);
-        }
-
-        default: {
+      } else if (url.pathname.startsWith("/api/deposits")) {
+          return await depositController(req, db);
+      } else if (url.pathname.startsWith("/api/withdraws")) {
+          return await withdrawController(req, db);
+      } else {
           return new Response("AutoFX API is working!");
-        }
       }
     }
 

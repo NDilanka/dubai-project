@@ -1,111 +1,75 @@
-import { Button, Divider, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead,
+import { Box, Divider, IconButton, Menu, MenuItem, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead,
          TablePagination, TableRow, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 interface ITableRow {
   id: string;
-  username: string;
   email: string;
   amount: number;
-  status?: string;
+  status: string;
+  filePath: string;
+  createdAt: string;
+  updatedAt: string;
 }
-
-const rows: ITableRow[] = [
-  {
-    id: "2341434",
-    username: "David Jones",
-    email: "david@test.com",
-    amount: 100,
-  },
-  {
-    id: "sdf2341434",
-    username: "David Jones",
-    email: "david@test.com",
-    amount: 100,
-  },
-  {
-    id: "2341434dfd",
-    username: "David Jones",
-    email: "david@test.com",
-    amount: 100,
-  },
-  {
-    id: "2sdf341434",
-    username: "David Jones",
-    email: "david@test.com",
-    amount: 100,
-  },
-  {
-    id: "sdf2341434;lsdkf",
-    username: "David Jones",
-    email: "david@test.com",
-    amount: 100,
-  },
-  {
-    id: "2341434deiwrfd",
-    username: "David Jones",
-    email: "david@test.com",
-    amount: 100,
-  },
-  {
-    id: "2341434ofdnv",
-    username: "David Jones",
-    email: "david@test.com",
-    amount: 100,
-  },
-  {
-    id: "sdf234143wet;'adf4",
-    username: "David Jones",
-    email: "david@test.com",
-    amount: 100,
-  },
-  {
-    id: "2341434dfdofofivnd",
-    username: "David Jones",
-    email: "david@test.com",
-    amount: 100,
-  },
-  {
-    id: "234143osdwe.sdf4",
-    username: "David Jones",
-    email: "david@test.com",
-    amount: 100,
-  },
-  {
-    id: "sfhbenerwdf2341434",
-    username: "David Jones",
-    email: "david@test.com",
-    amount: 100,
-  },
-  {
-    id: "2341434dfdgsdgs",
-    username: "David Jones",
-    email: "david@test.com",
-    amount: 100,
-  },
-];
 
 export default function DepositeRequestsPage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [tableData, setTableData] = useState<ITableRow[]>(
-    rows.map((row) => ({ ...row, status: "pending" }))
-  );
+  const [tableData, setTableData] = useState<ITableRow[]>([]);
+  const [rows, setRows] = useState<ITableRow[]>([]);
 
   useEffect(() => {
-    const visibleTableData = rows
-      .filter((_data, index) => index >= page * rowsPerPage && index < (page + 1) * rowsPerPage)
-      .map((data) => {
-        const existingRow = tableData.find((row) => row.id === data.id);
-        return {
-          ...data,
-          status: existingRow?.status || "pending",
-        };
-      });
+    fetchDeposits();
+  }, []);
+
+  useEffect(() => {
+    const visibleTableData = rows.filter((data, index) => {
+      if (index >= page * rowsPerPage && index < (page + 1) * rowsPerPage) {
+        return data;
+      }
+    });
 
     setTableData(visibleTableData);
-  }, [rowsPerPage, page]);
+  }, [rowsPerPage, page, rows]);
+
+  const fetchDeposits = async () => {
+    try {
+      const response = await fetch("/api/deposits");
+
+      if (response.ok) {
+        const data = await response.json();
+
+        const deposits = data.map((deposit: {
+          _id: string;
+          filePath: string;
+          amount: number;
+          createdAt: string;
+          updatedAt: string;
+          status: string;
+          user: {
+            _id: string;
+            email: string;
+          }
+        }) => ({
+          id: deposit._id,
+          email: deposit.user.email,
+          amount: deposit.amount,
+          status: deposit.status,
+          filePath: deposit.filePath,
+          createdAt: deposit.createdAt,
+          updatedAt: deposit.updatedAt
+        }));
+
+        setRows(deposits);
+      } else {
+        // TODO: Display an error message.
+      }
+    } catch (error: any) {
+      console.error(error);
+    }
+  };
 
   const handlePageChange = (_event: unknown, newPage: number) => {
     setPage(newPage);
@@ -116,19 +80,56 @@ export default function DepositeRequestsPage() {
     setPage(0);
   };
 
-  const handleStatusChange = (id: string, newStatus: "approved" | "rejected") => {
-    setTableData((prevTableData) =>
-      prevTableData.map((row) => (row.id === id ? { ...row, status: newStatus } : row))
-    );
+  const handleClickAccept = async (rowIndex: number) => {
+    try {
+      const response = await fetch("/api/deposits", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          id: rows[rowIndex].id,
+          status: "Accepted"
+        })
+      });
+
+      if (response.ok) {
+        fetchDeposits();
+      } else {
+        // TODO: Display an alert.
+      }
+    } catch (error: any) {
+      console.error(error);
+    }
+  };
+
+  const handleClickReject = async (rowIndex: number) => {
+    try {
+      const response = await fetch("/api/deposits", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          id: rows[rowIndex].id,
+          status: "Rejected"
+        })
+      });
+
+      if (response.ok) {
+        fetchDeposits();
+      } else {
+        // TODO: Display an alert.
+      }
+    } catch (error: any) {
+      console.error(error);
+    }
   };
 
   return (
     <Paper variant="outlined">
       <Stack direction="row" margin={2}>
-        <Stack direction="row" gap={1} mr="auto">
-          <TextField label="Search" size="small" />
-          <TextField label="Property" size="small" />
-        </Stack>
+        <TextField label="Search" size="small" />
       </Stack>
 
       <Divider />
@@ -138,48 +139,33 @@ export default function DepositeRequestsPage() {
           <TableHead>
             <TableRow>
               <TableCell>ID</TableCell>
-              <TableCell>Username</TableCell>
               <TableCell>Email</TableCell>
+              <TableCell>Date</TableCell>
               <TableCell>Amount</TableCell>
-              <TableCell>Action</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
-            {tableData.map((data) => (
-              <TableRow key={data.id}>
+            {tableData.map((data, index) => {
+              const date = new Date(data.createdAt);
+              return <TableRow key={data.id}>
                 <TableCell>{data.id}</TableCell>
-                <TableCell>{data.username}</TableCell>
                 <TableCell>{data.email}</TableCell>
-                <TableCell>{data.amount}</TableCell>
-
+                <TableCell>{date.getDate()}/{date.getMonth() + 1}/{date.getFullYear()}</TableCell>
+                <TableCell>$ {data.amount.toFixed(2)}</TableCell>
+                <TableCell>{data.status}</TableCell>
                 <TableCell>
-                  {data.status === "pending" ? (
-                    <>
-                      <Button
-                        variant="outlined"
-                        color="success"
-                        onClick={() => handleStatusChange(data.id, "approved")}
-                      >
-                        Approve
-                      </Button>
-
-                      &nbsp;
-
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        onClick={() => handleStatusChange(data.id, "rejected")}
-                      >
-                        Reject
-                      </Button>
-                    </>
-                  ) : (
-                    <span>{(data.status ?? "pending").charAt(0).toUpperCase() + (data.status ?? "pending").slice(1)}</span>
-                  )}
+                  <Actions 
+                    onClickAccept={handleClickAccept} 
+                    onClickReject={handleClickReject}
+                    rowIndex={index} 
+                    state={false}
+                  />
                 </TableCell>
               </TableRow>
-            ))}
+            })}
           </TableBody>
         </Table>
       </TableContainer>
@@ -194,5 +180,65 @@ export default function DepositeRequestsPage() {
         onRowsPerPageChange={handleRowsPerPageChange}
       />
     </Paper>
+  );
+}
+
+function Actions({ 
+  onClickAccept,
+  onClickReject,
+  rowIndex,
+}: { 
+  onClickAccept: (rowIndex: number) => void; 
+  onClickReject: (rowIndex: number) => void; 
+  rowIndex: number;
+  state: boolean; // true -> Active, false -> Inactive
+}) 
+{
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const openModel = Boolean(anchorEl);
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleClickAccept = () => {
+    onClickAccept(rowIndex);
+    handleClose();
+  };
+
+  const handleClickReject = () => {
+    onClickReject(rowIndex);
+    handleClose();
+  };
+
+  return (
+    <Box>
+      <IconButton
+        id="basic-button"
+        aria-controls={openModel ? 'basic-menu' : undefined}
+        aria-haspopup="true"
+        aria-expanded={openModel ? 'true' : undefined}
+        onClick={handleClick}
+      >
+        <MoreVertIcon />
+      </IconButton>
+
+      <Menu
+        id="basic-menu"
+        anchorEl={anchorEl}
+        open={openModel}
+        onClose={handleClose}
+        MenuListProps={{
+          'aria-labelledby': 'basic-button',
+        }}
+      >
+        <MenuItem onClick={handleClickAccept}>Accept</MenuItem>
+        <MenuItem onClick={handleClickReject}>Reject</MenuItem>
+      </Menu>
+    </Box>
   );
 }

@@ -112,5 +112,10 @@ export default async function walletController(request: Request, db: Db) {
     }
   } catch (error: any) {
     console.error(error);
+
+    return new Response(JSON.stringify({message: "Something went wrong!"}), {
+      status: 500,
+      headers: {"Content-Type": "application/json"}
+    });
   }
 }
