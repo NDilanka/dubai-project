@@ -29,7 +29,7 @@ interface ITableRow {
   lastName: string;
   email: string;
   phoneNumber: string;
-  date?: string;
+  date: string;
 }
 
 export default function UserPage() {
@@ -38,6 +38,7 @@ export default function UserPage() {
   const [tableData, setTableData] = useState<ITableRow[]>([]);
   const [open, setOpen] = useState(false);
   const [rows, setRows] = useState<ITableRow[]>([]);
+  const [filteredRows, setFilteredRows] = useState<ITableRow[]>([]);
   const [editUser, setEditUser] = useState<ITableRow>({
     id: "",
     firstName: "",
@@ -47,24 +48,66 @@ export default function UserPage() {
     date: "",
     currency: "",
   });
+  const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
   useEffect(() => {
-    const visibleTableData = rows.filter((data, index) => {
+    const visibleTableData = filteredRows.filter((data, index) => {
       return index >= page * rowsPerPage && index < (page + 1) * rowsPerPage;
     });
     setTableData(visibleTableData);
-  }, [rowsPerPage, page, rows]);
+  }, [rowsPerPage, page, filteredRows]);
+
+  useEffect(() => {
+      const filteredRows = applyFilter();
+      setFilteredRows(filteredRows);
+  }, [rows, searchText]);
+
+  const applyFilter = (): ITableRow[] => {
+      const searchFirstName = rows.filter(row => {
+          return row.firstName.includes(searchText);
+      });
+
+      if (searchFirstName.length > 0) {
+        return searchFirstName;
+      }
+
+      const searchLastName = rows.filter(row => {
+          return row.lastName.includes(searchText);
+      });
+
+      if (searchLastName.length > 0) {
+        return searchLastName;
+      }
+
+      const searchEmail = rows.filter(row => {
+        return row.email.includes(searchText);
+      });
+
+      if (searchEmail.length > 0) {
+        return searchEmail;
+      }
+
+      const searchPhoneNumber = rows.filter(row => {
+        return row.phoneNumber.includes(searchText);
+      });
+
+      if (searchPhoneNumber.length > 0) {
+        return searchPhoneNumber;
+      }
+
+      return [];
+  };
 
   const fetchUsers = async () => {
     try {
       const response = await fetch("/api/users?role=User");
       if (response.ok) {
         const data = await response.json();
-        
+
         const users = data.map((user: {
           _id: string;
           firstName: string;
@@ -134,7 +177,7 @@ export default function UserPage() {
 
       if (response.ok) {
         const result = await response.json();
-        
+
         const updatedUser = result.updatedUser ? result.updatedUser : editUser;
 
         setRows((prevRows) =>
@@ -155,7 +198,12 @@ export default function UserPage() {
     <Paper variant="outlined">
       <Stack direction="row" margin={2}>
         <Stack direction="row" gap={1} mr="auto">
-          <TextField label="Search" size="small" />
+          <TextField 
+            label="Search" 
+            size="small" 
+            value={searchText} 
+            onChange={(e) => setSearchText(e.target.value)} 
+          />
         </Stack>
 
         <Dialog open={open} onClose={handleClose}>

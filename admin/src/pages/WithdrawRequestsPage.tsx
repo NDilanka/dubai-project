@@ -32,20 +32,39 @@ export default function WithdrawRequestsPage() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [tableData, setTableData] = useState<ITableRow[]>([]);
   const [rows, setRows] = useState<ITableRow[]>([]);
+  const [filteredRows, setFilteredRows] = useState<ITableRow[]>([]);
+  const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
     fetchWithdraws();
   }, []);
 
   useEffect(() => {
-    const visibleTableData = rows.filter((data, index) => {
+    const visibleTableData = filteredRows.filter((data, index) => {
       if (index >= page * rowsPerPage && index < (page + 1) * rowsPerPage) {
         return data;
       }
     });
 
     setTableData(visibleTableData);
-  }, [rowsPerPage, page, rows]);
+  }, [rowsPerPage, page, filteredRows]);
+
+  useEffect(() => {
+      const filteredRows = applyFilter();
+      setFilteredRows(filteredRows);
+  }, [rows, searchText]);
+
+  const applyFilter = (): ITableRow[] => {
+      const searchEmail = rows.filter(row => {
+        return row.email.includes(searchText);
+      });
+
+      if (searchEmail.length > 0) {
+        return searchEmail;
+      }
+
+      return [];
+  };
 
   const fetchWithdraws = async () => {
     try {
@@ -140,7 +159,12 @@ export default function WithdrawRequestsPage() {
   return (
     <Paper variant="outlined">
       <Box margin={2}>
-        <TextField label="Search" size="small" />
+        <TextField 
+          label="Search" 
+          size="small" 
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+        />
       </Box>
 
       <Divider />

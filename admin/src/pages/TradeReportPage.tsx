@@ -33,15 +33,17 @@ export default function TradeReportPage() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [tableData, setTableData] = useState<ITableRow[]>([]);
   const [rows, setRows] = useState<ITableRow[]>([]);
+  const [filtredRows, setFilteredRows] = useState<ITableRow[]>([]);
   const [open, setOpen] = useState(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState(-1);
+  const [searchText, setSearchText] = useState("");
   
   useEffect(() => {
     fetchTradeReport();
   }, []);
 
   useEffect(() => {
-    const visibleTableData = rows.filter((data, index) => {
+    const visibleTableData = filtredRows.filter((data, index) => {
       console.log(page);
       if (index >= page * rowsPerPage && index < (page + 1) * rowsPerPage) {
         return data;
@@ -49,7 +51,24 @@ export default function TradeReportPage() {
     });
 
     setTableData(visibleTableData);
-  }, [rowsPerPage, page, rows]);
+  }, [rowsPerPage, page, filtredRows]);
+
+  useEffect(() => {
+      const filteredRows = applyFilter();
+      setFilteredRows(filteredRows);
+  }, [rows, searchText]);
+
+  const applyFilter = (): ITableRow[] => {
+      const searchEmail = rows.filter(row => {
+        return row.user.email.includes(searchText);
+      });
+
+      if (searchEmail.length > 0) {
+        return searchEmail;
+      }
+
+      return [];
+  };
 
   const fetchTradeReport = async () => {
     try {
@@ -98,7 +117,12 @@ export default function TradeReportPage() {
   return (
     <Paper variant="outlined">
       <Stack direction="row" margin={2}>
-        <TextField label="Search" size="small" />
+        <TextField 
+          label="Search" 
+          size="small" 
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+        />
 
         <EditForm open={open} onClose={handleClose} onFinish={handleFinishEdit} data={tableData} selectedRowIndex={selectedRowIndex} />
       </Stack>
@@ -110,8 +134,6 @@ export default function TradeReportPage() {
           <TableHead>
             <TableRow>
               <TableCell>ID</TableCell>
-              <TableCell>First Name</TableCell>
-              <TableCell>Last Name</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>BTC1</TableCell>
               <TableCell>BTC2</TableCell>
@@ -127,15 +149,13 @@ export default function TradeReportPage() {
             {tableData.map((data, index) => (
               <TableRow key={data._id}>
                 <TableCell>{data._id}</TableCell>
-                <TableCell>{data.user.firstName}</TableCell>
-                <TableCell>{data.user.lastName}</TableCell>
                 <TableCell>{data.user.email}</TableCell>
                 <TableCell>{data.btc1}</TableCell>
                 <TableCell>{data.btc2}</TableCell>
                 <TableCell>{data.btc3}</TableCell>
                 <TableCell>{data.btc4}</TableCell>
                 <TableCell>{data.btc5}</TableCell>
-                <TableCell>{data.amount}</TableCell>
+                <TableCell>$ {data.amount.toFixed(2)}</TableCell>
 
                 <TableCell>
                   <Button variant="contained" color="primary" onClick={() => handleClickEdit(index)}>

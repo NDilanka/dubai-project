@@ -20,27 +20,70 @@ export default function AdminManagerPage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [tableData, setTableData] = useState<ITableRow[]>([]);
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState<ITableRow[]>([]);
+  const [filteredRows, setFilteredRows] = useState<ITableRow[]>([]);
   const [openModel, setOpenModel] = useState(false);
   const [openEditAdminFormModel, setOpenEditAdminFormModel] = useState(false);
   const containerRef = useRef<HTMLElement>(null);
   const [showPopUp, setShowPopUp] = useState(false);
   const [popUpMessage, setPopUpMessage] = useState("");
   const [selectedRowIndex, setSelectedRowIndex] = useState(-1);
+  const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
   useEffect(() => {
-    const visibleTableData = rows.filter((data, index) => {
+    const visibleTableData = filteredRows.filter((data, index) => {
       if (index >= page * rowsPerPage && index < (page + 1) * rowsPerPage) {
         return data;
       }
     });
 
     setTableData(visibleTableData);
-  }, [rowsPerPage, page, rows]);
+  }, [rowsPerPage, page, filteredRows]);
+
+  useEffect(() => {
+    const filteredRows = applyFilter();
+    setFilteredRows(filteredRows);
+  }, [rows, searchText]);
+
+  const applyFilter = (): ITableRow[] => {
+      const searchFirstName = rows.filter(row => {
+          return row.firstName.includes(searchText);
+      });
+
+      if (searchFirstName.length > 0) {
+        return searchFirstName;
+      }
+
+      const searchLastName = rows.filter(row => {
+          return row.lastName.includes(searchText);
+      });
+
+      if (searchLastName.length > 0) {
+        return searchLastName;
+      }
+
+      const searchEmail = rows.filter(row => {
+          return row.email.includes(searchText);
+      });
+
+      if (searchEmail.length > 0) {
+        return searchEmail;
+      }
+
+      const searchPhoneNumber = rows.filter(row => {
+          return row.phoneNumber.includes(searchText);
+      });
+
+      if (searchPhoneNumber.length > 0) {
+        return searchPhoneNumber;
+      }
+
+      return [];
+  };
 
   const handleClickOpen = () => {
     setOpenModel(true);
@@ -154,7 +197,7 @@ export default function AdminManagerPage() {
 
       <Paper variant="outlined">
         <Stack direction="row" margin={2} justifyContent="space-between">
-          <TextField label="Search" size="small" />
+          <TextField label="Search" size="small" value={searchText} onChange={(e) => setSearchText(e.target.value)} />
           <Button variant="outlined" onClick={handleClickOpen}>Add New Admin</Button>
 
           <NewAdminForm open={openModel} onClose={handleClose} onFinish={handleFinishAddAdmin} />

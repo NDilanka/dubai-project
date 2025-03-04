@@ -32,18 +32,20 @@ export default function ChangeBalancePage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [tableData, setTableData] = useState<ITableRow[]>([]);
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState<ITableRow[]>([]);
+  const [filteredRows, setFilteredRows] = useState<ITableRow[]>([]);
   const [selectedRowIndex, setSelectedRowIndex] = useState(-1);
   const containerRef = useRef<HTMLElement>(null);
   const [showPopUp, setShowPopUp] = useState(false);
   const [popUpMessage, setPopUpMessage] = useState("");
+  const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
     fetchUserBalances();
   }, []);
 
   useEffect(() => {
-    const visibleTableData = rows.filter((data, index) => {
+    const visibleTableData = filteredRows.filter((data, index) => {
       console.log(page);
       if (index >= page * rowsPerPage && index < (page + 1) * rowsPerPage) {
         return data;
@@ -51,7 +53,24 @@ export default function ChangeBalancePage() {
     });
 
     setTableData(visibleTableData);
-  }, [rowsPerPage, page, rows]);
+  }, [rowsPerPage, page, filteredRows]);
+
+  useEffect(() => {
+      const filteredRows = applyFilter();
+      setFilteredRows(filteredRows);
+  }, [rows, searchText]);
+
+  const applyFilter = (): ITableRow[] => {
+      const searchEmail = rows.filter(row => {
+        return row.email.includes(searchText);
+      });
+
+      if (searchEmail.length > 0) {
+        return searchEmail;
+      }
+
+      return [];
+  };
 
   const fetchUserBalances = async () => {
     try {
@@ -115,7 +134,12 @@ export default function ChangeBalancePage() {
 
       <Paper variant="outlined">
         <Box margin={2}>
-          <TextField label="Search" size="small" />
+          <TextField 
+            label="Search" 
+            size="small" 
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
         </Box>
 
         <Divider />
@@ -136,7 +160,7 @@ export default function ChangeBalancePage() {
                 <TableRow key={data.id}>
                   <TableCell>{data.id}</TableCell>
                   <TableCell>{data.email}</TableCell>
-                  <TableCell>{data.balance.toFixed(2)}$</TableCell>
+                  <TableCell>$ {data.balance.toFixed(2)}</TableCell>
 
                   <TableCell>
                     <Button 
