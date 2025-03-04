@@ -99,49 +99,59 @@ export default function DepositeRequestsPage() {
     setPage(0);
   };
 
-  const handleClickAccept = async (rowIndex: number) => {
+  const handleClickAccept = async (rowId: string) => {
+    const originalRows = [...rows];
     try {
+      const updatedRows = rows.map(row => 
+        row.id === rowId ? { ...row, status: 'Accepted' } : row
+      );
+      setRows(updatedRows);
+
       const response = await fetch("/api/deposits", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          id: rows[rowIndex].id,
+          id: rowId,
           status: "Accepted"
         })
       });
 
-      if (response.ok) {
-        fetchDeposits();
-      } else {
-        // TODO: Display an alert.
-      }
-    } catch (error: any) {
+      if (!response.ok) throw new Error('Accept failed');
+      await fetchDeposits(); // Sync with server
+    } catch (error) {
       console.error(error);
+      setRows(originalRows); // Revert on error
+      // TODO: Show error notification
     }
   };
 
-  const handleClickReject = async (rowIndex: number) => {
+  const handleClickReject = async (rowId: string) => {
+    const originalRows = [...rows];
     try {
+      const updatedRows = rows.map(row => 
+        row.id === rowId ? { ...row, status: 'Rejected' } : row
+      );
+      setRows(updatedRows);
+
       const response = await fetch("/api/deposits", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          id: rows[rowIndex].id,
+          id: rowId,
           status: "Rejected"
         })
       });
 
-      if (response.ok) {
-        fetchDeposits();
-      } else {
-        // TODO: Display an alert.
-      }
-    } catch (error: any) {
+      if (!response.ok) throw new Error('Reject failed');
+      await fetchDeposits(); // Sync with server
+    } catch (error) {
       console.error(error);
+      setRows(originalRows); // Revert on error
+      // TODO: Show error notification
     }
   };
 
@@ -172,9 +182,25 @@ export default function DepositeRequestsPage() {
           </TableHead>
 
           <TableBody>
-            {tableData.map((data, index) => {
+            {tableData.map((data) => {
               const date = new Date(data.createdAt);
-              return <TableRow key={data.id}>
+              return <TableRow 
+                        key={data.id}
+                        sx={{ 
+                          backgroundColor: data.status === 'Accepted' 
+                            ? 'rgba(144, 238, 144, 0.3)'
+                            : data.status === 'Rejected' 
+                            ? 'rgba(255, 99, 71, 0.3)'
+                            : 'inherit',
+                          '&:hover': {
+                            backgroundColor: data.status === 'Accepted' 
+                              ? 'rgba(144, 238, 144, 0.5)'
+                              : data.status === 'Rejected' 
+                              ? 'rgba(255, 99, 71, 0.5)'
+                              : 'inherit',
+                          }
+                        }}
+                        >
                 <TableCell>{data.id}</TableCell>
                 <TableCell>{data.email}</TableCell>
                 <TableCell>{date.getDate()}/{date.getMonth() + 1}/{date.getFullYear()}</TableCell>
@@ -184,7 +210,7 @@ export default function DepositeRequestsPage() {
                   <Actions 
                     onClickAccept={handleClickAccept} 
                     onClickReject={handleClickReject}
-                    rowIndex={index} 
+                    rowId={data.id} 
                     state={false}
                   />
                 </TableCell>
@@ -210,11 +236,11 @@ export default function DepositeRequestsPage() {
 function Actions({ 
   onClickAccept,
   onClickReject,
-  rowIndex,
+  rowId,
 }: { 
-  onClickAccept: (rowIndex: number) => void; 
-  onClickReject: (rowIndex: number) => void; 
-  rowIndex: number;
+  onClickAccept: (rowId: string) => void; 
+  onClickReject: (rowId: string) => void; 
+  rowId: string;
   state: boolean; // true -> Active, false -> Inactive
 }) 
 {
@@ -230,12 +256,12 @@ function Actions({
   };
 
   const handleClickAccept = () => {
-    onClickAccept(rowIndex);
+    onClickAccept(rowId);
     handleClose();
   };
 
   const handleClickReject = () => {
-    onClickReject(rowIndex);
+    onClickReject(rowId);
     handleClose();
   };
 
