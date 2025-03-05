@@ -7,23 +7,25 @@ export default function Footer() {
       component="footer"
       sx={{
         display: "flex",
+        flexDirection: { xs: "column", md: "row" },
         justifyContent: "space-between",
-        alignItems: "center",
+        alignItems: { xs: "flex-start", md: "center" },
         padding: "1rem",
         marginTop: "150px",
         marginBottom: "50px",
+        gap: { xs: 4, md: 0 },
       }}
     >
       <Box>
         <Box component="h3">AutoFX</Box>
-        <Box component="p" sx={{width: "400px"}}>
+        <Box component="p" sx={{width: {xs: "100%", md: "400px"}}}>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ornare
           cursus sed nunc eget dictum Sed ornare cursus sed nunc eget dictumd
           nunc eget dictum Sed ornare cursus sed nunc eget dictum
         </Box>
       </Box>
 
-      <Box sx={{display: "flex", flexDirection: "column", alignItems: "flex-end"}}>
+      <Box sx={{display: "flex", flexDirection: "column", alignItems: { xs: "flex-start", md: "flex-end" }}}>
         <Box component="h3">AutoFX</Box>
         <Box>
           <Link to="/">
