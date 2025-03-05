@@ -66,7 +66,7 @@ export default async function signInController(request: Request, db: Db) {
         status: 200,
         headers: {
           "Content-Type": "application/json",
-          // TODO: Add 'Secure;' when using https `ngp6Token=${token}; Path=/; HttpOnly; Secure; SameSite=Strict`.
+          // TODO: Add 'Secure;' when using https `autoFXToken=${token}; Path=/; HttpOnly; Secure; SameSite=Strict`.
           "Set-Cookie": `autoFXToken=${token}; Path=/; HttpOnly; SameSite=Strict`
         }
       });

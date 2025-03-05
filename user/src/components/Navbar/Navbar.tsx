@@ -1,16 +1,19 @@
 import {
+    Avatar,
   Box,
   IconButton,
   Menu,
   MenuItem,
+  Typography,
   useTheme,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import NavListItem from "./NavListItem";
-import { useContext, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../../../auth/src/context/UserContext";
+import { Logout } from "@mui/icons-material";
 
 export default function Navbar() {
   const theme = useTheme();
@@ -18,6 +21,8 @@ export default function Navbar() {
   const isDropdownOpen = Boolean(anchorEl);
   const navigate = useNavigate();
   const userContext = useContext(UserContext);
+  const ref = useRef(null);
+  const [profileDropDownIsOpen, setProfileDropdownIsOpen] = useState(false);
 
   const handleClickMenuButton = (event: MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -29,6 +34,11 @@ export default function Navbar() {
 
   const handleMenuCloseWithNavigate = (href: string) => {
     navigate(href);
+  };
+
+  const handleClickProfileItem = () => {
+    setProfileDropdownIsOpen(false);
+    navigate("/profile");
   };
 
   return (
@@ -72,7 +82,7 @@ export default function Navbar() {
         <NavListItem href="/wallet" title="Wallet" />
       </Box>
 
-      {!userContext?.user &&
+      {(userContext!.user === null) &&
         <Box
           component="a"
           href="/sign-in"
@@ -133,23 +143,31 @@ export default function Navbar() {
         </MenuItem>
       </Menu>
 
-      {/* <Avatar ref={ref}>Z</Avatar> */}
+      {!(userContext!.user === null) &&
+        <Box component="div" onMouseOver={() => setProfileDropdownIsOpen(true)}>
+          <Avatar ref={ref}>Z</Avatar>
+        </Box>
+      }
 
-      {/* <Menu
-        open={true}
+      <Menu
+        open={profileDropDownIsOpen}
+        onClose={() => setProfileDropdownIsOpen(false)}
         anchorEl={ref.current}
         anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
         sx={{ marginTop: 1 }}
       >
-        <MenuItem sx={{ display: "flex", gap: 2 }}>
+        <MenuItem 
+          sx={{ display: "flex", gap: 2 }} 
+          onClick={handleClickProfileItem}
+        >
           <Avatar>Z</Avatar>
           <Typography>Profile</Typography>
         </MenuItem>
 
-        <MenuItem sx={{ display: "flex", gap: 2 }}>
+        <MenuItem sx={{ display: "flex", gap: 2 }}  onClick={() => setProfileDropdownIsOpen(false)}>
           <Logout /> Sign Out
         </MenuItem>
-      </Menu> */}
+      </Menu>
     </Box>
   );
 }

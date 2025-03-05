@@ -1,44 +1,69 @@
+import jwt from "jsonwebtoken";
 import { Db, ObjectId } from "mongodb";
 
 const secretKey = "SECRET KEY";
 
 export default async function userController(request: Request, db: Db) {
+  const splitedUrl = request.url.split("/");
+
   try {
     if (request.method === "GET") {
-      // Extract role name from query paramters.
-      const url = new URL(request.url);
-      const role = url.searchParams.get("role");
+      if (splitedUrl.length === 5) {
+        // Extract role name from query paramters.
+        const url = new URL(request.url);
+        const role = url.searchParams.get("role");
 
-      // Find all the users with privided role.
-      //const users = await db.collection("users").find({}).toArray();
-      const users = await db.collection("users").aggregate([
-        {
-          $lookup: {
-            from: "roles",
-            localField: "roleId",
-            foreignField: "_id",
-            as: "role"
+        // Find all the users with privided role.
+        //const users = await db.collection("users").find({}).toArray();
+        const users = await db.collection("users").aggregate([
+          {
+            $lookup: {
+              from: "roles",
+              localField: "roleId",
+              foreignField: "_id",
+              as: "role"
+            }
+          },
+          {
+            $project: {
+              password: 0
+            }
+          },
+          {
+            $unwind: "$role"
+          },
+          {
+            $match: {
+              "role.name": role
+            }
           }
-        },
-        {
-          $project: {
-            password: 0
-          }
-        },
-        {
-          $unwind: "$role"
-        },
-        {
-          $match: {
-            "role.name": role
-          }
+        ]).toArray();
+
+        return new Response(JSON.stringify(users), {
+          status: 200,
+          headers: {"Content-Type": "application/json"}
+        });
+      } else if (splitedUrl.length === 6) {
+        const userId = splitedUrl[5];
+        const foundUser = await db.collection("users").findOne({ _id: new ObjectId(userId) });
+
+        if (!foundUser) {
+          return new Response(JSON.stringify({message: "User not found!"}), {
+            status: 404,
+            headers: {"Content-Type": "application/json"}
+          });
         }
-      ]).toArray();
 
-      return new Response(JSON.stringify(users), {
-        status: 200,
-        headers: {"Content-Type": "application/json"}
-      });
+        return new Response(JSON.stringify(foundUser), {
+          status: 200,
+          headers: {"Content-Type": "application/json"}
+        });
+      } else {
+        return new Response(JSON.stringify({message: "Url not valid!"}), {
+          status: 400,
+          headers: {"Content-Type": "application/json"}
+        });
+      }
     } else if (request.method === "POST") {
       const data = await request.json();
 
@@ -172,8 +197,6 @@ export default async function userController(request: Request, db: Db) {
         });
       }
 
-      
-
       // Update the user data.
       const result = await db.collection("users").updateOne({ _id: new ObjectId(`${data.id}`) }, {
         $set: {
@@ -199,38 +222,90 @@ export default async function userController(request: Request, db: Db) {
     } else if (request.method === "PATCH") {
       const data = await request.json();
 
-      if (data.id.length === 0) {
-        return new Response(JSON.stringify({message: "User id must be provided!"}), {
-          status: 400,
-          headers: {"Content-Type": "application/json"}
-        });
-      }
-
-      if (data.newState.length === 0) {
-        return new Response(JSON.stringify({message: "Please enter the phone number!"}), {
-          status: 400,
-          headers: {"Content-Type": "application/json"}
-        });
-      }
-
-      // Update the user state.
-      const result = await db.collection("users").updateOne({ _id: new ObjectId(`${data.id}`) }, {
-        $set: {
-          active: data.newState
+      if (splitedUrl.length === 5) {
+        if (data.id.length === 0) {
+          return new Response(JSON.stringify({message: "User id must be provided!"}), {
+            status: 400,
+            headers: {"Content-Type": "application/json"}
+          });
         }
-      });
 
-      if (result.modifiedCount === 1) {
-        return new Response(JSON.stringify({message: "Admin state updated successfully!"}), {
-          status: 200,
+        if (data.newState.length === 0) {
+          return new Response(JSON.stringify({message: "Please enter the phone number!"}), {
+            status: 400,
+            headers: {"Content-Type": "application/json"}
+          });
+        }
+
+        // Update the user state.
+        const result = await db.collection("users").updateOne({ _id: new ObjectId(`${data.id}`) }, {
+          $set: {
+            active: data.newState
+          }
+        });
+
+        if (result.modifiedCount === 1) {
+          return new Response(JSON.stringify({message: "Admin state updated successfully!"}), {
+            status: 200,
+            headers: {"Content-Type": "application/json"}
+          });
+        }
+
+        return new Response(JSON.stringify({message: "Failed to update admin state!"}), {
+          status: 500,
           headers: {"Content-Type": "application/json"}
         });
-      }
+      } else if (splitedUrl.length === 6) {
+        const userId = splitedUrl[5];
 
-      return new Response(JSON.stringify({message: "Failed to update admin state!"}), {
-        status: 500,
-        headers: {"Content-Type": "application/json"}
-      });
+        // TODO: Check if firstName, lasstName, email and phoneNumber exists in the request.
+
+        const result = await db.collection("users").updateOne({ _id: new ObjectId(`${userId}`) }, {
+          $set: {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            phoneNumber: data.phoneNumber
+          }
+        });
+
+        if (result.modifiedCount === 1) {
+          const user = await db.collection("users").findOne({ _id: new ObjectId(userId) });
+
+          if (!user) {
+            return new Response(JSON.stringify({message: "User not found!"}), {
+              status: 404,
+              headers: {"Content-Type": "application/json"}
+            });
+          }
+
+          const payload = {
+            _id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            phoneNumber: user.phoneNo,
+            currency: user.currency
+          };
+
+          const token = jwt.sign(payload, secretKey, {expiresIn: "1h"});
+          console.log(token);
+
+          return new Response(JSON.stringify({message: "Sign in successful!"}), {
+            status: 200,
+            headers: {
+              "Content-Type": "application/json",
+              // TODO: Add 'Secure;' when using https `autoFXToken=${token}; Path=/; HttpOnly; Secure; SameSite=Strict`.
+              "Set-Cookie": `autoFXToken=${token}; Path=/; HttpOnly; SameSite=Strict`
+            }
+          });
+        } else {
+          return new Response(JSON.stringify({message: "Failed to update user details!"}), {
+            status: 400,
+            headers: {"Content-Type": "application/json"}
+          });
+        }
+      }
     } else {
       return new Response(JSON.stringify({message: "Method not allowed!"}), {
         status: 405,

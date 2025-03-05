@@ -55,7 +55,7 @@ const server = Bun.serve({
       } else if (url.pathname === "/api/users/save-changes") {
           // New endpoint for saving user changes
           return await saveUserChanges(req, db);
-      } else if (url.pathname === "/api/users") {
+      } else if (url.pathname.startsWith("/api/users")) {
           return await userController(req, db);
       } else if (url.pathname === "/api/wallet") {
           return await walletController(req, db);
