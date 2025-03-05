@@ -36,8 +36,8 @@ export default function TradePage() {
       ".chart",
       "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js",
       {
-        width: 1000,
-        height: 600,
+        width: "100%",
+        height: "100%",
         symbols: [
           { proName: "FOREXCOM:SPXUSD", title: "S&P 500 Index" },
           { proName: "FOREXCOM:NSXUSD", title: "US 100 Cash CFD" },
@@ -45,7 +45,7 @@ export default function TradePage() {
           { proName: "BITSTAMP:BTCUSD", title: "Bitcoin" },
           { proName: "BITSTAMP:ETHUSD", title: "Ethereum" },
         ],
-        symbol: "NASDAQ:AAPL",
+        symbol: "BTC",
         interval: "D",
         timezone: "Etc/UTC",
         theme: "dark",
@@ -123,62 +123,34 @@ export default function TradePage() {
   };
 
   return (
-    <Box>
-      <Stack direction="row" gap={8}>
+    <Box sx={{ p: { xs: 2, md: 0 } }}>
+      <Stack direction={{ xs: 'column', md: 'row' }} gap={{ xs: 4, md: 8 }}>
         <Box
           className="chart"
           borderRadius={2}
           overflow="hidden"
           border={1}
           borderColor="#434651"
+          sx={{
+            width: { xs: '100%', md: 1000 },
+            height: { xs: 300, md: 600 }
+          }}
         />
 
-        <Stack gap={3}>
-          <Stack justifyContent="space-between" gap={2} sx={{ flex: 1 }}>
-            <TextField
-              variant="outlined"
-              label="BTC 1"
-              value={tradeData.btc1}
-              onChange={(e) =>
-                setTradeData({ ...tradeData, btc1: e.target.value })
-              }
-            />
-
-            <TextField
-              variant="outlined"
-              label="BTC 2"
-              value={tradeData.btc2}
-              onChange={(e) =>
-                setTradeData({ ...tradeData, btc2: e.target.value })
-              }
-            />
-
-            <TextField
-              variant="outlined"
-              label="BTC 3"
-              value={tradeData.btc3}
-              onChange={(e) =>
-                setTradeData({ ...tradeData, btc3: e.target.value })
-              }
-            />
-
-            <TextField
-              variant="outlined"
-              label="BTC 4"
-              value={tradeData.btc4}
-              onChange={(e) =>
-                setTradeData({ ...tradeData, btc4: e.target.value })
-              }
-            />
-
-            <TextField
-              variant="outlined"
-              label="BTC 5"
-              value={tradeData.btc5}
-              onChange={(e) =>
-                setTradeData({ ...tradeData, btc5: e.target.value })
-              }
-            />
+        <Stack gap={3} sx={{ width: { xs: '100%', md: 'auto' } }}>
+        <Stack justifyContent="space-between" gap={2} sx={{ flex: 1 }}>
+            {['btc1', 'btc2', 'btc3', 'btc4', 'btc5'].map((field) => (
+              <TextField
+                key={field}
+                variant="outlined"
+                label={field.toUpperCase()}
+                value={tradeData[field as keyof typeof tradeData]}
+                onChange={(e) =>
+                  setTradeData({ ...tradeData, [field]: e.target.value })
+                }
+                fullWidth
+              />
+            ))}
 
             <TextField
               variant="outlined"
@@ -187,15 +159,19 @@ export default function TradePage() {
               onChange={(e) =>
                 setTradeData({ ...tradeData, tradeAmount: e.target.value })
               }
+              fullWidth
             />
           </Stack>
 
-          <Stack direction="row" gap={3}>
+          <Stack
+            direction={{ xs: 'column', md: 'row' }}
+            gap={{ xs: 2, md: 3 }}
+          >
             <Button
               variant="contained"
               color="error"
               size="large"
-              sx={{ flex: 1 }}
+              fullWidth
               onClick={handleClickSell}
             >
               Sell
@@ -205,7 +181,7 @@ export default function TradePage() {
               variant="contained"
               color="success"
               size="large"
-              sx={{ flex: 1 }}
+              fullWidth
               onClick={handleClickBuy}
             >
               Buy

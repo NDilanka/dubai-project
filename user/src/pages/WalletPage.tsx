@@ -20,6 +20,9 @@ import {
   Slide,
   Alert,
   TextField,
+  Select,
+  MenuItem,
+  type SelectChangeEvent,
 } from "@mui/material";
 import { useContext, useEffect, useRef, useState } from "react";
 import type { ChangeEvent, SyntheticEvent } from "react";
@@ -75,7 +78,10 @@ export default function WalletPage() {
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [depositRows, setDepositRows] = useState<IDepositTableRow[]>([]);
   const [withdrawRows, setWithdrawRows] = useState<IWtithdrawTableRow[]>([]);
-  
+
+  const [recentWithdraw, setRecentWithdraw] = useState("")
+  const [recentDeposit, setRecentDeposit] = useState("")
+
   useEffect(() => {
     if (userContext?.user) {
       fetchDeposits(userContext.user._id);
@@ -134,6 +140,12 @@ export default function WalletPage() {
           updatedAt: deposit.updatedAt
         }));
 
+        deposits.sort((a: IDepositTableRow, b: IDepositTableRow) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+        const latestDeposit = deposits.length > 0 ? deposits[0].amount : "0.00";
+
+        setRecentDeposit(latestDeposit)
+
         setDepositRows(deposits);
       } else {
         // TODO: Display an error message.
@@ -167,6 +179,12 @@ export default function WalletPage() {
           createdAt: withdraw.createdAt,
           updatedAt: withdraw.updatedAt
         }));
+
+        withdraws.sort((a: IDepositTableRow, b: IDepositTableRow) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+        const latestWithdraw = withdraws.length > 0 ? withdraws[0].amount : "0.00";
+
+        setRecentWithdraw(latestWithdraw)
 
         setWithdrawRows(withdraws);
       } else {
@@ -227,13 +245,13 @@ export default function WalletPage() {
   };
 
   const handleChangeUsdtDepositFile = (event: ChangeEvent<HTMLInputElement>) => {
-   if (event.target.files && event.target.files.length > 0) {
+    if (event.target.files && event.target.files.length > 0) {
       setUsdtDepositFile(event.target.files[0]);
     }
   };
 
   const handleChangeBankTranserDepositFile = (event: ChangeEvent<HTMLInputElement>) => {
-   if (event.target.files && event.target.files.length > 0) {
+    if (event.target.files && event.target.files.length > 0) {
       setBankTransferDepositFile(event.target.files[0]);
     }
   };
@@ -373,6 +391,17 @@ export default function WalletPage() {
     }
   };
 
+  const convertBalance = (balance: number, type: string) => {
+    let symbol = type === "EUR" ? "€" : type === "INR" ? "₹" : "$";
+    let convertRate = type == "EUR" ? 1 : type == "INR" ? 1 : 1
+    let newValue = (balance * convertRate).toString();
+    setBalance({ value: newValue, symbol: symbol })
+  }
+
+  const handleCurrencyChange = async (event: SelectChangeEvent<string>) => {
+    convertBalance(parseFloat(balance.value), event.target.value)
+  };
+
   return (
     <>
       <Box sx={{ position: "absolute", left: "50%", top: 0, transform: "translateX(-50%)" }}>
@@ -383,183 +412,213 @@ export default function WalletPage() {
 
       <Box>
         <Dialog open={isDialogOpen} onClose={handleCloseDialog} fullWidth maxWidth="sm">
-        {trueForDepositFalseForWithdraw ? (
-          <>
-            <DialogTitle>Deposit</DialogTitle>
+          {trueForDepositFalseForWithdraw ? (
+            <>
+              <DialogTitle>Deposit</DialogTitle>
 
-            <Tabs
-              value={dialogTabIndex}
-              onChange={(_event: SyntheticEvent, value: number) => setDialogTabIndex(value)}
-              indicatorColor="primary"
-              textColor="primary"
-              sx={{ borderBottom: "1px solid #ccc" }}
-            >
-              <Tab label="USDT" />
-              <Tab label="Bank Transfer" />
-              <Tab label="Cart" />
-            </Tabs>
+              <Tabs
+                value={dialogTabIndex}
+                onChange={(_event: SyntheticEvent, value: number) => setDialogTabIndex(value)}
+                indicatorColor="primary"
+                textColor="primary"
+                sx={{ borderBottom: "1px solid #ccc" }}
+              >
+                <Tab label="USDT" />
+                <Tab label="Bank Transfer" />
+              </Tabs>
 
-            <DialogContent sx={{ padding: "24px" }}>
-              {dialogTabIndex === 0 && (
-                <Box sx={{display: 'flex', flexDirection: 'column',  gap: '2rem'}}>
-                  <Typography variant="body1" gutterBottom>
-                    Wallet Address: <strong>1234-5678-9012-3456</strong>
-                  </Typography>
-
-                  {usdtDepositFile && <Typography>Selected File: {usdtDepositFile.name}</Typography>}
-
-                  <TextField 
-                    variant="outlined" 
-                    label="Amount"
-                    type="number"
-                    value={depositAmount} 
-                    onChange={(e) => setDepositAmount(e.target.value)}
-                  />
-
-                  <Box sx={{display: 'flex', alignItems: 'center', gap: '2rem'}}>
+              <DialogContent sx={{ padding: "24px" }}>
+                {dialogTabIndex === 0 && (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                     <Typography variant="body1" gutterBottom>
-                      Upload Bank Slip:
+                      Wallet Address: <strong>1234-5678-9012-3456</strong>
                     </Typography>
 
-                    <Button
+                    {usdtDepositFile && (
+                      <Box>
+                        <Typography>Selected File: {usdtDepositFile.name}</Typography>
+                        {usdtDepositFile.type.startsWith("image/") && (
+                          <img
+                            src={URL.createObjectURL(usdtDepositFile)}
+                            alt="Selected Deposit Slip"
+                            style={{ height: "100px", objectFit: "cover", marginTop: "10px" }}
+                          />
+                        )}
+                      </Box>
+                    )}
+
+                    <TextField
                       variant="outlined"
-                      component="label"
+                      label="Amount"
+                      type="number"
+                      value={depositAmount}
+                      onChange={(e) => setDepositAmount(e.target.value)}
+                    />
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+                      <Typography variant="body1" gutterBottom>
+                        Upload Bank Slip:
+                      </Typography>
+
+                      <Button
+                        variant="outlined"
+                        component="label"
+                        color="primary"
+                        sx={{ marginBottom: 2 }}
+                      >
+                        Select File
+                        <input
+                          type="file"
+                          hidden accept="image/*,application/pdf"
+                          onChange={handleChangeUsdtDepositFile}
+                        />
+                      </Button>
+                    </Box>
+
+                    <Button
+                      fullWidth
+                      disabled={usdtDepositFile === null || depositAmount.length === 0}
+                      variant="contained"
                       color="primary"
-                      sx={{ marginBottom: 2 }}
+                      onClick={handleSubmitUSDTDeposit}
                     >
-                      Select File
-                      <input 
-                        type="file" 
-                        hidden accept="image/*,application/pdf" 
-                        onChange={handleChangeUsdtDepositFile} 
-                      />
+                      Submit Deposit
                     </Button>
                   </Box>
+                )}
+                {dialogTabIndex === 1 && (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
 
-                  <Button 
-                    fullWidth 
-                    disabled={usdtDepositFile === null || depositAmount.length === 0}
-                    variant="contained" 
-                    color="primary" 
-                    onClick={handleSubmitUSDTDeposit}
-                  >
-                    Submit Deposit
-                  </Button>
-                </Box>
-              )}
-              {dialogTabIndex === 1 && (
-                <Box sx={{display: 'flex', flexDirection: 'column',  gap: '2rem'}}>
-
-                  <Typography variant="body1" >
-                    Contact admin to get bank details.
-                  </Typography>
-
-                  {usdtDepositFile && <Typography>Selected File: {usdtDepositFile.name}</Typography>}
-
-                  <TextField 
-                    variant="outlined" 
-                    label="Amount"
-                    type="number"
-                    value={depositAmount} 
-                    onChange={(e) => setDepositAmount(e.target.value)}
-                  />
-
-                  <Box sx={{display: 'flex', alignItems: 'center', gap: '2rem'}}>
-                    <Typography variant="body1" gutterBottom>
-                      Upload Slip:
+                    <Typography variant="body1" >
+                      Contact admin to get bank details.
                     </Typography>
 
-                    <Button
+                    {bankTransferDepositFile && (
+                      <Box>
+                        <Typography>Selected File: {bankTransferDepositFile.name}</Typography>
+                        {bankTransferDepositFile.type.startsWith("image/") && (
+                          <img
+                            src={URL.createObjectURL(bankTransferDepositFile)}
+                            alt="Selected Bank Slip"
+                            style={{ height: "100px", objectFit: "cover", marginTop: "10px" }}
+                          />
+                        )}
+                      </Box>
+                    )}
+
+
+                    <TextField
                       variant="outlined"
-                      component="label"
+                      label="Amount"
+                      type="number"
+                      value={depositAmount}
+                      onChange={(e) => setDepositAmount(e.target.value)}
+                    />
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+                      <Typography variant="body1" gutterBottom>
+                        Upload Slip:
+                      </Typography>
+
+                      <Button
+                        variant="outlined"
+                        component="label"
+                        color="primary"
+                        sx={{ marginBottom: 2 }}
+                      >
+                        Select File
+                        <input
+                          type="file"
+                          hidden accept="image/*,application/pdf"
+                          onChange={handleChangeBankTranserDepositFile}
+                        />
+                      </Button>
+                    </Box>
+
+                    <Button
+                      fullWidth
+                      disabled={bankTransferDepositFile === null || depositAmount.length === 0}
+                      variant="contained"
                       color="primary"
-                      sx={{ marginBottom: 2 }}
+                      onClick={handleSubmitBankTransformDeposit}
                     >
-                      Select File
-                      <input 
-                        type="file" 
-                        hidden accept="image/*,application/pdf" 
-                        onChange={handleChangeBankTranserDepositFile} 
-                      />
+                      Submit Deposit
                     </Button>
                   </Box>
+                )}
+              </DialogContent>
+            </>
+          ) : (
+            <>
+              <DialogTitle>Withdraw</DialogTitle>
 
-                  <Button 
-                    fullWidth 
-                    disabled={bankTransferDepositFile === null || depositAmount.length === 0}
-                    variant="contained" 
-                    color="primary" 
-                    onClick={handleSubmitBankTransformDeposit}
-                  >
-                    Submit Deposit
-                  </Button>
-                </Box>
-              )}
-              {dialogTabIndex === 2 && (
-                <Box>
-                  <Typography>Payment Gateway</Typography>
-                </Box>
-              )}
-            </DialogContent>
-          </>
-        ) : (
-          <>
-            <DialogTitle>Withdraw</DialogTitle>
+              <Tabs
+                value={dialogTabIndex}
+                onChange={(_event: SyntheticEvent, value: number) => setDialogTabIndex(value)}
+                indicatorColor="primary"
+                textColor="primary"
+                sx={{ borderBottom: "1px solid #ccc" }}
+              >
+                <Tab label="USDT" />
+              </Tabs>
 
-            <Tabs
-              value={dialogTabIndex}
-              onChange={(_event: SyntheticEvent, value: number) => setDialogTabIndex(value)}
-              indicatorColor="primary"
-              textColor="primary"
-              sx={{ borderBottom: "1px solid #ccc" }}
-            >
-              <Tab label="USDT" />
-            </Tabs>
+              <DialogContent sx={{ padding: "24px" }}>
+                {dialogTabIndex === 0 && (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                    <TextField
+                      variant="outlined"
+                      label="Amount"
+                      type="number"
+                      value={withdrawAmount}
+                      onChange={(e) => setWithdrawAmount(e.target.value)}
+                    />
 
-            <DialogContent sx={{ padding: "24px" }}>
-              {dialogTabIndex === 0 && (
-                <Box sx={{display: 'flex', flexDirection: 'column',  gap: '2rem'}}>
-                  <TextField 
-                    variant="outlined" 
-                    label="Amount"
-                    type="number"
-                    value={withdrawAmount} 
-                    onChange={(e) => setWithdrawAmount(e.target.value)}
-                  />
-
-                  <Button 
-                    fullWidth 
-                    disabled={withdrawAmount.length === 0 && usdtWithdrawFile !== null}
-                    variant="contained" 
-                    color="primary" 
-                    onClick={handleSubmitWithdraw}
-                  >
-                    Submit Withdraw
-                  </Button>
-                </Box>
-              )}
-              {dialogTabIndex === 2 && (
-                <Box>
-                  <Typography>Payment Gateway</Typography>
-                </Box>
-              )}
-            </DialogContent>
-          </>
-        )}
+                    <Button
+                      fullWidth
+                      disabled={withdrawAmount.length === 0 && usdtWithdrawFile !== null}
+                      variant="contained"
+                      color="primary"
+                      onClick={handleSubmitWithdraw}
+                    >
+                      Submit Withdraw
+                    </Button>
+                  </Box>
+                )}
+                {dialogTabIndex === 2 && (
+                  <Box>
+                    <Typography>Payment Gateway</Typography>
+                  </Box>
+                )}
+              </DialogContent>
+            </>
+          )}
         </Dialog>
 
         <Stack direction="column" alignItems="center">
-          <Typography
-            fontSize={24}
-            sx={{
-              opacity: 0.65,
-              [theme.breakpoints.down("sm")]: {
-                fontSize: 18,
-              },
-            }}
-          >
-            Balance
-          </Typography>
+          <Stack direction="row" alignItems="center">
+            <Typography
+              fontSize={24}
+              sx={{
+                opacity: 0.65,
+                [theme.breakpoints.down("sm")]: {
+                  fontSize: 18,
+                },
+              }}
+            >
+              Balance
+            </Typography>
+            <Select
+              variant="standard"
+              disableUnderline
+              onChange={handleCurrencyChange}
+              displayEmpty
+              renderValue={(selected) => (selected ? "" : "")}
+            >
+              <MenuItem value="USD">USD</MenuItem>
+              <MenuItem value="EUR">EUR</MenuItem>
+              <MenuItem value="INR">INR</MenuItem>
+            </Select>
+          </Stack>
 
           <Typography
             fontSize={46}
@@ -570,7 +629,7 @@ export default function WalletPage() {
               },
             }}
           >
-           {balance.symbol} {parseFloat(balance.value).toFixed(2)}
+            {balance.symbol} {parseFloat(balance.value).toFixed(2)}
           </Typography>
 
           <Stack direction="row" gap={2} paddingTop={2.5} paddingBottom={6}>
@@ -585,7 +644,7 @@ export default function WalletPage() {
                   },
                 }}
               />
-              <Typography>+ $ 7650.00</Typography>
+              <Typography>+ ${recentDeposit}</Typography>
             </Stack>
 
             <Stack direction="row" alignItems="center" gap={0.5}>
@@ -599,7 +658,7 @@ export default function WalletPage() {
                   },
                 }}
               />
-              <Typography>- $ 7650.00</Typography>
+              <Typography>- ${recentWithdraw}</Typography>
             </Stack>
           </Stack>
 
@@ -698,7 +757,7 @@ export default function WalletPage() {
                     return <TableRow key={data.id} sx={{ borderBottom: "1px solid #ccc" }}>
                       <TableCell>{data.id}</TableCell>
                       <TableCell>{date.getDate()}/{date.getMonth() + 1}/{date.getFullYear()}</TableCell>
-                      <TableCell>$ {parseFloat(data.amount).toFixed(2)}</TableCell>
+                      <TableCell>{parseFloat(data.amount).toFixed(2)}</TableCell>
                       <TableCell>
                         <Box
                           sx={{

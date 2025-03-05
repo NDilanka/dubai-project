@@ -1,5 +1,4 @@
-import { Box, Divider, IconButton, Menu, MenuItem, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead,
-         TablePagination, TableRow, TextField } from "@mui/material";
+import { Box, Dialog, DialogContent, DialogTitle, Divider, IconButton, Menu, MenuItem, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -21,6 +20,8 @@ export default function DepositeRequestsPage() {
   const [rows, setRows] = useState<ITableRow[]>([]);
   const [filteredRows, setFilteredRows] = useState<ITableRow[]>([]);
   const [searchText, setSearchText] = useState("");
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedImage, setSelectedImage] = useState("");
 
   useEffect(() => {
     fetchDeposits();
@@ -37,20 +38,20 @@ export default function DepositeRequestsPage() {
   }, [rowsPerPage, page, filteredRows]);
 
   useEffect(() => {
-      const filteredRows = applyFilter();
-      setFilteredRows(filteredRows);
+    const filteredRows = applyFilter();
+    setFilteredRows(filteredRows);
   }, [rows, searchText]);
 
   const applyFilter = (): ITableRow[] => {
-      const searchEmail = rows.filter(row => {
-        return row.email.includes(searchText);
-      });
+    const searchEmail = rows.filter(row => {
+      return row.email.includes(searchText);
+    });
 
-      if (searchEmail.length > 0) {
-        return searchEmail;
-      }
+    if (searchEmail.length > 0) {
+      return searchEmail;
+    }
 
-      return [];
+    return [];
   };
 
   const fetchDeposits = async () => {
@@ -99,125 +100,168 @@ export default function DepositeRequestsPage() {
     setPage(0);
   };
 
-  const handleClickAccept = async (rowIndex: number) => {
+  const handleClickAccept = async (rowId: string) => {
+    const originalRows = [...rows];
     try {
+      const updatedRows = rows.map(row =>
+        row.id === rowId ? { ...row, status: 'Accepted' } : row
+      );
+      setRows(updatedRows);
+
       const response = await fetch("/api/deposits", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          id: rows[rowIndex].id,
+          id: rowId,
           status: "Accepted"
         })
       });
 
-      if (response.ok) {
-        fetchDeposits();
-      } else {
-        // TODO: Display an alert.
-      }
-    } catch (error: any) {
+      if (!response.ok) throw new Error('Accept failed');
+      await fetchDeposits(); // Sync with server
+    } catch (error) {
       console.error(error);
+      setRows(originalRows); // Revert on error
+      // TODO: Show error notification
     }
   };
 
-  const handleClickReject = async (rowIndex: number) => {
+  const handleClickReject = async (rowId: string) => {
+    const originalRows = [...rows];
     try {
+      const updatedRows = rows.map(row =>
+        row.id === rowId ? { ...row, status: 'Rejected' } : row
+      );
+      setRows(updatedRows);
+
       const response = await fetch("/api/deposits", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          id: rows[rowIndex].id,
+          id: rowId,
           status: "Rejected"
         })
       });
 
-      if (response.ok) {
-        fetchDeposits();
-      } else {
-        // TODO: Display an alert.
-      }
-    } catch (error: any) {
+      if (!response.ok) throw new Error('Reject failed');
+      await fetchDeposits(); // Sync with server
+    } catch (error) {
       console.error(error);
+      setRows(originalRows); // Revert on error
+      // TODO: Show error notification
     }
   };
 
+  const handleClickViewImage = (filePath: string) => {
+    const fullPath = `http://localhost:8000/${filePath.replace("./", "")}`;
+    setSelectedImage(fullPath);
+    setOpenDialog(true);
+  };
+
   return (
-    <Paper variant="outlined">
-      <Stack direction="row" margin={2}>
-        <TextField 
-          label="Search" 
-          size="small" 
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-        />
-      </Stack>
+    <>
+      <Paper variant="outlined">
+        <Stack direction="row" margin={2}>
+          <TextField
+            label="Search"
+            size="small"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+        </Stack>
 
-      <Divider />
+        <Divider />
 
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Amount</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {tableData.map((data, index) => {
-              const date = new Date(data.createdAt);
-              return <TableRow key={data.id}>
-                <TableCell>{data.id}</TableCell>
-                <TableCell>{data.email}</TableCell>
-                <TableCell>{date.getDate()}/{date.getMonth() + 1}/{date.getFullYear()}</TableCell>
-                <TableCell>$ {data.amount.toFixed(2)}</TableCell>
-                <TableCell>{data.status}</TableCell>
-                <TableCell>
-                  <Actions 
-                    onClickAccept={handleClickAccept} 
-                    onClickReject={handleClickReject}
-                    rowIndex={index} 
-                    state={false}
-                  />
-                </TableCell>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Date</TableCell>
+                <TableCell>Amount</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
 
-      <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
-        component="div"
-        count={rows.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handlePageChange}
-        onRowsPerPageChange={handleRowsPerPageChange}
-      />
-    </Paper>
+            <TableBody>
+              {tableData.map((data, index) => {
+                const date = new Date(data.createdAt);
+                return (
+                  <TableRow
+                    key={data.id}
+                    sx={{
+                      backgroundColor: data.status === 'Accepted'
+                        ? 'rgba(144, 238, 144, 0.3)'
+                        : data.status === 'Rejected'
+                          ? 'rgba(255, 99, 71, 0.3)'
+                          : 'inherit',
+                      '&:hover': {
+                        backgroundColor: data.status === 'Accepted'
+                          ? 'rgba(144, 238, 144, 0.5)'
+                          : data.status === 'Rejected'
+                            ? 'rgba(255, 99, 71, 0.5)'
+                            : 'inherit',
+                      }
+                    }}
+                  >
+                    <TableCell>{data.id}</TableCell>
+                    <TableCell>{data.email}</TableCell>
+                    <TableCell>{date.getDate()}/{date.getMonth() + 1}/{date.getFullYear()}</TableCell>
+                    <TableCell>$ {data.amount.toFixed(2)}</TableCell>
+                    <TableCell>{data.status}</TableCell>
+                    <TableCell>
+                      <Actions
+                        onClickAccept={handleClickAccept}
+                        onClickReject={handleClickReject}
+                        onClickViewImage={handleClickViewImage}
+                        rowId={data.id}
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={rows.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handlePageChange}
+          onRowsPerPageChange={handleRowsPerPageChange}
+        />
+      </Paper>
+
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>Deposit Proof</DialogTitle>
+        <DialogContent>
+          <img src={selectedImage} alt="Deposit Proof" style={{ width: "100%", height: "auto" }} />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
-function Actions({ 
+function Actions({
   onClickAccept,
   onClickReject,
-  rowIndex,
-}: { 
-  onClickAccept: (rowIndex: number) => void; 
-  onClickReject: (rowIndex: number) => void; 
-  rowIndex: number;
-  state: boolean; // true -> Active, false -> Inactive
-}) 
-{
+  onClickViewImage,
+  rowId
+}: {
+  onClickAccept: (rowId: string) => void;
+  onClickReject: (rowId: string) => void;
+  onClickViewImage: (filePath: string) => void;
+  rowId: string;
+}) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openModel = Boolean(anchorEl);
 
@@ -227,16 +271,6 @@ function Actions({
 
   const handleClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleClickAccept = () => {
-    onClickAccept(rowIndex);
-    handleClose();
-  };
-
-  const handleClickReject = () => {
-    onClickReject(rowIndex);
-    handleClose();
   };
 
   return (
@@ -260,8 +294,9 @@ function Actions({
           'aria-labelledby': 'basic-button',
         }}
       >
-        <MenuItem onClick={handleClickAccept}>Accept</MenuItem>
-        <MenuItem onClick={handleClickReject}>Reject</MenuItem>
+        <MenuItem onClick={() => { onClickAccept(rowId); handleClose(); }}>Accept</MenuItem>
+        <MenuItem onClick={() => { onClickReject(rowId); handleClose(); }}>Reject</MenuItem>
+        <MenuItem onClick={() => { onClickViewImage(rowId); handleClose(); }}>View Receipt</MenuItem>
       </Menu>
     </Box>
   );
