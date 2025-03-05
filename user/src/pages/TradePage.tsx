@@ -45,7 +45,7 @@ export default function TradePage() {
           { proName: "BITSTAMP:BTCUSD", title: "Bitcoin" },
           { proName: "BITSTAMP:ETHUSD", title: "Ethereum" },
         ],
-        symbol: "NASDAQ:AAPL",
+        symbol: "BTC",
         interval: "D",
         timezone: "Etc/UTC",
         theme: "dark",
