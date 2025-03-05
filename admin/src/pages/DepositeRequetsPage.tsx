@@ -1,4 +1,4 @@
-import { Box, Divider, IconButton, Menu, MenuItem, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead,
+import { Box, Dialog, DialogContent, DialogTitle, Divider, IconButton, Menu, MenuItem, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead,
          TablePagination, TableRow, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
@@ -21,6 +21,8 @@ export default function DepositeRequestsPage() {
   const [rows, setRows] = useState<ITableRow[]>([]);
   const [filteredRows, setFilteredRows] = useState<ITableRow[]>([]);
   const [searchText, setSearchText] = useState("");
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedImage, setSelectedImage] = useState("");
 
   useEffect(() => {
     fetchDeposits();
@@ -145,7 +147,21 @@ export default function DepositeRequestsPage() {
     }
   };
 
+  const handleClickViewImage = (rowIndex: number) => {
+    const filePath = rows[rowIndex].filePath;
+    const fullPath = `http://localhost:8000/${filePath.replace("./", "")}`;
+  
+    setSelectedImage(fullPath);
+    console.log("Full Image Path:", fullPath);
+    console.log(filePath);
+    console.log(selectedImage);
+    setOpenDialog(true);
+  };
+
   return (
+    <>
+    
+    
     <Paper variant="outlined">
       <Stack direction="row" margin={2}>
         <TextField 
@@ -184,6 +200,7 @@ export default function DepositeRequestsPage() {
                   <Actions 
                     onClickAccept={handleClickAccept} 
                     onClickReject={handleClickReject}
+                    onClickViewImage={handleClickViewImage}
                     rowIndex={index} 
                     state={false}
                   />
@@ -204,16 +221,26 @@ export default function DepositeRequestsPage() {
         onRowsPerPageChange={handleRowsPerPageChange}
       />
     </Paper>
+
+    <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>Deposit Proof</DialogTitle>
+        <DialogContent>
+          <img src={selectedImage} alt="Deposit Proof" style={{ width: "100%", height: "auto" }} />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
 function Actions({ 
   onClickAccept,
   onClickReject,
+  onClickViewImage,
   rowIndex,
 }: { 
   onClickAccept: (rowIndex: number) => void; 
   onClickReject: (rowIndex: number) => void; 
+  onClickViewImage: (rowIndex: number) => void; 
   rowIndex: number;
   state: boolean; // true -> Active, false -> Inactive
 }) 
@@ -239,6 +266,11 @@ function Actions({
     handleClose();
   };
 
+  const handleClickViewImage = () => {
+    onClickViewImage(rowIndex);
+    handleClose();
+  }
+
   return (
     <Box>
       <IconButton
@@ -262,6 +294,7 @@ function Actions({
       >
         <MenuItem onClick={handleClickAccept}>Accept</MenuItem>
         <MenuItem onClick={handleClickReject}>Reject</MenuItem>
+        <MenuItem onClick={handleClickViewImage}>View Receipt</MenuItem>
       </Menu>
     </Box>
   );
