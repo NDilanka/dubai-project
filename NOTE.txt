@@ -1,3 +1,1 @@
-- pm2 start --interpreter bun server.ts
-- pm2 stop <id>
-- pm2 restart <id>
+pm2 start --interpreter bun server.ts
