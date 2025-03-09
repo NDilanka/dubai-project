@@ -14,11 +14,12 @@ export default function Layout() {
   const location = useLocation();
   const [title, setTitle] = useState("");
   const userContext = useContext(UserContext);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (userContext && userContext.user) {
       console.log(userContext.user);
-      //window.location.href = "/";
+      fetchRole(userContext.user._id);
     }
   }, [userContext]);
 
@@ -63,6 +64,32 @@ export default function Layout() {
     }
   }, [drawerRef.current]);
 
+  const fetchRole = async (userId: string) => {
+    try {
+      const response = await fetch("/api/check-role", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({userId})
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        if (data.name !== "Admin" && data.name !== "Super Admin") {
+          window.location.href = "/";
+        } else {
+          setIsLoading(false);
+        }
+      } else {
+        // TODO: Display an error message.
+      }
+    } catch (error: any) {
+      console.error(error);
+    }
+  };
+
   const handleSignOut = async () => {
     try {
       const res = await fetch('/api/sign-out', { method: 'POST' });
@@ -77,7 +104,10 @@ export default function Layout() {
       console.error('Error during sign out:', error);
     }
   };
-  
+
+  if (isLoading) {
+    return <Box>Loading...</Box>
+  }
 
   return (
     <Box>

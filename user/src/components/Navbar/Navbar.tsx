@@ -13,7 +13,7 @@ import { useContext, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../../../auth/src/context/UserContext";
-import { Logout } from "@mui/icons-material";
+import { Logout, People } from "@mui/icons-material";
 
 export default function Navbar() {
   const theme = useTheme();
@@ -39,6 +39,11 @@ export default function Navbar() {
   const handleClickProfileItem = () => {
     setProfileDropdownIsOpen(false);
     navigate("/profile");
+  };
+
+  const handleClickAdminItem = () => {
+    setProfileDropdownIsOpen(false);
+    window.location.href = "/admin";
   };
 
   return (
@@ -123,7 +128,7 @@ export default function Navbar() {
 
       {!(userContext!.user === null) &&
         <Box component="div" onMouseOver={() => setProfileDropdownIsOpen(true)}>
-          <Avatar ref={ref}>Z</Avatar>
+          <Avatar ref={ref}>{userContext?.user.firstName[0]}</Avatar>
         </Box>
       }
 
@@ -138,11 +143,22 @@ export default function Navbar() {
           sx={{ display: "flex", gap: 2 }} 
           onClick={handleClickProfileItem}
         >
-          <Avatar>Z</Avatar>
+          <Avatar>{userContext?.user?.firstName[0]}</Avatar>
           <Typography>Profile</Typography>
         </MenuItem>
 
-        <MenuItem sx={{ display: "flex", gap: 2 }}  onClick={() => setProfileDropdownIsOpen(false)}>
+        <MenuItem
+          sx={{ display: "flex", gap: 2 }} 
+          onClick={handleClickAdminItem}
+        >
+          <People />
+          <Typography>Admin</Typography>
+        </MenuItem>
+
+        <MenuItem 
+          sx={{ display: "flex", gap: 2 }}  
+          onClick={() => setProfileDropdownIsOpen(false)}
+        >
           <Logout /> Sign Out
         </MenuItem>
       </Menu>

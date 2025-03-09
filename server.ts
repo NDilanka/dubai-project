@@ -12,6 +12,7 @@ import userController, { saveUserChanges } from "./api/controllers/userControlle
 import depositController from "./api/controllers/depositeController.ts";
 import withdrawController from "./api/controllers/withdrawController.ts";
 import dashboardController from "./api/controllers/dashboardController.ts";
+import userRoleController from "./api/controllers/userRoleController.ts";
 import { MongoClient, Db } from "mongodb";
 
 const client: MongoClient = await MongoClient.connect(db_uri);
@@ -67,6 +68,9 @@ const server = Bun.serve({
           return await withdrawController(req, db);
       } else if (url.pathname === "/api/dashboard") {
         return await dashboardController(req, db);
+      } else if (url.pathname === "/api/check-role") {
+        console.log("Yelloe");
+        return await userRoleController(req, db);
       } else {
           return new Response("AutoFX API is working!");
       }

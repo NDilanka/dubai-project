@@ -1,4 +1,3 @@
-import { useContext, useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 import DashboardPage from "./pages/DashboardPage";
@@ -11,7 +10,6 @@ import DepositeRequestPage from "./pages/DepositeRequetsPage";
 import WithdrawRequestsPage from "./pages/WithdrawRequestsPage";
 import FaqMessagesPage from "./pages/FaqMessagesPage";
 import UserContextProvider from "../../auth/src/context/UserContext";
-import { UserContext } from "../../auth/src/context/UserContext";
 
 function App() {
   const theme = createTheme({
@@ -19,17 +17,6 @@ function App() {
       mode: "light",
     },
   });
-  const userContext = useContext(UserContext);
-
-  useEffect(() => {
-    if (userContext && userContext.user) {
-      // TODO: Check if this user have the admin role.
-      // If not, redirect to the home page.
-      console.log("------------------");
-      console.log(userContext.user);
-      console.log("------------------");
-    }
-  }, []);
 
   return (
     <ThemeProvider theme={theme}>
