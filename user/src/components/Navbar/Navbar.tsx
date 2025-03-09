@@ -58,29 +58,7 @@ export default function Navbar() {
         </Box>
       </Box>
 
-      <Box
-        component="ul"
-        position="absolute"
-        left="50%"
-        top="50%"
-        paddingX={4}
-        paddingY={2}
-        display="flex"
-        gap={4}
-        bgcolor="#fff3"
-        borderRadius={999}
-        sx={{
-          listStyleType: "none",
-          transform: "translate(-50%, -75%)",
-          [theme.breakpoints.down("sm")]: {
-            display: "none",
-          },
-        }}
-      >
-        <NavListItem href="/" title="Home" />
-        <NavListItem href="/trade" title="Trade" />
-        <NavListItem href="/wallet" title="Wallet" />
-      </Box>
+      <NavList />
 
       {(userContext!.user === null) &&
         <Box
@@ -168,6 +146,46 @@ export default function Navbar() {
           <Logout /> Sign Out
         </MenuItem>
       </Menu>
+    </Box>
+  );
+}
+
+function NavList() {
+  const theme = useTheme();
+  const userContext = useContext(UserContext);
+
+  return (
+    <Box
+      component="ul"
+      position="absolute"
+      left="50%"
+      top="50%"
+      paddingX={4}
+      paddingY={2}
+      display="flex"
+      gap={4}
+      bgcolor="#fff3"
+      borderRadius={999}
+      sx={{
+        listStyleType: "none",
+        transform: "translate(-50%, -75%)",
+        [theme.breakpoints.down("sm")]: {
+          display: "none",
+        },
+      }}
+    >
+      <NavListItem href="/" title="Home" />
+      {userContext?.user  !== null ? (
+        <>
+          <NavListItem href="/trade" title="Trade" />
+          <NavListItem href="/wallet" title="Wallet" />
+        </>
+      ) : (
+        <>
+          <a href="/sign-in" style={{textDecoration: "none", color: "white"}}>Trade</a>
+          <a href="/sign-in" style={{textDecoration: "none", color: "white"}}>Wallet</a>
+        </>
+      )}
     </Box>
   );
 }

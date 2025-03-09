@@ -75,6 +75,8 @@ export default async function signUpController(request: Request, db: Db) {
       });
     }
 
+    //await db.collection("tracking_data").find().sort()
+
     const savedUser = await db.collection("users").insertOne({
       firstName: data.firstName,
       lastName: data.lastName,
@@ -109,7 +111,7 @@ export default async function signUpController(request: Request, db: Db) {
       status: 201,
       headers: {
         "Content-Type": "application/json",
-        // TODO: Add 'Secure;' when using https `ngp6Token=${token}; Path=/; HttpOnly; Secure; SameSite=Strict`.
+        // TODO: Add 'Secure;' when using https `autoFXToken=${token}; Path=/; HttpOnly; Secure; SameSite=Strict`.
         "Set-Cookie": `autoFXToken=${token}; Path=/; HttpOnly; SameSite=Strict`
       }
     });

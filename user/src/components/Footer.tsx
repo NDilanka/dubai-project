@@ -1,7 +1,11 @@
 import { Box, Button } from "@mui/material";
+import { useContext } from "react";
 import { Link } from "react-router-dom";
+import { UserContext } from "../../../auth/src/context/UserContext";
 
 export default function Footer() {
+  const userContext = useContext(UserContext);
+
   return (
     <Box
       component="footer"
@@ -28,17 +32,27 @@ export default function Footer() {
       <Box sx={{display: "flex", flexDirection: "column", alignItems: { xs: "flex-start", md: "flex-end" }}}>
         <Box component="h3">AutoFX</Box>
         <Box>
-          <Link to="/">
-            <Button sx={{color: "white"}}>Home</Button>
-          </Link>
+        {userContext?.user !== null ? (
+          <>
+            <Link to="/">
+              <Button sx={{color: "white"}}>Home</Button>
+            </Link>
 
-          <Link to="/trade">
-            <Button sx={{color: "white"}}>Trade</Button>
-          </Link>
+            <Link to="/trade">
+              <Button sx={{color: "white"}}>Trade</Button>
+            </Link>
 
-          <Link to="/wallet">
-            <Button sx={{color: "white"}}>Wallet</Button>
-          </Link>
+            <Link to="/wallet">
+              <Button sx={{color: "white"}}>Wallet</Button>
+            </Link>
+          </>
+        ) : (
+          <>
+            <Button sx={{color: "white"}} onClick={() => window.location.href = "/"}>Home</Button>
+            <Button sx={{color: "white"}} onClick={() => window.location.href = "/sign-in"}>Trade</Button>
+            <Button sx={{color: "white"}} onClick={() => window.location.href = "/sign-in"}>Wallet</Button>
+          </>
+        )}
         </Box>
       </Box>
     </Box>
