@@ -16,7 +16,11 @@ export default function HomePage() {
         const script = document.createElement("script");
         script.src = src;
         script.async = true;
-        script.innerHTML = JSON.stringify(config);
+        script.innerHTML = JSON.stringify({
+          ...config,
+          width: "100%",
+          height: "100%",
+        });
         container.appendChild(script);
       }
     };
@@ -25,8 +29,6 @@ export default function HomePage() {
       ".tradingview-widget-container__widget",
       "https://s3.tradingview.com/external-embedding/embed-widget-forex-cross-rates.js",
       {
-        width: 1000,
-        height: 400,
         currencies: ["EUR", "USD", "JPY", "GBP", "CHF", "AUD", "CAD", "NZD"],
         isTransparent: false,
         colorTheme: "dark",
@@ -40,45 +42,36 @@ export default function HomePage() {
         selector: ".mini-widget-1",
         config: {
           symbol: "FX:EURUSD",
-          width: 350,
-          height: 220,
           locale: "en",
           dateRange: "12M",
           colorTheme: "dark",
           backgroundColor: "rgba(0, 0, 0, 1)",
           isTransparent: true,
-          autosize: false,
-          largeChartUrl: "",
+          autosize: true,
         },
       },
       {
         selector: ".mini-widget-2",
         config: {
           symbol: "MARKETSCOM:OIL",
-          width: 350,
-          height: 220,
           locale: "en",
           dateRange: "12M",
           colorTheme: "dark",
           backgroundColor: "rgba(0, 0, 0, 1)",
           isTransparent: true,
-          autosize: false,
-          largeChartUrl: "",
+          autosize: true,
         },
       },
       {
         selector: ".mini-widget-3",
         config: {
           symbol: "OANDA:AUDCAD",
-          width: 350,
-          height: 220,
           locale: "en",
           dateRange: "12M",
           colorTheme: "dark",
           backgroundColor: "rgba(0, 0, 0, 1)",
           isTransparent: true,
-          autosize: false,
-          largeChartUrl: "",
+          autosize: true,
         },
       },
     ];
@@ -95,8 +88,6 @@ export default function HomePage() {
       ".heatmap-widget",
       "https://s3.tradingview.com/external-embedding/embed-widget-forex-heat-map.js",
       {
-        width: 767,
-        height: 452,
         currencies: [
           "EUR",
           "USD",
@@ -122,8 +113,6 @@ export default function HomePage() {
         feedMode: "all_symbols",
         isTransparent: false,
         displayMode: "regular",
-        width: 330,
-        height: 452,
         colorTheme: "dark",
         locale: "en",
       }
@@ -165,65 +154,44 @@ export default function HomePage() {
       <Header />
 
       <Box
-        display="flex"
-        justifyContent="center"
-        marginTop={10}
         sx={{
-          [theme.breakpoints.down("sm")]: {
-            marginTop: 2,
-          },
-          [theme.breakpoints.down("md")]: {
-            marginTop: 5
-          }
+          display: "flex",
+          justifyContent: "center",
+          mt: { xs: 2, md: 10 },
+          px: { xs: 2, md: 0 },
         }}
       >
-        <Box
-          borderRadius={5}
-          overflow="hidden"
-          border={2}
-          borderColor="#434651"
-        >
-          <div className="tradingview-widget-container">
-            <div className="tradingview-widget-container__widget"></div>
-          </div>
+        <Box sx={{ width: { xs: "100%", md: "100%" }, height: { xs: 400, md: 452 } }}>
+          <Box
+            className="tradingview-widget-container"
+            style={{ width: "100%", height: "100%" }}
+          >
+            <Box className="tradingview-widget-container__widget"  style={{ width: "100%", height: "100%" }} ></Box>
+          </Box>
         </Box>
       </Box>
 
       <Box
-        maxWidth="60%"
-        mx="auto"
-        textAlign="center"
-        marginTop={5}
         sx={{
-          [theme.breakpoints.down("sm")]: {
-            maxWidth: "80%",
-          },
+          maxWidth: { xs: "90%", md: "60%" },
+          mx: "auto",
+          textAlign: "center",
+          mt: { xs: 4, md: 6 },
         }}
       >
         <Box
           component="h2"
-          fontSize={46}
           sx={{
-            [theme.breakpoints.down("sm")]: {
-              fontSize: 28,
-              lineHeight: 1.2,
-            },
-            [theme.breakpoints.down("md")]: {
-              fontSize: 42,
-              lineHeight: 1.2
-            }
+            fontSize: { xs: 28, sm: 36, md: 46 },
+            lineHeight: 1.2,
+            mb: 2,
           }}
         >
           Check your favorite coin price within a glance
         </Box>
         <Box
           component="p"
-          color="#A6AAB2"
-          sx={{
-            [theme.breakpoints.down("sm")]: {
-              fontSize: 14,
-            },
-          }}
+          sx={{ color: "#A6AAB2", fontSize: { xs: 14, md: 16 } }}
         >
           Step into the world of trading excellence and seize every opportunity
           with our advanced platform, expert guidance, and strategic insights
@@ -232,63 +200,49 @@ export default function HomePage() {
       </Box>
 
       <Box
-        display="flex"
-        justifyContent="space-around"
-        marginTop={10}
-        flexWrap="wrap"
         sx={{
-          [theme.breakpoints.down("sm")]: {
-            marginTop: 0,
-          },
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          justifyContent: "center",
+          gap: { xs: 2, md: 4 },
+          mt: { xs: 4, md: 8 },
+          px: { xs: 2, md: 0 },
         }}
       >
-        <Box
-          className="mini-widget-1"
-          borderRadius={2}
-          overflow="hidden"
-          border={1}
-          borderColor="#434651"
-        />
-        <Box
-          className="mini-widget-2"
-          borderRadius={2}
-          overflow="hidden"
-          border={1}
-          borderColor="#434651"
-        />
-        <Box
-          className="mini-widget-3"
-          borderRadius={2}
-          overflow="hidden"
-          border={1}
-          borderColor="#434651"
-        />
+        {[1, 2, 3].map((num) => (
+          <Box
+            key={num}
+            sx={{
+              width: { xs: "100%", md: 350 },
+              height: { xs: 220, md: 240 },
+              borderRadius: 2,
+              overflow: "hidden",
+              border: 1,
+              borderColor: "#434651",
+            }}
+          >
+            <Box
+              className={`mini-widget-${num}`}
+              style={{ width: "100%", height: "100%" }}
+            />
+          </Box>
+        ))}
       </Box>
 
       <Box
-        maxWidth="60%"
-        mx="auto"
-        textAlign="center"
-        marginTop={6}
         sx={{
-          [theme.breakpoints.down("sm")]: {
-            marginTop: 0,
-            maxWidth: "80%",
-          },
+          maxWidth: { xs: "90%", md: "60%" },
+          mx: "auto",
+          textAlign: "center",
+          mt: { xs: 4, md: 8 },
         }}
       >
         <Box
           component="h2"
-          fontSize={46}
           sx={{
-            [theme.breakpoints.down("sm")]: {
-              fontSize: 28,
-              lineHeight: 1.2,
-            },
-            [theme.breakpoints.down("md")]: {
-              fontSize: 42,
-              lineHeight: 1.2
-            }
+            fontSize: { xs: 28, sm: 36, md: 46 },
+            lineHeight: 1.2,
+            mb: 2,
           }}
         >
           Check real-time heat map, find opportunities, and trade with
@@ -296,12 +250,7 @@ export default function HomePage() {
         </Box>
         <Box
           component="p"
-          color="#A6AAB2"
-          sx={{
-            [theme.breakpoints.down("sm")]: {
-              fontSize: 14,
-            },
-          }}
+          sx={{ color: "#A6AAB2", fontSize: { xs: 14, md: 16 } }}
         >
           Step into the world of trading excellence and seize every opportunity
           with our advanced platform, expert guidance, and strategic insights
@@ -309,12 +258,26 @@ export default function HomePage() {
         </Box>
       </Box>
 
-      <Box display="flex" gap={5} marginTop={10}>
-        <Box className="heatmap-widget" />
-        <Box className="timeline-widget" />
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          gap: { xs: 2, md: "space-between" },
+          mt: { xs: 4, md: 8 },
+          px: { xs: 2, md: 0 },
+        }}
+      >
+        <Box sx={{ width: { xs: "100%", md: "60%" }, height: { xs: 400, md: 452 } }}>
+          <Box className="heatmap-widget" style={{ width: "100%", height: "100%" }} />
+        </Box>
+        <Box sx={{ width: { xs: "100%", md: 330 }, height: { xs: 400, md: 452 } }}>
+          <Box className="timeline-widget" style={{ width: "100%", height: "100%" }} />
+        </Box>
       </Box>
 
-      <Box className="ticker-tape-widget" marginY={10} height={10} />
+      <Box sx={{ mt: { xs: 4, md: 8 }, height: 46, px: { xs: 2, md: 0 } }}>
+        <Box className="ticker-tape-widget" style={{ width: "100%", height: "100%" }} />
+      </Box>
     </Box>
   );
 }

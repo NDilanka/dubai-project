@@ -11,6 +11,7 @@ import signoutController from "./api/controllers/signoutController.ts";
 import userController, { saveUserChanges } from "./api/controllers/userController.ts";
 import depositController from "./api/controllers/depositeController.ts";
 import withdrawController from "./api/controllers/withdrawController.ts";
+import dashboardController from "./api/controllers/dashboardController.ts";
 import { MongoClient, Db } from "mongodb";
 
 const client: MongoClient = await MongoClient.connect(db_uri);
@@ -53,7 +54,6 @@ const server = Bun.serve({
       } else if (url.pathname === "/api/verify-token") {
           return await verifyTokenController(req);
       } else if (url.pathname === "/api/users/save-changes") {
-          // New endpoint for saving user changes
           return await saveUserChanges(req, db);
       } else if (url.pathname.startsWith("/api/users")) {
           return await userController(req, db);
@@ -65,6 +65,8 @@ const server = Bun.serve({
           return await depositController(req, db);
       } else if (url.pathname.startsWith("/api/withdraws")) {
           return await withdrawController(req, db);
+      } else if (url.pathname === "/api/dashboard") {
+        return await dashboardController(req, db);
       } else {
           return new Response("AutoFX API is working!");
       }
