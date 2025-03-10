@@ -1,12 +1,21 @@
 import { Box, useTheme } from "@mui/material";
 import HeaderTag from "./HeaderTag";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { UserContext } from "../../../../auth/src/context/UserContext";
 
 export default function Header() {
   const theme = useTheme();
   const userContext = useContext(UserContext);
+  const navigate = useNavigate();
+
+  const handleClickStartTrading = () => {
+    if (userContext?.user) {
+      navigate("/trade");
+    } else {
+      window.location.href = "/sign-in";
+    }
+  };
 
   return (
     <Box
@@ -116,12 +125,14 @@ export default function Header() {
           alignItems="center"
           gap={1}
           sx={{
+            cursor: "pointer",
             [theme.breakpoints.down("sm")]: {
               fontSize: 14,
               paddingX: 1.5,
               paddingY: 0.5,
             },
           }}
+          onClick={handleClickStartTrading}
         >
           <Box
             component="img"
@@ -137,8 +148,8 @@ export default function Header() {
 
         {!userContext?.user &&
           <Box
-            component={Link}
-            to="/sign-in"
+            component="a"
+            href="/sign-in"
             paddingX={2.5}
             paddingY={1.5}
             borderRadius={999}

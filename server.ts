@@ -13,6 +13,8 @@ import depositController from "./api/controllers/depositeController.ts";
 import withdrawController from "./api/controllers/withdrawController.ts";
 import dashboardController from "./api/controllers/dashboardController.ts";
 import userRoleController from "./api/controllers/userRoleController.ts";
+import passwordController from "./api/controllers/passwordController.ts";
+import suuperAdminController from "./api/controllers/superAdminController.ts";
 import { MongoClient, Db } from "mongodb";
 
 const client: MongoClient = await MongoClient.connect(db_uri);
@@ -38,7 +40,7 @@ const server = Bun.serve({
     "/admin/trade-report": adminPage,
     "/admin/faq-messages": adminPage,
   },
-  development: false,
+  development: true,
   websocket: {
     message: () => { }
   },
@@ -69,8 +71,11 @@ const server = Bun.serve({
       } else if (url.pathname === "/api/dashboard") {
         return await dashboardController(req, db);
       } else if (url.pathname === "/api/check-role") {
-        console.log("Yelloe");
         return await userRoleController(req, db);
+      } else if (url.pathname === "/api/change-password") {
+        return await passwordController(req, db);
+      } else if (url.pathname === "/api/super-admin") {
+        return await suuperAdminController(req, db);
       } else {
           return new Response("AutoFX API is working!");
       }

@@ -14,35 +14,68 @@ export default async function userController(request: Request, db: Db) {
         const role = url.searchParams.get("role");
 
         // Find all the users with privided role.
-        //const users = await db.collection("users").find({}).toArray();
-        const users = await db.collection("users").aggregate([
-          {
-            $lookup: {
-              from: "roles",
-              localField: "roleId",
-              foreignField: "_id",
-              as: "role"
+        if (role === "User") {
+          const users = await db.collection("users").aggregate([
+            {
+              $lookup: {
+                from: "roles",
+                localField: "roleId",
+                foreignField: "_id",
+                as: "role"
+              }
+            },
+            {
+              $project: {
+                password: 0
+              }
+            },
+            {
+              $unwind: "$role"
+            },
+            {
+              $match: {
+                "role.name": role
+              }
             }
-          },
-          {
-            $project: {
-              password: 0
-            }
-          },
-          {
-            $unwind: "$role"
-          },
-          {
-            $match: {
-              "role.name": role
-            }
-          }
-        ]).toArray();
+          ]).toArray();
 
-        return new Response(JSON.stringify(users), {
-          status: 200,
-          headers: {"Content-Type": "application/json"}
-        });
+          return new Response(JSON.stringify(users), {
+            status: 200,
+            headers: {"Content-Type": "application/json"}
+          });
+        } else if (role === "Admin") {
+          const admins = await db.collection("users").aggregate([
+            {
+              $lookup: {
+                from: "roles",
+                localField: "roleId",
+                foreignField: "_id",
+                as: "role"
+              }
+            },
+            {
+              $project: {
+                password: 0
+              }
+            },
+            {
+              $unwind: "$role"
+            },
+            {
+              $match: {
+                $or: [
+                  {"role.name": "Admin"},
+                  {"role.name": "Super Admin"}
+                ]
+              }
+            }
+          ]).toArray();
+
+          return new Response(JSON.stringify(admins), {
+            status: 200,
+            headers: {"Content-Type": "application/json"}
+          });
+        }
       } else if (splitedUrl.length === 6) {
         const userId = splitedUrl[5];
         const foundUser = await db.collection("users").findOne({ _id: new ObjectId(userId) });
@@ -133,12 +166,38 @@ export default async function userController(request: Request, db: Db) {
           });
         }
 
+        const autoFXIds = await db.collection("tracking_data").aggregate([
+                            {
+                              $sort: {
+                                idCounter: -1
+                              }
+                            },
+                            {
+                              $limit: 1
+                            }
+                          ]).toArray();
+
+        const result = await db.collection("tracking_data").updateOne({ _id: autoFXIds[0]._id }, {
+          $set: {
+            idCounter: autoFXIds[0].idCounter + 1
+          }
+        });
+
+        if (result.modifiedCount !== 1) {
+          // Id is not incremented.
+          return new Response(JSON.stringify({message: "Failed to create a new admin!"}), {
+            status: 500,
+            headers: {"Content-Type": "application/json"}
+          });
+        }
+
         const savedAdmin = await db.collection("users").insertOne({
+          autoFXId: autoFXIds[0].idCounter + 1,
           firstName: data.firstName,
           lastName: data.lastName,
           email: data.email,
           phoneNumber: data.phoneNumber,
-          currencty: null,
+          currencty: "USD",
           balance: 0,
           password: hashedPassword,
           roleId: adminRole._id,
