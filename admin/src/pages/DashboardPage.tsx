@@ -26,7 +26,7 @@ export default function DashboardPage() {
     <Grid2 container spacing={4}>
       <GridPreviewItem title="Admin Count" value={counts.adminCount} />
       <GridPreviewItem title="User Count" value={counts.userCount} />
-      <GridPreviewItem title="Total Deposit Amount" value={`$${counts.totalDeposit}`} />
+      <GridPreviewItem title="Total Deposit Amount" value={`$${counts.totalDeposit.toFixed(2)}`} />
       <GridPreviewItem title="Pending Withdrawal Reqs" value={counts.pendingWithdrawals} />
       <GridPreviewItem title="Pending Deposit Reqs" value={counts.pendingDeposits} />
     </Grid2>
