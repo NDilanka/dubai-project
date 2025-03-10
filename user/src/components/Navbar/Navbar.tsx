@@ -13,7 +13,7 @@ import { useContext, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../../../auth/src/context/UserContext";
-import { Logout } from "@mui/icons-material";
+import { Logout, People } from "@mui/icons-material";
 
 export default function Navbar() {
   const theme = useTheme();
@@ -41,6 +41,11 @@ export default function Navbar() {
     navigate("/profile");
   };
 
+  const handleClickAdminItem = () => {
+    setProfileDropdownIsOpen(false);
+    window.location.href = "/admin";
+  };
+
   return (
     <Box
       component="nav"
@@ -58,29 +63,7 @@ export default function Navbar() {
         </Box>
       </Box>
 
-      <Box
-        component="ul"
-        position="absolute"
-        left="50%"
-        top="50%"
-        paddingX={4}
-        paddingY={2}
-        display="flex"
-        gap={4}
-        bgcolor="#fff3"
-        borderRadius={999}
-        sx={{
-          listStyleType: "none",
-          transform: "translate(-50%, -75%)",
-          [theme.breakpoints.down("sm")]: {
-            display: "none",
-          },
-        }}
-      >
-        <NavListItem href="/" title="Home" />
-        <NavListItem href="/trade" title="Trade" />
-        <NavListItem href="/wallet" title="Wallet" />
-      </Box>
+      <NavList />
 
       {(userContext!.user === null) &&
         <Box
@@ -145,7 +128,7 @@ export default function Navbar() {
 
       {!(userContext!.user === null) &&
         <Box component="div" onMouseOver={() => setProfileDropdownIsOpen(true)}>
-          <Avatar ref={ref}>Z</Avatar>
+          <Avatar ref={ref}>{userContext?.user.firstName[0]}</Avatar>
         </Box>
       }
 
@@ -160,14 +143,65 @@ export default function Navbar() {
           sx={{ display: "flex", gap: 2 }} 
           onClick={handleClickProfileItem}
         >
-          <Avatar>Z</Avatar>
+          <Avatar>{userContext?.user?.firstName[0]}</Avatar>
           <Typography>Profile</Typography>
         </MenuItem>
 
-        <MenuItem sx={{ display: "flex", gap: 2 }}  onClick={() => setProfileDropdownIsOpen(false)}>
+        <MenuItem
+          sx={{ display: "flex", gap: 2 }} 
+          onClick={handleClickAdminItem}
+        >
+          <People />
+          <Typography>Admin</Typography>
+        </MenuItem>
+
+        <MenuItem 
+          sx={{ display: "flex", gap: 2 }}  
+          onClick={() => setProfileDropdownIsOpen(false)}
+        >
           <Logout /> Sign Out
         </MenuItem>
       </Menu>
+    </Box>
+  );
+}
+
+function NavList() {
+  const theme = useTheme();
+  const userContext = useContext(UserContext);
+
+  return (
+    <Box
+      component="ul"
+      position="absolute"
+      left="50%"
+      top="50%"
+      paddingX={4}
+      paddingY={2}
+      display="flex"
+      gap={4}
+      bgcolor="#fff3"
+      borderRadius={999}
+      sx={{
+        listStyleType: "none",
+        transform: "translate(-50%, -75%)",
+        [theme.breakpoints.down("sm")]: {
+          display: "none",
+        },
+      }}
+    >
+      <NavListItem href="/" title="Home" />
+      {userContext?.user  !== null ? (
+        <>
+          <NavListItem href="/trade" title="Trade" />
+          <NavListItem href="/wallet" title="Wallet" />
+        </>
+      ) : (
+        <>
+          <a href="/sign-in" style={{textDecoration: "none", color: "white"}}>Trade</a>
+          <a href="/sign-in" style={{textDecoration: "none", color: "white"}}>Wallet</a>
+        </>
+      )}
     </Box>
   );
 }

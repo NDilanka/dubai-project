@@ -9,6 +9,7 @@ export interface User {
   lastName: string;
   mobileNo: string; // TODO: Assign data to this. It has a bug.
   role: string;     // TODO: Add the role id as well. Maybe add other role data too.
+  loaded: boolean;
 }
 
 export interface UserContextType {
@@ -40,6 +41,7 @@ export default function UserContextProvider({
       lastName: result.userData.lastName,
       email: result.userData.email,
       mobileNo: result.userData.mobileNo,
+      loaded: true
     });
   };
 
