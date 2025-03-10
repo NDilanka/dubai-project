@@ -9,9 +9,9 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import NavListItem from "./NavListItem";
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import type { MouseEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "../../../../auth/src/context/UserContext";
 import { Logout, People } from "@mui/icons-material";
 
@@ -23,6 +23,36 @@ export default function Navbar() {
   const userContext = useContext(UserContext);
   const ref = useRef(null);
   const [profileDropDownIsOpen, setProfileDropdownIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (userContext && userContext.user) {
+      console.log(userContext.user);
+      fetchRole(userContext.user._id);
+    }
+  }, [userContext]);
+
+  const fetchRole = async (userId: string) => {
+    try {
+      const response = await fetch("/api/check-role", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({userId})
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setIsAdmin(data.name === "Admin" || data.name === "Super Admin");
+      } else {
+        // TODO: Display an error message.
+      }
+    } catch (error: any) {
+      console.error(error);
+    }
+  };
 
   const handleClickMenuButton = (event: MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -56,7 +86,16 @@ export default function Navbar() {
       marginBottom={5}
       height={100}
     >
-      <Box display="flex" alignItems="center">
+      <Box 
+        component={Link} 
+        to="/" 
+        display="flex" 
+        alignItems="center" 
+        color="white"
+        sx={{
+          textDecoration: "none"
+        }}
+      >
         <Box component="img" src="/svgs/lemlistlogo_2.svg" />
         <Box component="span" fontSize={20} fontWeight={700}>
           AutoFX
@@ -147,13 +186,15 @@ export default function Navbar() {
           <Typography>Profile</Typography>
         </MenuItem>
 
-        <MenuItem
-          sx={{ display: "flex", gap: 2 }} 
-          onClick={handleClickAdminItem}
-        >
-          <People />
-          <Typography>Admin</Typography>
-        </MenuItem>
+        {isAdmin &&
+          <MenuItem
+            sx={{ display: "flex", gap: 2 }} 
+            onClick={handleClickAdminItem}
+          >
+            <People />
+            <Typography>Admin</Typography>
+          </MenuItem>
+        }
 
         <MenuItem 
           sx={{ display: "flex", gap: 2 }}  

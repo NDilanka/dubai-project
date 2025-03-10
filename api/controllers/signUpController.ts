@@ -75,9 +75,33 @@ export default async function signUpController(request: Request, db: Db) {
       });
     }
 
-    //await db.collection("tracking_data").find().sort()
+    const autoFXIds = await db.collection("tracking_data").aggregate([
+                        {
+                          $sort: {
+                            idCounter: -1
+                          }
+                        },
+                        {
+                          $limit: 1
+                        }
+                      ]).toArray();
+
+    const result = await db.collection("tracking_data").updateOne({ _id: autoFXIds[0]._id }, {
+      $set: {
+        idCounter: autoFXIds[0].idCounter + 1
+      }
+    });
+
+    if (result.modifiedCount !== 1) {
+      // Id is not incremented.
+      return new Response(JSON.stringify({message: "Sign Up failed!"}), {
+        status: 500,
+        headers: {"Content-Type": "application/json"}
+      });
+    }
 
     const savedUser = await db.collection("users").insertOne({
+      autoFXId: autoFXIds[0].idCounter + 1,
       firstName: data.firstName,
       lastName: data.lastName,
       email: data.email,

@@ -12,6 +12,7 @@ interface ITableRow {
   lastName: string;
   email: string;
   phoneNumber: string;
+  roleName: string;
   date?: string;
   active: boolean;
 }
@@ -106,6 +107,7 @@ export default function AdminManagerPage() {
           lastName: string;
           email: string;
           phoneNumber: string;
+          role: { _id: string; name: string; description: string; };
           date: string;
           active: boolean;
         }) => ({
@@ -114,6 +116,7 @@ export default function AdminManagerPage() {
           lastName: admin.lastName,
           email: admin.email,
           phoneNumber: admin.phoneNumber,
+          roleName: admin.role.name,
           date: admin.date,
           active: admin.active
         }));
@@ -223,27 +226,55 @@ export default function AdminManagerPage() {
             </TableHead>
 
             <TableBody>
-              {tableData.map((data, index) => (
-                <TableRow key={data.id} sx={{bgcolor: data.active ? "" : "#ff8888"}}>
-                  <TableCell>{data.id}</TableCell>
-                  <TableCell>{data.firstName}</TableCell>
-                  <TableCell>{data.lastName}</TableCell>
-                  <TableCell>{data.email}</TableCell>
-                  <TableCell>{data.phoneNumber}</TableCell>
-                  <TableCell>{getDateString(data.date || "")}</TableCell>
-                  <TableCell>{data.active ? "Active" : "Inactive"}</TableCell>
+              {tableData.map((data, index) => {
+                if (data.roleName === "Super Admin") {
+                  return (
+                    <TableRow key={data.id} sx={{bgcolor: data.active ? "#ffff00" : "#ff8888"}}>
+                      <TableCell>{data.id}</TableCell>
+                      <TableCell>{data.firstName}</TableCell>
+                      <TableCell>{data.lastName}</TableCell>
+                      <TableCell>{data.email}</TableCell>
+                      <TableCell>{data.phoneNumber}</TableCell>
+                      <TableCell>{getDateString(data.date || "")}</TableCell>
+                      <TableCell>{data.active ? "Active" : "Inactive"}</TableCell>
 
-                  <TableCell>
-                    <Actions 
-                      onClickEdit={handleClickEdit} 
-                      onClickToggleStatus={(newState: boolean) => handleClickToggleStatus(data.id, newState)} 
-                      selectedRowIndex={index} 
-                      onSelectedRowIndex={handleSelectedRowIndex} 
-                      state={data.active}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
+                      <TableCell>
+                        <Actions 
+                          onClickEdit={handleClickEdit} 
+                          onClickToggleStatus={(newState: boolean) => handleClickToggleStatus(data.id, newState)} 
+                          selectedRowIndex={index} 
+                          onSelectedRowIndex={handleSelectedRowIndex} 
+                          state={data.active}
+                          disableActivationControl={true}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                } else {
+                  return (
+                    <TableRow key={data.id} sx={{bgcolor: data.active ? "" : "#ff8888"}}>
+                      <TableCell>{data.id}</TableCell>
+                      <TableCell>{data.firstName}</TableCell>
+                      <TableCell>{data.lastName}</TableCell>
+                      <TableCell>{data.email}</TableCell>
+                      <TableCell>{data.phoneNumber}</TableCell>
+                      <TableCell>{getDateString(data.date || "")}</TableCell>
+                      <TableCell>{data.active ? "Active" : "Inactive"}</TableCell>
+
+                      <TableCell>
+                        <Actions 
+                          onClickEdit={handleClickEdit} 
+                          onClickToggleStatus={(newState: boolean) => handleClickToggleStatus(data.id, newState)} 
+                          selectedRowIndex={index} 
+                          onSelectedRowIndex={handleSelectedRowIndex} 
+                          state={data.active}
+                          disableActivationControl={false}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                }
+              })}
             </TableBody>
           </Table>
         </TableContainer>
@@ -267,13 +298,15 @@ function Actions({
   onClickToggleStatus,
   selectedRowIndex,
   onSelectedRowIndex,
-  state
+  state,
+  disableActivationControl
 }: { 
   onClickEdit: () => void; 
   onClickToggleStatus: (newState: boolean) => void;
   selectedRowIndex: number;
   onSelectedRowIndex: (index: number) => void;
   state: boolean; // true -> Active, false -> Inactive
+  disableActivationControl: boolean;
 }) 
 {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -323,9 +356,11 @@ function Actions({
       >
         <MenuItem onClick={handleClickEdit}>Edit</MenuItem>
 
-        <MenuItem onClick={handleClickToggleStatus}>
-          {statusActive ? "Deactivate" : "Activate"}
-        </MenuItem>
+        {!disableActivationControl &&
+          <MenuItem onClick={handleClickToggleStatus}>
+            {statusActive ? "Deactivate" : "Activate"}
+          </MenuItem>
+        }
       </Menu>
     </Box>
   );
