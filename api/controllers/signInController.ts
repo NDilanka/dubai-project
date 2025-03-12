@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { Db } from "mongodb";
 
-const secretKey = "SECRET KEY!";
+const secretKey = process.env.SECRET_KEY;
 
 export default async function signInController(request: Request, db: Db) {
   try {
@@ -60,7 +60,7 @@ export default async function signInController(request: Request, db: Db) {
         currency: foundUser.currency
       };
 
-      const token = jwt.sign(payload, secretKey, {expiresIn: "1h"});
+      const token = jwt.sign(payload, secretKey as string, {expiresIn: "1h"});
 
       return new Response(JSON.stringify({message: "Sign in successful!"}), {
         status: 200,

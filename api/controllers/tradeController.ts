@@ -1,6 +1,6 @@
 import { Db, ObjectId } from "mongodb";
 
-const secretKey = "SECRET KEY";
+const secretKey = process.env.SECRET_KEY;
 
 export default async function tradeController(request: Request, db: Db) {
   const splitedUrl = request.url.split("/");

@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-const secretKey = "SECRET KEY!";
+const secretKey = process.env.SECRET_KEY;
 
 export default async function verifyTokenController(request: Request) {
   if (request.method == "POST") {
@@ -12,7 +12,7 @@ export default async function verifyTokenController(request: Request) {
                           .map((cookie) => cookie.trim().split("="))
                         );
       const token = cookieObj.autoFXToken;
-      const decoded = jwt.verify(token, secretKey);
+      const decoded = jwt.verify(token, secretKey as string);
 
       return new Response(JSON.stringify({
         message: "Already signed in!", 
