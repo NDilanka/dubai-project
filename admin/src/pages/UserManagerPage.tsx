@@ -23,13 +23,14 @@ import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
 
 interface ITableRow {
-  currency: string;
   id: string;
+  autoFXId: string;
   firstName: string;
   lastName: string;
   email: string;
   phoneNumber: string;
   date: string;
+  currency: string;
 }
 
 export default function UserPage() {
@@ -41,6 +42,7 @@ export default function UserPage() {
   const [filteredRows, setFilteredRows] = useState<ITableRow[]>([]);
   const [editUser, setEditUser] = useState<ITableRow>({
     id: "",
+    autoFXId: "",
     firstName: "",
     lastName: "",
     email: "",
@@ -62,44 +64,44 @@ export default function UserPage() {
   }, [rowsPerPage, page, filteredRows]);
 
   useEffect(() => {
-      const filteredRows = applyFilter();
-      setFilteredRows(filteredRows);
+    const filteredRows = applyFilter();
+    setFilteredRows(filteredRows);
   }, [rows, searchText]);
 
   const applyFilter = (): ITableRow[] => {
-      const searchFirstName = rows.filter(row => {
-          return row.firstName.includes(searchText);
-      });
+    const searchFirstName = rows.filter((row) => {
+      return row.firstName.includes(searchText);
+    });
 
-      if (searchFirstName.length > 0) {
-        return searchFirstName;
-      }
+    if (searchFirstName.length > 0) {
+      return searchFirstName;
+    }
 
-      const searchLastName = rows.filter(row => {
-          return row.lastName.includes(searchText);
-      });
+    const searchLastName = rows.filter((row) => {
+      return row.lastName.includes(searchText);
+    });
 
-      if (searchLastName.length > 0) {
-        return searchLastName;
-      }
+    if (searchLastName.length > 0) {
+      return searchLastName;
+    }
 
-      const searchEmail = rows.filter(row => {
-        return row.email.includes(searchText);
-      });
+    const searchEmail = rows.filter((row) => {
+      return row.email.includes(searchText);
+    });
 
-      if (searchEmail.length > 0) {
-        return searchEmail;
-      }
+    if (searchEmail.length > 0) {
+      return searchEmail;
+    }
 
-      const searchPhoneNumber = rows.filter(row => {
-        return row.phoneNumber.includes(searchText);
-      });
+    const searchPhoneNumber = rows.filter((row) => {
+      return row.phoneNumber.includes(searchText);
+    });
 
-      if (searchPhoneNumber.length > 0) {
-        return searchPhoneNumber;
-      }
+    if (searchPhoneNumber.length > 0) {
+      return searchPhoneNumber;
+    }
 
-      return [];
+    return [];
   };
 
   const fetchUsers = async () => {
@@ -108,23 +110,27 @@ export default function UserPage() {
       if (response.ok) {
         const data = await response.json();
 
-        const users = data.map((user: {
-          _id: string;
-          firstName: string;
-          lastName: string;
-          email: string;
-          phoneNumber: string;
-          date: string;
-          currency: string;
-        }) => ({
-          id: user._id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          phoneNumber: user.phoneNumber,
-          date: user.date,
-          currency: user.currency,
-        }));
+        const users = data.map(
+          (user: {
+            _id: string;
+            autoFXId: string;
+            firstName: string;
+            lastName: string;
+            email: string;
+            phoneNumber: string;
+            date: string;
+            currency: string;
+          }) => ({
+            id: user._id,
+            autoFXId: user.autoFXId,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            phoneNumber: user.phoneNumber,
+            date: user.date,
+            currency: user.currency,
+          }),
+        );
         setRows(users);
       }
     } catch (error: any) {
@@ -135,6 +141,7 @@ export default function UserPage() {
   const handleClickOpen = (tableRow: ITableRow) => {
     setEditUser({
       id: tableRow.id,
+      autoFXId: tableRow.autoFXId,
       firstName: tableRow.firstName,
       lastName: tableRow.lastName,
       email: tableRow.email,
@@ -163,7 +170,7 @@ export default function UserPage() {
 
     return `${dateObj.getDay()}/${dateObj.getMonth()}/${dateObj.getFullYear()}`;
   };
-  
+
   const handleSaveChanges = async () => {
     console.log("Save Changes clicked", editUser);
     try {
@@ -182,8 +189,8 @@ export default function UserPage() {
 
         setRows((prevRows) =>
           prevRows.map((user) =>
-            user.id === updatedUser.id ? { ...user, ...updatedUser } : user
-          )
+            user.id === updatedUser.id ? { ...user, ...updatedUser } : user,
+          ),
         );
         setOpen(false);
       } else {
@@ -198,25 +205,25 @@ export default function UserPage() {
     <Paper variant="outlined">
       <Stack direction="row" margin={2}>
         <Stack direction="row" gap={1} mr="auto">
-          <TextField 
-            label="Search" 
-            size="small" 
-            value={searchText} 
-            onChange={(e) => setSearchText(e.target.value)} 
+          <TextField
+            label="Search"
+            size="small"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
           />
         </Stack>
 
         <Dialog open={open} onClose={handleClose}>
           <DialogContent>
             <Stack gap={2}>
-              <TextField
+              {/*<TextField
                 autoFocus
                 label="ID"
                 type="text"
                 fullWidth
                 value={editUser.id}
                 disabled
-              />
+              />*/}
 
               <TextField
                 label="First Name"
@@ -308,7 +315,7 @@ export default function UserPage() {
           <TableBody>
             {tableData.map((data) => (
               <TableRow key={data.id}>
-                <TableCell>{data.id}</TableCell>
+                <TableCell>{data.autoFXId}</TableCell>
                 <TableCell>{data.firstName}</TableCell>
                 <TableCell>{data.lastName}</TableCell>
                 <TableCell>{data.email}</TableCell>
@@ -316,7 +323,10 @@ export default function UserPage() {
                 <TableCell>{getDateString(data.date || "")}</TableCell>
                 <TableCell>{data.currency}</TableCell>
                 <TableCell>
-                  <Button variant="contained" onClick={() => handleClickOpen(data)}>
+                  <Button
+                    variant="contained"
+                    onClick={() => handleClickOpen(data)}
+                  >
                     Edit
                   </Button>
                 </TableCell>

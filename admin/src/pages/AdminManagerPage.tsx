@@ -1,13 +1,35 @@
-import { Box, Button, Divider, Paper, Stack, Table, TableBody, TableCell,
-         TableContainer, TableHead, TablePagination, TableRow, TextField, Dialog,
-         DialogTitle, DialogContent, DialogActions, DialogContentText, Menu, MenuItem,
-         IconButton, Slide, Alert } from "@mui/material";
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import {
+  Box,
+  Button,
+  Divider,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
+  Menu,
+  MenuItem,
+  IconButton,
+  Slide,
+  Alert,
+} from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 
 interface ITableRow {
   id: string;
+  autoFXId: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -51,39 +73,39 @@ export default function AdminManagerPage() {
   }, [rows, searchText]);
 
   const applyFilter = (): ITableRow[] => {
-      const searchFirstName = rows.filter(row => {
-          return row.firstName.includes(searchText);
-      });
+    const searchFirstName = rows.filter((row) => {
+      return row.firstName.includes(searchText);
+    });
 
-      if (searchFirstName.length > 0) {
-        return searchFirstName;
-      }
+    if (searchFirstName.length > 0) {
+      return searchFirstName;
+    }
 
-      const searchLastName = rows.filter(row => {
-          return row.lastName.includes(searchText);
-      });
+    const searchLastName = rows.filter((row) => {
+      return row.lastName.includes(searchText);
+    });
 
-      if (searchLastName.length > 0) {
-        return searchLastName;
-      }
+    if (searchLastName.length > 0) {
+      return searchLastName;
+    }
 
-      const searchEmail = rows.filter(row => {
-          return row.email.includes(searchText);
-      });
+    const searchEmail = rows.filter((row) => {
+      return row.email.includes(searchText);
+    });
 
-      if (searchEmail.length > 0) {
-        return searchEmail;
-      }
+    if (searchEmail.length > 0) {
+      return searchEmail;
+    }
 
-      const searchPhoneNumber = rows.filter(row => {
-          return row.phoneNumber.includes(searchText);
-      });
+    const searchPhoneNumber = rows.filter((row) => {
+      return row.phoneNumber.includes(searchText);
+    });
 
-      if (searchPhoneNumber.length > 0) {
-        return searchPhoneNumber;
-      }
+    if (searchPhoneNumber.length > 0) {
+      return searchPhoneNumber;
+    }
 
-      return [];
+    return [];
   };
 
   const handleClickOpen = () => {
@@ -101,25 +123,29 @@ export default function AdminManagerPage() {
       if (response.ok) {
         const data = await response.json();
 
-        const admins = data.map((admin: {
-          _id: string;
-          firstName: string;
-          lastName: string;
-          email: string;
-          phoneNumber: string;
-          role: { _id: string; name: string; description: string; };
-          date: string;
-          active: boolean;
-        }) => ({
-          id: admin._id,
-          firstName: admin.firstName,
-          lastName: admin.lastName,
-          email: admin.email,
-          phoneNumber: admin.phoneNumber,
-          roleName: admin.role.name,
-          date: admin.date,
-          active: admin.active
-        }));
+        const admins = data.map(
+          (admin: {
+            _id: string;
+            autoFXId: string;
+            firstName: string;
+            lastName: string;
+            email: string;
+            phoneNumber: string;
+            role: { _id: string; name: string; description: string };
+            date: string;
+            active: boolean;
+          }) => ({
+            id: admin._id,
+            autoFXId: admin.autoFXId,
+            firstName: admin.firstName,
+            lastName: admin.lastName,
+            email: admin.email,
+            phoneNumber: admin.phoneNumber,
+            roleName: admin.role.name,
+            date: admin.date,
+            active: admin.active,
+          }),
+        );
 
         setRows(admins);
       } else {
@@ -154,9 +180,9 @@ export default function AdminManagerPage() {
       const response = await fetch("/api/users", {
         method: "PATCH",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({id, newState})
+        body: JSON.stringify({ id, newState }),
       });
 
       if (response.ok) {
@@ -192,7 +218,14 @@ export default function AdminManagerPage() {
 
   return (
     <>
-      <Box sx={{ position: "absolute", left: "50%", top: 0, transform: "translateX(-50%)" }}>
+      <Box
+        sx={{
+          position: "absolute",
+          left: "50%",
+          top: 0,
+          transform: "translateX(-50%)",
+        }}
+      >
         <Slide in={showPopUp} container={containerRef.current}>
           <Alert severity="success">{popUpMessage}</Alert>
         </Slide>
@@ -200,12 +233,27 @@ export default function AdminManagerPage() {
 
       <Paper variant="outlined">
         <Stack direction="row" margin={2} justifyContent="space-between">
-          <TextField label="Search" size="small" value={searchText} onChange={(e) => setSearchText(e.target.value)} />
-          <Button variant="outlined" onClick={handleClickOpen}>Add New Admin</Button>
+          <TextField
+            label="Search"
+            size="small"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+          <Button variant="outlined" onClick={handleClickOpen}>
+            Add New Admin
+          </Button>
 
-          <NewAdminForm open={openModel} onClose={handleClose} onFinish={handleFinishAddAdmin} />
-          <EditAdminForm open={openEditAdminFormModel} onClose={handleCloseEditAdminModel} 
-            selectedRow={tableData[selectedRowIndex]} onFinish={handleFinishEditAdmin} />
+          <NewAdminForm
+            open={openModel}
+            onClose={handleClose}
+            onFinish={handleFinishAddAdmin}
+          />
+          <EditAdminForm
+            open={openEditAdminFormModel}
+            onClose={handleCloseEditAdminModel}
+            selectedRow={tableData[selectedRowIndex]}
+            onFinish={handleFinishEditAdmin}
+          />
         </Stack>
 
         <Divider />
@@ -229,21 +277,28 @@ export default function AdminManagerPage() {
               {tableData.map((data, index) => {
                 if (data.roleName === "Super Admin") {
                   return (
-                    <TableRow key={data.id} sx={{bgcolor: data.active ? "#ffff00" : "#ff8888"}}>
-                      <TableCell>{data.id}</TableCell>
+                    <TableRow
+                      key={data.id}
+                      sx={{ bgcolor: data.active ? "#ffff00" : "#ff8888" }}
+                    >
+                      <TableCell>{data.autoFXId}</TableCell>
                       <TableCell>{data.firstName}</TableCell>
                       <TableCell>{data.lastName}</TableCell>
                       <TableCell>{data.email}</TableCell>
                       <TableCell>{data.phoneNumber}</TableCell>
                       <TableCell>{getDateString(data.date || "")}</TableCell>
-                      <TableCell>{data.active ? "Active" : "Inactive"}</TableCell>
+                      <TableCell>
+                        {data.active ? "Active" : "Inactive"}
+                      </TableCell>
 
                       <TableCell>
-                        <Actions 
-                          onClickEdit={handleClickEdit} 
-                          onClickToggleStatus={(newState: boolean) => handleClickToggleStatus(data.id, newState)} 
-                          selectedRowIndex={index} 
-                          onSelectedRowIndex={handleSelectedRowIndex} 
+                        <Actions
+                          onClickEdit={handleClickEdit}
+                          onClickToggleStatus={(newState: boolean) =>
+                            handleClickToggleStatus(data.id, newState)
+                          }
+                          selectedRowIndex={index}
+                          onSelectedRowIndex={handleSelectedRowIndex}
                           state={data.active}
                           disableActivationControl={true}
                         />
@@ -252,21 +307,28 @@ export default function AdminManagerPage() {
                   );
                 } else {
                   return (
-                    <TableRow key={data.id} sx={{bgcolor: data.active ? "" : "#ff8888"}}>
-                      <TableCell>{data.id}</TableCell>
+                    <TableRow
+                      key={data.id}
+                      sx={{ bgcolor: data.active ? "" : "#ff8888" }}
+                    >
+                      <TableCell>{data.autoFXId}</TableCell>
                       <TableCell>{data.firstName}</TableCell>
                       <TableCell>{data.lastName}</TableCell>
                       <TableCell>{data.email}</TableCell>
                       <TableCell>{data.phoneNumber}</TableCell>
                       <TableCell>{getDateString(data.date || "")}</TableCell>
-                      <TableCell>{data.active ? "Active" : "Inactive"}</TableCell>
+                      <TableCell>
+                        {data.active ? "Active" : "Inactive"}
+                      </TableCell>
 
                       <TableCell>
-                        <Actions 
-                          onClickEdit={handleClickEdit} 
-                          onClickToggleStatus={(newState: boolean) => handleClickToggleStatus(data.id, newState)} 
-                          selectedRowIndex={index} 
-                          onSelectedRowIndex={handleSelectedRowIndex} 
+                        <Actions
+                          onClickEdit={handleClickEdit}
+                          onClickToggleStatus={(newState: boolean) =>
+                            handleClickToggleStatus(data.id, newState)
+                          }
+                          selectedRowIndex={index}
+                          onSelectedRowIndex={handleSelectedRowIndex}
                           state={data.active}
                           disableActivationControl={false}
                         />
@@ -293,22 +355,21 @@ export default function AdminManagerPage() {
   );
 }
 
-function Actions({ 
+function Actions({
   onClickEdit,
   onClickToggleStatus,
   selectedRowIndex,
   onSelectedRowIndex,
   state,
-  disableActivationControl
-}: { 
-  onClickEdit: () => void; 
+  disableActivationControl,
+}: {
+  onClickEdit: () => void;
   onClickToggleStatus: (newState: boolean) => void;
   selectedRowIndex: number;
   onSelectedRowIndex: (index: number) => void;
   state: boolean; // true -> Active, false -> Inactive
   disableActivationControl: boolean;
-}) 
-{
+}) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openModel = Boolean(anchorEl);
   const [statusActive, setStatusActive] = useState(state);
@@ -337,9 +398,9 @@ function Actions({
     <Box>
       <IconButton
         id="basic-button"
-        aria-controls={openModel ? 'basic-menu' : undefined}
+        aria-controls={openModel ? "basic-menu" : undefined}
         aria-haspopup="true"
-        aria-expanded={openModel ? 'true' : undefined}
+        aria-expanded={openModel ? "true" : undefined}
         onClick={handleClick}
       >
         <MoreVertIcon />
@@ -351,28 +412,28 @@ function Actions({
         open={openModel}
         onClose={handleClose}
         MenuListProps={{
-          'aria-labelledby': 'basic-button',
+          "aria-labelledby": "basic-button",
         }}
       >
         <MenuItem onClick={handleClickEdit}>Edit</MenuItem>
 
-        {!disableActivationControl &&
+        {!disableActivationControl && (
           <MenuItem onClick={handleClickToggleStatus}>
             {statusActive ? "Deactivate" : "Activate"}
           </MenuItem>
-        }
+        )}
       </Menu>
     </Box>
   );
 }
 
-function NewAdminForm({ 
+function NewAdminForm({
   open,
   onClose,
-  onFinish
-}: { 
-  open: boolean; 
-  onClose?: () => void; 
+  onFinish,
+}: {
+  open: boolean;
+  onClose?: () => void;
   onFinish: () => void;
 }) {
   const [adminFormData, setAdminFormData] = useState({
@@ -380,7 +441,7 @@ function NewAdminForm({
     lastName: "",
     email: "",
     phoneNumber: "",
-    password: ""
+    password: "",
   });
 
   const handleClickAdd = async () => {
@@ -388,9 +449,9 @@ function NewAdminForm({
       const response = await fetch("/api/users?role=Admin", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(adminFormData)
+        body: JSON.stringify(adminFormData),
       });
 
       if (response.ok) {
@@ -424,7 +485,9 @@ function NewAdminForm({
           type="text"
           fullWidth
           value={adminFormData.firstName}
-          onChange={e => setAdminFormData({ ...adminFormData, firstName: e.target.value })}
+          onChange={(e) =>
+            setAdminFormData({ ...adminFormData, firstName: e.target.value })
+          }
         />
 
         <TextField
@@ -433,7 +496,9 @@ function NewAdminForm({
           type="text"
           fullWidth
           value={adminFormData.lastName}
-          onChange={e => setAdminFormData({ ...adminFormData, lastName: e.target.value })}
+          onChange={(e) =>
+            setAdminFormData({ ...adminFormData, lastName: e.target.value })
+          }
         />
 
         <TextField
@@ -442,7 +507,9 @@ function NewAdminForm({
           type="email"
           fullWidth
           value={adminFormData.email}
-          onChange={e => setAdminFormData({ ...adminFormData, email: e.target.value })}
+          onChange={(e) =>
+            setAdminFormData({ ...adminFormData, email: e.target.value })
+          }
         />
 
         <TextField
@@ -451,7 +518,9 @@ function NewAdminForm({
           type="tel"
           fullWidth
           value={adminFormData.phoneNumber}
-          onChange={e => setAdminFormData({ ...adminFormData, phoneNumber: e.target.value })}
+          onChange={(e) =>
+            setAdminFormData({ ...adminFormData, phoneNumber: e.target.value })
+          }
         />
 
         <TextField
@@ -460,28 +529,33 @@ function NewAdminForm({
           type="password"
           fullWidth
           value={adminFormData.password}
-          onChange={e => setAdminFormData({ ...adminFormData, password: e.target.value })}
+          onChange={(e) =>
+            setAdminFormData({ ...adminFormData, password: e.target.value })
+          }
         />
-
       </DialogContent>
 
       <DialogActions>
-        <Button variant="contained" onClick={handleClickAdd}>Add</Button>
-        <Button variant="outlined" onClick={onClose}>Cancel</Button>
+        <Button variant="contained" onClick={handleClickAdd}>
+          Add
+        </Button>
+        <Button variant="outlined" onClick={onClose}>
+          Cancel
+        </Button>
       </DialogActions>
     </Dialog>
   );
 }
 
-function EditAdminForm({ 
-  open, 
-  onClose, 
-  selectedRow, 
-  onFinish
-}: { 
-  open: boolean; 
-  onClose?: () => void; 
-  selectedRow: ITableRow; 
+function EditAdminForm({
+  open,
+  onClose,
+  selectedRow,
+  onFinish,
+}: {
+  open: boolean;
+  onClose?: () => void;
+  selectedRow: ITableRow;
   onFinish: (message: string) => void;
 }) {
   const [adminFormData, setAdminFormData] = useState({
@@ -507,15 +581,15 @@ function EditAdminForm({
       const response = await fetch("/api/users?role=Admin", {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           id: selectedRow.id,
           firstName: adminFormData.firstName,
           lastName: adminFormData.lastName,
           email: adminFormData.email,
-          phoneNumber: adminFormData.phoneNumber
-        })
+          phoneNumber: adminFormData.phoneNumber,
+        }),
       });
 
       const data = await response.json();
@@ -550,7 +624,9 @@ function EditAdminForm({
           type="text"
           fullWidth
           value={adminFormData.firstName}
-          onChange={e => setAdminFormData({ ...adminFormData, firstName: e.target.value })}
+          onChange={(e) =>
+            setAdminFormData({ ...adminFormData, firstName: e.target.value })
+          }
         />
 
         <TextField
@@ -559,7 +635,9 @@ function EditAdminForm({
           type="text"
           fullWidth
           value={adminFormData.lastName}
-          onChange={e => setAdminFormData({ ...adminFormData, lastName: e.target.value })}
+          onChange={(e) =>
+            setAdminFormData({ ...adminFormData, lastName: e.target.value })
+          }
         />
 
         <TextField
@@ -568,7 +646,9 @@ function EditAdminForm({
           type="email"
           fullWidth
           value={adminFormData.email}
-          onChange={e => setAdminFormData({ ...adminFormData, email: e.target.value })}
+          onChange={(e) =>
+            setAdminFormData({ ...adminFormData, email: e.target.value })
+          }
         />
 
         <TextField
@@ -577,14 +657,19 @@ function EditAdminForm({
           type="tel"
           fullWidth
           value={adminFormData.phoneNumber}
-          onChange={e => setAdminFormData({ ...adminFormData, phoneNumber: e.target.value })}
+          onChange={(e) =>
+            setAdminFormData({ ...adminFormData, phoneNumber: e.target.value })
+          }
         />
-
       </DialogContent>
 
       <DialogActions>
-        <Button variant="contained" onClick={handleClickSaveChanges}>Save Changes</Button>
-        <Button variant="outlined" onClick={onClose}>Cancel</Button>
+        <Button variant="contained" onClick={handleClickSaveChanges}>
+          Save Changes
+        </Button>
+        <Button variant="outlined" onClick={onClose}>
+          Cancel
+        </Button>
       </DialogActions>
     </Dialog>
   );

@@ -24,6 +24,7 @@ import type { ChangeEvent } from "react";
 
 interface ITableRow {
   id: string;
+  autoFXId: string;
   email: string;
   balance: number;
 }
@@ -56,20 +57,20 @@ export default function ChangeBalancePage() {
   }, [rowsPerPage, page, filteredRows]);
 
   useEffect(() => {
-      const filteredRows = applyFilter();
-      setFilteredRows(filteredRows);
+    const filteredRows = applyFilter();
+    setFilteredRows(filteredRows);
   }, [rows, searchText]);
 
   const applyFilter = (): ITableRow[] => {
-      const searchEmail = rows.filter(row => {
-        return row.email.includes(searchText);
-      });
+    const searchEmail = rows.filter((row) => {
+      return row.email.includes(searchText);
+    });
 
-      if (searchEmail.length > 0) {
-        return searchEmail;
-      }
+    if (searchEmail.length > 0) {
+      return searchEmail;
+    }
 
-      return [];
+    return [];
   };
 
   const fetchUserBalances = async () => {
@@ -79,17 +80,21 @@ export default function ChangeBalancePage() {
       if (response.ok) {
         const data = await response.json();
 
-        const usersBalance = data.map((userBalance: {
-          _id: string;
-          email: string;
-          currency: string;
-          balance: number;
-        }) => ({
-          id: userBalance._id,
-          email: userBalance.email,
-          currency: userBalance.currency,
-          balance: userBalance.balance
-        }));
+        const usersBalance = data.map(
+          (userBalance: {
+            _id: string;
+            autoFXId: string;
+            email: string;
+            currency: string;
+            balance: number;
+          }) => ({
+            id: userBalance._id,
+            autoFXId: userBalance.autoFXId,
+            email: userBalance.email,
+            currency: userBalance.currency,
+            balance: userBalance.balance,
+          }),
+        );
 
         setRows(usersBalance);
       }
@@ -126,7 +131,14 @@ export default function ChangeBalancePage() {
 
   return (
     <>
-      <Box sx={{ position: "absolute", left: "50%", top: 0, transform: "translateX(-50%)" }}>
+      <Box
+        sx={{
+          position: "absolute",
+          left: "50%",
+          top: 0,
+          transform: "translateX(-50%)",
+        }}
+      >
         <Slide in={showPopUp} container={containerRef.current}>
           <Alert severity="success">{popUpMessage}</Alert>
         </Slide>
@@ -134,9 +146,9 @@ export default function ChangeBalancePage() {
 
       <Paper variant="outlined">
         <Box margin={2}>
-          <TextField 
-            label="Search" 
-            size="small" 
+          <TextField
+            label="Search"
+            size="small"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
@@ -158,18 +170,17 @@ export default function ChangeBalancePage() {
             <TableBody>
               {tableData.map((data, index) => (
                 <TableRow key={data.id}>
-                  <TableCell>{data.id}</TableCell>
+                  <TableCell>{data.autoFXId}</TableCell>
                   <TableCell>{data.email}</TableCell>
                   <TableCell>$ {data.balance.toFixed(2)}</TableCell>
 
                   <TableCell>
-                    <Button 
-                    variant="contained" 
-                    onClick={() => handleClickChange(index)}
-                  >
-                    Change
-                  </Button>
-
+                    <Button
+                      variant="contained"
+                      onClick={() => handleClickChange(index)}
+                    >
+                      Change
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -187,11 +198,11 @@ export default function ChangeBalancePage() {
           onRowsPerPageChange={handleRowsPerPageChange}
         />
 
-        <EditForm 
-          open={open} 
-          onClose={handleClose} 
-          rows={rows} 
-          selectedRowIndex={selectedRowIndex} 
+        <EditForm
+          open={open}
+          onClose={handleClose}
+          rows={rows}
+          selectedRowIndex={selectedRowIndex}
           onFinish={handleFinish}
         />
       </Paper>
@@ -204,7 +215,7 @@ function EditForm({
   onClose,
   rows,
   selectedRowIndex,
-  onFinish
+  onFinish,
 }: {
   open: boolean;
   onClose: () => void;
@@ -229,12 +240,12 @@ function EditForm({
       const response = await fetch("/api/wallet", {
         method: "PATCH",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           id: rows[selectedRowIndex].id,
-          balance: parseFloat(balance)
-        })
+          balance: parseFloat(balance),
+        }),
       });
 
       if (response.ok) {
