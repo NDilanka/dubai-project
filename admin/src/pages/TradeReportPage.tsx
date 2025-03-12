@@ -22,7 +22,7 @@ import type { ChangeEvent } from "react";
 
 interface ITableRow {
   _id: string;
-  amount: number;
+  amount: string;
   btc1: number;
   btc2: number;
   btc3: number;
@@ -178,7 +178,7 @@ export default function TradeReportPage() {
                 <TableCell>{data.btc3}</TableCell>
                 <TableCell>{data.btc4}</TableCell>
                 <TableCell>{data.btc5}</TableCell>
-                <TableCell>$ {data.amount.toFixed(2)}</TableCell>
+                <TableCell>$ {parseFloat(data.amount).toFixed(2)}</TableCell>
 
                 <TableCell>
                   <Button
@@ -254,13 +254,14 @@ function EditForm({
         },
         body: JSON.stringify({
           id: data[selectedRowIndex]._id,
-          btc1: tradeFormData.btc1,
-          btc2: tradeFormData.btc2,
-          btc3: tradeFormData.btc3,
-          btc4: tradeFormData.btc4,
-          btc5: tradeFormData.btc5,
-          amount: tradeFormData.amount,
-          //remarks: tradeFormData.remarks
+          btc1: parseFloat(tradeFormData.btc1),
+          btc2: parseFloat(tradeFormData.btc2),
+          btc3: parseFloat(tradeFormData.btc3),
+          btc4: parseFloat(tradeFormData.btc4),
+          btc5: parseFloat(tradeFormData.btc5),
+          amount: parseFloat(tradeFormData.amount),
+          remarks: parseFloat(tradeFormData.remarks),
+          isAccepted: true
         }),
       });
 
@@ -356,7 +357,7 @@ function EditForm({
           }
         />
 
-        {/*<TextField
+        <TextField
           autoFocus
           multiline
           margin="dense"
@@ -365,12 +366,12 @@ function EditForm({
           fullWidth
           value={tradeFormData.remarks}
           onChange={(event) => setTradeFormData({ ...tradeFormData, remarks: event.target.value })}
-        />*/}
+        />
       </DialogContent>
 
       <DialogActions>
         <Button variant="contained" onClick={handleClickUpdate}>
-          Update
+          Accept and Update
         </Button>
         <Button variant="outlined" onClick={onClose}>
           Cancel

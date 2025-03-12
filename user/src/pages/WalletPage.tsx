@@ -47,19 +47,6 @@ interface IWtithdrawTableRow {
   updatedAt: string;
 }
 
-interface ITrade {
-  _id: string;
-  btc1: number;
-  btc2: number;
-  btc3: number;
-  btc4: number;
-  btc5: number;
-  amount: number;
-  createdAt: string;
-  updatedAt: string;
-  remarks: string;
-}
-
 export default function WalletPage() {
   const theme = useTheme();
   const [depositPage, setDepositPage] = useState(0);
@@ -75,7 +62,6 @@ export default function WalletPage() {
   >([]);
 
   const [tabIndex, setTabIndex] = useState(0);
-  const [tradeFakeTabIndex, setTradeFakeTabIndex] = useState(0);
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [dialogTabIndex, setDialogTabIndex] = useState(0);
   const userContext = useContext(UserContext);
@@ -103,8 +89,6 @@ export default function WalletPage() {
 
   const [recentWithdraw, setRecentWithdraw] = useState("");
   const [recentDeposit, setRecentDeposit] = useState("");
-
-  const [trades, setTrades] = useState<ITrade[]>([]);
 
   useEffect(() => {
     if (userContext?.user) {
@@ -142,7 +126,6 @@ export default function WalletPage() {
   useEffect(() => {
     if (userContext?.user) {
       fetchBalance(userContext.user?._id);
-      fetchTrades(userContext.user?._id);
     }
   }, [userContext?.user]);
 
@@ -183,23 +166,6 @@ export default function WalletPage() {
         setRecentDeposit(latestDeposit);
 
         setDepositRows(deposits);
-      } else {
-        // TODO: Display an error message.
-      }
-    } catch (error: any) {
-      console.error(error);
-
-      // TODO: Display an error message.
-    }
-  };
-
-  const fetchTrades = async (userId: string) => {
-    try {
-      const response = await fetch(`/api/trades/${userId}`);
-
-      if (response.ok) {
-        const data = await response.json();
-        setTrades(data);
       } else {
         // TODO: Display an error message.
       }
@@ -280,10 +246,6 @@ export default function WalletPage() {
 
   const handleChangeTab = (_event: SyntheticEvent, value: number) => {
     setTabIndex(value);
-  };
-
-  const handleChangeTradeFakeTab = (_event: SyntheticEvent, value: number) => {
-    setTradeFakeTabIndex(value);
   };
 
   const handleOpenDialog = () => {
@@ -1014,68 +976,6 @@ export default function WalletPage() {
           </Paper>
         )}
       </Box>
-
-      <Divider sx={{ my: 8 }} />
-
-      <Paper sx={{ background: "none" }}>
-        <Tabs
-          sx={{ marginTop: 16 }}
-          tabIndex={0}
-          onChange={handleChangeTradeFakeTab}
-        >
-          <Tab label="Trade History" />
-        </Tabs>
-
-        <TableContainer>
-          <Table sx={{ borderCollapse: "separate", borderSpacing: "0 8px" }}>
-            <TableHead>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Date</TableCell>
-                <TableCell>BTC1</TableCell>
-                <TableCell>BTC2</TableCell>
-                <TableCell>BTC3</TableCell>
-                <TableCell>BTC4</TableCell>
-                <TableCell>BTC5</TableCell>
-                <TableCell>Amount</TableCell>
-                <TableCell>Remarks</TableCell>
-              </TableRow>
-            </TableHead>
-
-            <TableBody>
-              {trades.map((trade) => {
-                const date = new Date(trade.createdAt);
-                return (
-                  <TableRow>
-                    <TableCell>{trade._id}</TableCell>
-                    <TableCell>
-                      {date.getDate()}/{date.getMonth() + 1}/
-                      {date.getFullYear()}
-                    </TableCell>
-                    <TableCell>{trade.btc1}</TableCell>
-                    <TableCell>{trade.btc2}</TableCell>
-                    <TableCell>{trade.btc3}</TableCell>
-                    <TableCell>{trade.btc4}</TableCell>
-                    <TableCell>{trade.btc5}</TableCell>
-                    <TableCell>{trade.amount}</TableCell>
-                    <TableCell>{trade.remarks}</TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={withdrawTableData.length}
-          rowsPerPage={withdrawRowsPerPage}
-          page={withdrawPage}
-          onPageChange={handleWithdrawPageChange}
-          onRowsPerPageChange={handleWithdrawRowsPerPageChange}
-        />
-      </Paper>
     </>
   );
 }

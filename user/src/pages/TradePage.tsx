@@ -1,7 +1,37 @@
-import { Box, Button, Stack, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  Paper,
+  Stack,
+  Tab,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  Tabs,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useContext, useEffect, useState } from "react";
+import type { ChangeEvent, SyntheticEvent } from "react";
 import postTradeService from "../services/tradeService";
 import { UserContext } from "../../../auth/src/context/UserContext";
+
+interface ITrade {
+  _id: string;
+  btc1: number;
+  btc2: number;
+  btc3: number;
+  btc4: number;
+  btc5: number;
+  amount: number;
+  createdAt: string;
+  updatedAt: string;
+  remarks: string;
+}
 
 export default function TradePage() {
   const [page, setPage] = useState(0);
@@ -15,6 +45,11 @@ export default function TradePage() {
     tradeAmount: "0",
   });
   const userContext = useContext(UserContext);
+  const [trades, setTrades] = useState<ITrade[]>([]);
+  const [tradeFakeTabIndex, setTradeFakeTabIndex] = useState(0);
+
+  const [tradePage, setTradePage] = useState(0);
+  const [tradeRowsPerPage, setTradeRowsPerPage] = useState(5);
 
   useEffect(() => {
     const appendScript = (
@@ -64,6 +99,12 @@ export default function TradePage() {
     };
   }, [rowsPerPage, page]);
 
+  useEffect(() => {
+    if (userContext?.user) {
+      fetchTrades(userContext.user?._id);
+    }
+  }, [userContext?.user]);
+
   const handleClickSell = async () => {
     if (userContext?.user) {
       const result = await postTradeService({
@@ -90,6 +131,26 @@ export default function TradePage() {
       }
     } else {
       console.error("User not logged in!");
+    }
+  };
+
+  const fetchTrades = async (userId: string) => {
+    try {
+      const response = await fetch(`/api/trades/${userId}`);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("lllllllllllllllll");
+        console.log(userId, data);
+        console.log("lllllllllllllllll");
+        setTrades(data);
+      } else {
+        // TODO: Display an error message.
+      }
+    } catch (error: any) {
+      console.error(error);
+
+      // TODO: Display an error message.
     }
   };
 
@@ -120,6 +181,21 @@ export default function TradePage() {
     } else {
       console.error("User not logged in!");
     }
+  };
+
+  const handleChangeTradeFakeTab = (_event: SyntheticEvent, value: number) => {
+    setTradeFakeTabIndex(value);
+  };
+
+  const handleTradePageChange = (_event: unknown, newPage: number) => {
+    setTradePage(newPage);
+  };
+
+  const handleTradeRowsPerPageChange = (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    setTradeRowsPerPage(parseInt(event.target.value, 10));
+    setTradePage(0);
   };
 
   return (
@@ -186,6 +262,66 @@ export default function TradePage() {
           </Stack>
         </Stack>
       </Stack>
+
+      <Paper sx={{ background: "none" }}>
+        <Tabs
+          sx={{ marginTop: 16 }}
+          tabIndex={0}
+          onChange={handleChangeTradeFakeTab}
+        >
+          <Tab label="Trade History" />
+        </Tabs>
+
+        <TableContainer>
+          <Table sx={{ borderCollapse: "separate", borderSpacing: "0 8px" }}>
+            <TableHead>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Date</TableCell>
+                <TableCell>BTC1</TableCell>
+                <TableCell>BTC2</TableCell>
+                <TableCell>BTC3</TableCell>
+                <TableCell>BTC4</TableCell>
+                <TableCell>BTC5</TableCell>
+                <TableCell>Amount</TableCell>
+                <TableCell>Remarks</TableCell>
+              </TableRow>
+            </TableHead>
+
+            <TableBody>
+              {trades.map((trade) => {
+                const date = new Date(trade.createdAt);
+                return (
+                  <TableRow>
+                    <TableCell>{trade._id}</TableCell>
+                    <TableCell>
+                      {date.getDate()}/{date.getMonth() + 1}/
+                      {date.getFullYear()}
+                    </TableCell>
+                    <TableCell>{trade.btc1}</TableCell>
+                    <TableCell>{trade.btc2}</TableCell>
+                    <TableCell>{trade.btc3}</TableCell>
+                    <TableCell>{trade.btc4}</TableCell>
+                    <TableCell>{trade.btc5}</TableCell>
+                    <TableCell>{trade.amount}</TableCell>
+                    <TableCell>{trade.remarks}</TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={trades.length}
+          rowsPerPage={tradeRowsPerPage}
+          page={tradePage}
+          onPageChange={handleTradePageChange}
+          onRowsPerPageChange={handleTradeRowsPerPageChange}
+        />
+      </Paper>
     </Box>
   );
 }

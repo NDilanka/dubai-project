@@ -222,7 +222,7 @@ export default async function tradeController(request: Request, db: Db) {
         */
 
         const result = await db.collection("trades").updateOne(
-          { _id: new ObjectId(data.id) },
+          { _id: new ObjectId(`${data.id}`) },
           {
             $set: {
               btc1: data.btc1,
@@ -231,8 +231,9 @@ export default async function tradeController(request: Request, db: Db) {
               btc4: data.btc4,
               btc5: data.btc5,
               amount: data.amount,
-              //remarks: data.remarks,
+              remarks: data.remarks,
               updatedAt: new Date().toUTCString(),
+              isAccepted: data.isAccepted
             },
           },
         );
