@@ -30,6 +30,7 @@ export default async function depositController(request: Request, db: Db) {
               status: 1,
               user: {
                 _id: 1,
+                autoFXId: 1,
                 email: 1
               }
             }

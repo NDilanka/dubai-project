@@ -29,6 +29,7 @@ export default async function withdrawController(request: Request, db: Db) {
               updatedAt: 1,
               user: {
                 _id: 1,
+                autoFXId: 1,
                 email: 1
               },
             }

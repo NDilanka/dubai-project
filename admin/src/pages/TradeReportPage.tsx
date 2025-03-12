@@ -33,6 +33,7 @@ interface ITableRow {
   updatedAt: string;
   user: {
     _id: string;
+    autoFXId: string;
     firstName: string;
     lastName: string;
     email: string;
@@ -170,7 +171,7 @@ export default function TradeReportPage() {
           <TableBody>
             {tableData.map((data, index) => (
               <TableRow key={data._id}>
-                <TableCell>{data._id}</TableCell>
+                <TableCell>{data.user.autoFXId}</TableCell>
                 <TableCell>{data.user.email}</TableCell>
                 <TableCell>{data.btc1}</TableCell>
                 <TableCell>{data.btc2}</TableCell>

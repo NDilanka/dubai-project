@@ -1,10 +1,30 @@
-import { Box, Dialog, DialogContent, DialogTitle, Divider, IconButton, Menu, MenuItem, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField } from "@mui/material";
+import {
+  Box,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  IconButton,
+  Menu,
+  MenuItem,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  TextField,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 interface ITableRow {
   id: string;
+  autoFXId: string;
   email: string;
   amount: number;
   status: string;
@@ -43,7 +63,7 @@ export default function DepositeRequestsPage() {
   }, [rows, searchText]);
 
   const applyFilter = (): ITableRow[] => {
-    const searchEmail = rows.filter(row => {
+    const searchEmail = rows.filter((row) => {
       return row.email.includes(searchText);
     });
 
@@ -61,26 +81,30 @@ export default function DepositeRequestsPage() {
       if (response.ok) {
         const data = await response.json();
 
-        const deposits = data.map((deposit: {
-          _id: string;
-          filePath: string;
-          amount: number;
-          createdAt: string;
-          updatedAt: string;
-          status: string;
-          user: {
+        const deposits = data.map(
+          (deposit: {
             _id: string;
-            email: string;
-          }
-        }) => ({
-          id: deposit._id,
-          email: deposit.user.email,
-          amount: deposit.amount,
-          status: deposit.status,
-          filePath: deposit.filePath,
-          createdAt: deposit.createdAt,
-          updatedAt: deposit.updatedAt
-        }));
+            filePath: string;
+            amount: number;
+            createdAt: string;
+            updatedAt: string;
+            status: string;
+            user: {
+              _id: string;
+              autoFXId: string;
+              email: string;
+            };
+          }) => ({
+            id: deposit._id,
+            autoFXId: deposit.user.autoFXId,
+            email: deposit.user.email,
+            amount: deposit.amount,
+            status: deposit.status,
+            filePath: deposit.filePath,
+            createdAt: deposit.createdAt,
+            updatedAt: deposit.updatedAt,
+          }),
+        );
 
         setRows(deposits);
       } else {
@@ -103,23 +127,23 @@ export default function DepositeRequestsPage() {
   const handleClickAccept = async (rowId: string) => {
     const originalRows = [...rows];
     try {
-      const updatedRows = rows.map(row =>
-        row.id === rowId ? { ...row, status: 'Accepted' } : row
+      const updatedRows = rows.map((row) =>
+        row.id === rowId ? { ...row, status: "Accepted" } : row,
       );
       setRows(updatedRows);
 
       const response = await fetch("/api/deposits", {
         method: "PATCH",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           id: rowId,
-          status: "Accepted"
-        })
+          status: "Accepted",
+        }),
       });
 
-      if (!response.ok) throw new Error('Accept failed');
+      if (!response.ok) throw new Error("Accept failed");
       await fetchDeposits(); // Sync with server
     } catch (error) {
       console.error(error);
@@ -131,23 +155,23 @@ export default function DepositeRequestsPage() {
   const handleClickReject = async (rowId: string) => {
     const originalRows = [...rows];
     try {
-      const updatedRows = rows.map(row =>
-        row.id === rowId ? { ...row, status: 'Rejected' } : row
+      const updatedRows = rows.map((row) =>
+        row.id === rowId ? { ...row, status: "Rejected" } : row,
       );
       setRows(updatedRows);
 
       const response = await fetch("/api/deposits", {
         method: "PATCH",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           id: rowId,
-          status: "Rejected"
-        })
+          status: "Rejected",
+        }),
       });
 
-      if (!response.ok) throw new Error('Reject failed');
+      if (!response.ok) throw new Error("Reject failed");
       await fetchDeposits(); // Sync with server
     } catch (error) {
       console.error(error);
@@ -196,23 +220,28 @@ export default function DepositeRequestsPage() {
                   <TableRow
                     key={data.id}
                     sx={{
-                      backgroundColor: data.status === 'Accepted'
-                        ? 'rgba(144, 238, 144, 0.3)'
-                        : data.status === 'Rejected'
-                          ? 'rgba(255, 99, 71, 0.3)'
-                          : 'inherit',
-                      '&:hover': {
-                        backgroundColor: data.status === 'Accepted'
-                          ? 'rgba(144, 238, 144, 0.5)'
-                          : data.status === 'Rejected'
-                            ? 'rgba(255, 99, 71, 0.5)'
-                            : 'inherit',
-                      }
+                      backgroundColor:
+                        data.status === "Accepted"
+                          ? "rgba(144, 238, 144, 0.3)"
+                          : data.status === "Rejected"
+                            ? "rgba(255, 99, 71, 0.3)"
+                            : "inherit",
+                      "&:hover": {
+                        backgroundColor:
+                          data.status === "Accepted"
+                            ? "rgba(144, 238, 144, 0.5)"
+                            : data.status === "Rejected"
+                              ? "rgba(255, 99, 71, 0.5)"
+                              : "inherit",
+                      },
                     }}
                   >
-                    <TableCell>{data.id}</TableCell>
+                    <TableCell>{data.autoFXId}</TableCell>
                     <TableCell>{data.email}</TableCell>
-                    <TableCell>{date.getDate()}/{date.getMonth() + 1}/{date.getFullYear()}</TableCell>
+                    <TableCell>
+                      {date.getDate()}/{date.getMonth() + 1}/
+                      {date.getFullYear()}
+                    </TableCell>
                     <TableCell>$ {data.amount.toFixed(2)}</TableCell>
                     <TableCell>{data.status}</TableCell>
                     <TableCell>
@@ -244,7 +273,11 @@ export default function DepositeRequestsPage() {
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>Deposit Proof</DialogTitle>
         <DialogContent>
-          <img src={selectedImage} alt="Deposit Proof" style={{ width: "100%", height: "auto" }} />
+          <img
+            src={selectedImage}
+            alt="Deposit Proof"
+            style={{ width: "100%", height: "auto" }}
+          />
         </DialogContent>
       </Dialog>
     </>
@@ -255,7 +288,7 @@ function Actions({
   onClickAccept,
   onClickReject,
   onClickViewImage,
-  rowId
+  rowId,
 }: {
   onClickAccept: (rowId: string) => void;
   onClickReject: (rowId: string) => void;
@@ -277,9 +310,9 @@ function Actions({
     <Box>
       <IconButton
         id="basic-button"
-        aria-controls={openModel ? 'basic-menu' : undefined}
+        aria-controls={openModel ? "basic-menu" : undefined}
         aria-haspopup="true"
-        aria-expanded={openModel ? 'true' : undefined}
+        aria-expanded={openModel ? "true" : undefined}
         onClick={handleClick}
       >
         <MoreVertIcon />
@@ -291,12 +324,33 @@ function Actions({
         open={openModel}
         onClose={handleClose}
         MenuListProps={{
-          'aria-labelledby': 'basic-button',
+          "aria-labelledby": "basic-button",
         }}
       >
-        <MenuItem onClick={() => { onClickAccept(rowId); handleClose(); }}>Accept</MenuItem>
-        <MenuItem onClick={() => { onClickReject(rowId); handleClose(); }}>Reject</MenuItem>
-        <MenuItem onClick={() => { onClickViewImage(rowId); handleClose(); }}>View Receipt</MenuItem>
+        <MenuItem
+          onClick={() => {
+            onClickAccept(rowId);
+            handleClose();
+          }}
+        >
+          Accept
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            onClickReject(rowId);
+            handleClose();
+          }}
+        >
+          Reject
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            onClickViewImage(rowId);
+            handleClose();
+          }}
+        >
+          View Receipt
+        </MenuItem>
       </Menu>
     </Box>
   );

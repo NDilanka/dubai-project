@@ -59,6 +59,7 @@ export default async function walletController(request: Request, db: Db) {
         {
           $project: {
             _id: 1,
+            autoFXId: 1,
             email: 1,
             currency: 1,
             balance: 1
