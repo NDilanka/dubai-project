@@ -1,11 +1,17 @@
 import {
-    Avatar,
+  Avatar,
   Box,
   IconButton,
   Menu,
   MenuItem,
   Typography,
   useTheme,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import NavListItem from "./NavListItem";
@@ -17,18 +23,16 @@ import { Logout, People } from "@mui/icons-material";
 
 export default function Navbar() {
   const theme = useTheme();
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const isDropdownOpen = Boolean(anchorEl);
   const navigate = useNavigate();
   const userContext = useContext(UserContext);
   const ref = useRef(null);
   const [profileDropDownIsOpen, setProfileDropdownIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
     if (userContext && userContext.user) {
-      console.log(userContext.user);
       fetchRole(userContext.user._id);
     }
   }, [userContext]);
@@ -40,40 +44,42 @@ export default function Navbar() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({userId})
+        body: JSON.stringify({ userId }),
       });
 
       if (response.ok) {
         const data = await response.json();
         setIsAdmin(data.name === "Admin" || data.name === "Super Admin");
-      } else {
-        // TODO: Display an error message.
       }
     } catch (error: any) {
       console.error(error);
     }
   };
 
-  const handleClickMenuButton = (event: MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleMenuCloseWithNavigate = (href: string) => {
-    navigate(href);
-  };
-
   const handleClickProfileItem = () => {
-    setProfileDropdownIsOpen(false);
     navigate("/profile");
+    setIsDrawerOpen(false);
   };
 
   const handleClickAdminItem = () => {
-    setProfileDropdownIsOpen(false);
     window.location.href = "/admin";
+    setIsDrawerOpen(false);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      const res = await fetch('/api/sign-out', { method: 'POST' });
+      if (res.ok) {
+        // Optionally, clear your user context if needed:
+        // userContext.setUser(null);
+        window.location.href = '/'; // redirect to sign in page after sign out
+      } else {
+        console.error('Sign out failed.');
+      }
+    } catch (error) {
+      console.error('Error during sign out:', error);
+    }
+    setIsDrawerOpen(false);
   };
 
   return (
@@ -86,15 +92,13 @@ export default function Navbar() {
       marginBottom={5}
       height={100}
     >
-      <Box 
-        component={Link} 
-        to="/" 
-        display="flex" 
-        alignItems="center" 
+      <Box
+        component={Link}
+        to="/"
+        display="flex"
+        alignItems="center"
         color="white"
-        sx={{
-          textDecoration: "none"
-        }}
+        sx={{ textDecoration: "none" }}
       >
         <Box component="img" src="/svgs/lemlistlogo_2.svg" />
         <Box component="span" fontSize={20} fontWeight={700}>
@@ -104,7 +108,7 @@ export default function Navbar() {
 
       <NavList />
 
-      {(userContext!.user === null) &&
+      {userContext!.user === null && (
         <Box
           component="a"
           href="/sign-in"
@@ -120,84 +124,159 @@ export default function Navbar() {
           sx={{
             background: `radial-gradient(ellipse 8rem 4rem at center, ${theme.palette.background.default}, ${theme.palette.primary.main})`,
             borderImage: `linear-gradient(0deg, ${theme.palette.background.default}, ${theme.palette.primary.main}) 1`,
-            mask: `linear-gradient(${theme.palette.background.default} 0 0)`,
-            maskComposite: "exclude",
+            [theme.breakpoints.down("sm")]: { display: "none" },
             textDecoration: "none",
-            "&:hover": {
-              background: `radial-gradient(ellipse 4rem 2rem at center, ${theme.palette.background.default}, ${theme.palette.primary.main})`,
-            },
-            [theme.breakpoints.down("sm")]: {
-              display: "none",
-            },
           }}
         >
           Sign In
         </Box>
-      }
+      )}
 
       <IconButton
-        onClick={handleClickMenuButton}
+        onClick={() => setIsDrawerOpen(true)}
         sx={{
           display: "none",
-          [theme.breakpoints.down("sm")]: {
-            display: "block",
-          },
+          [theme.breakpoints.down("sm")]: { display: "block" },
         }}
       >
         <MenuIcon />
       </IconButton>
 
-      <Menu anchorEl={anchorEl} open={isDropdownOpen} onClose={handleMenuClose}>
-        <MenuItem onClick={() => handleMenuCloseWithNavigate("/")}>
-          Home
-        </MenuItem>
+      <Drawer
+        anchor="left"
+        open={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        sx={{
+    '& .MuiDrawer-paper': {
+      backgroundColor: 'black',
+      color: 'white',
+    },
+  }}
+      >
+        <Box sx={{ width: 250 }} role="presentation">
+          <List>
+            <ListItem
+              component="button"
+              onClick={() => {
+                navigate("/");
+                setIsDrawerOpen(false);
+              }}
+              sx={{ cursor: "pointer", backgroundColor: "black", color: "white", border: "none" }}
+            >
+              <ListItemText primary="Home" />
+            </ListItem>
+            <ListItem
+              component="button"
+              onClick={() => {
+                navigate("/trade");
+                setIsDrawerOpen(false);
+              }}
+              sx={{ cursor: "pointer", backgroundColor: "black", color: "white", border: "none"  }}
+            >
+              <ListItemText primary="Trade" />
+            </ListItem>
+            <ListItem
+              component="button"
+              onClick={() => {
+                navigate("/wallet");
+                setIsDrawerOpen(false);
+              }}
+              sx={{ cursor: "pointer", backgroundColor: "black", color: "white", border: "none" }}
+            >
+              <ListItemText primary="Wallet" />
+            </ListItem>
+            {userContext?.user === null && (
+              <ListItem
+                component="button"
+                onClick={() => {
+                  window.location.href = "/sign-in";
+                  setIsDrawerOpen(false);
+                }}
+                sx={{ cursor: "pointer", backgroundColor: "black", color: "white", border: "none" }}
+              >
+                <ListItemText primary="Sign In" />
+              </ListItem>
+            )}
+          </List>
 
-        <MenuItem onClick={() => handleMenuCloseWithNavigate("/trade")}>
-          Trade
-        </MenuItem>
+          {userContext?.user && (
+            <>
+              <Divider />
+              <List>
+                <ListItem
+                  component="button"
+                  onClick={handleClickProfileItem}
+                  sx={{ cursor: "pointer", backgroundColor: "black", color: "white", border: "none" }}
+                >
+                  <ListItemIcon>
+                    <Avatar>{userContext.user.firstName[0]}</Avatar>
+                  </ListItemIcon>
+                  <ListItemText primary="Profile" />
+                </ListItem>
 
-        <MenuItem onClick={() => handleMenuCloseWithNavigate("/wallet")}>
-          Wallet
-        </MenuItem>
+                {isAdmin && (
+                  <ListItem
+                    component="button"
+                    onClick={handleClickAdminItem}
+                    sx={{ cursor: "pointer", backgroundColor: "black", color: "white", border: "none" }}
+                  >
+                    <ListItemIcon>
+                      <People />
+                    </ListItemIcon>
+                    <ListItemText primary="Admin" />
+                  </ListItem>
+                )}
 
-        <MenuItem onClick={() => handleMenuCloseWithNavigate("/sign-in")}>
-          Sign In
-        </MenuItem>
-      </Menu>
+                <ListItem
+                  component="button"
+                  onClick={handleSignOut}
+                  sx={{ cursor: "pointer", backgroundColor: "black", color: "white", border: "none" }}
+                >
+                  <ListItemIcon>
+                    <Logout />
+                  </ListItemIcon>
+                  <ListItemText primary="Sign Out" />
+                </ListItem>
+              </List>
+            </>
+          )}
+        </Box>
+      </Drawer>
 
-      {!(userContext!.user === null) &&
-        <Box component="div" onMouseOver={() => setProfileDropdownIsOpen(true)}>
+      {!(userContext!.user === null) && (
+        <Box
+          component="div"
+          onMouseOver={() => setProfileDropdownIsOpen(true)}
+          sx={{ [theme.breakpoints.down("sm")]: { display: "none" } }}
+        >
           <Avatar ref={ref}>{userContext?.user.firstName[0]}</Avatar>
         </Box>
-      }
+      )}
 
       <Menu
         open={profileDropDownIsOpen}
         onClose={() => setProfileDropdownIsOpen(false)}
         anchorEl={ref.current}
         anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
-        sx={{ marginTop: 1 }}
+        sx={{
+          marginTop: 1,
+          [theme.breakpoints.down("sm")]: { display: "none" },
+        }}
       >
-        <MenuItem 
-          sx={{ display: "flex", gap: 2 }} 
-          onClick={handleClickProfileItem}
-        >
+        <MenuItem sx={{ display: "flex", gap: 2 }} onClick={handleClickProfileItem}>
           <Avatar>{userContext?.user?.firstName[0]}</Avatar>
           <Typography>Profile</Typography>
         </MenuItem>
 
-        {isAdmin &&
-          <MenuItem
-            sx={{ display: "flex", gap: 2 }} 
-            onClick={handleClickAdminItem}
-          >
+        {isAdmin && (
+          <MenuItem sx={{ display: "flex", gap: 2 }} onClick={handleClickAdminItem}>
             <People />
             <Typography>Admin</Typography>
           </MenuItem>
-        }
+        )}
 
-        <MenuItem 
-          sx={{ display: "flex", gap: 2 }}  
+        <MenuItem
+          sx={{ display: "flex", gap: 2 }}
           onClick={() => setProfileDropdownIsOpen(false)}
         >
           <Logout /> Sign Out
@@ -226,21 +305,23 @@ function NavList() {
       sx={{
         listStyleType: "none",
         transform: "translate(-50%, -75%)",
-        [theme.breakpoints.down("sm")]: {
-          display: "none",
-        },
+        [theme.breakpoints.down("sm")]: { display: "none" },
       }}
     >
       <NavListItem href="/" title="Home" />
-      {userContext?.user  !== null ? (
+      {userContext?.user !== null ? (
         <>
           <NavListItem href="/trade" title="Trade" />
           <NavListItem href="/wallet" title="Wallet" />
         </>
       ) : (
         <>
-          <a href="/sign-in" style={{textDecoration: "none", color: "white"}}>Trade</a>
-          <a href="/sign-in" style={{textDecoration: "none", color: "white"}}>Wallet</a>
+          <a href="/sign-in" style={{ textDecoration: "none", color: "white" }}>
+            Trade
+          </a>
+          <a href="/sign-in" style={{ textDecoration: "none", color: "white" }}>
+            Wallet
+          </a>
         </>
       )}
     </Box>
