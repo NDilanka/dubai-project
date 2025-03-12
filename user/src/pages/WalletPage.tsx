@@ -22,8 +22,9 @@ import {
   TextField,
   Select,
   MenuItem,
-  type SelectChangeEvent,
+  Divider,
 } from "@mui/material";
+import type { SelectChangeEvent } from "@mui/material";
 import { useContext, useEffect, useRef, useState } from "react";
 import type { ChangeEvent, SyntheticEvent } from "react";
 import { UserContext } from "../../../auth/src/context/UserContext";
@@ -46,41 +47,64 @@ interface IWtithdrawTableRow {
   updatedAt: string;
 }
 
+interface ITrade {
+  _id: string;
+  btc1: number;
+  btc2: number;
+  btc3: number;
+  btc4: number;
+  btc5: number;
+  amount: number;
+  createdAt: string;
+  updatedAt: string;
+  remarks: string;
+}
+
 export default function WalletPage() {
   const theme = useTheme();
   const [depositPage, setDepositPage] = useState(0);
   const [depositRowsPerPage, setDepositRowsPerPage] = useState(5);
-  const [depositTableData, setDepositTableData] = useState<IDepositTableRow[]>([]);
+  const [depositTableData, setDepositTableData] = useState<IDepositTableRow[]>(
+    [],
+  );
 
   const [withdrawPage, setWithdrawPage] = useState(0);
   const [withdrawRowsPerPage, setWithdrawRowsPerPage] = useState(5);
-  const [withdrawTableData, setWithdrawTableData] = useState<IWtithdrawTableRow[]>([]);
+  const [withdrawTableData, setWithdrawTableData] = useState<
+    IWtithdrawTableRow[]
+  >([]);
 
   const [tabIndex, setTabIndex] = useState(0);
+  const [tradeFakeTabIndex, setTradeFakeTabIndex] = useState(0);
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [dialogTabIndex, setDialogTabIndex] = useState(0);
   const userContext = useContext(UserContext);
   const [balance, setBalance] = useState({
     value: "0",
-    symbol: "$"
+    symbol: "$",
   });
   const [usdtDepositFile, setUsdtDepositFile] = useState<File | null>(null);
-  const [bankTransferDepositFile, setBankTransferDepositFile] = useState<File | null>(null);
+  const [bankTransferDepositFile, setBankTransferDepositFile] =
+    useState<File | null>(null);
 
   const [usdtWithdrawFile, setUsdtWithdrawFile] = useState<File | null>(null);
-  const [bankTransferWithdrawFile, setBankTransferWithdrawFile] = useState<File | null>(null);
+  const [bankTransferWithdrawFile, setBankTransferWithdrawFile] =
+    useState<File | null>(null);
 
   const containerRef = useRef<HTMLElement>(null);
   const [showPopUp, setShowPopUp] = useState(false);
   const [popUpMessage, setPopUpMessage] = useState("");
   const [depositAmount, setDepositAmount] = useState("");
-  const [trueForDepositFalseForWithdraw, setTrueForDepositFalseForWithdraw] = useState(true);
+  const [trueForDepositFalseForWithdraw, setTrueForDepositFalseForWithdraw] =
+    useState(true);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [depositRows, setDepositRows] = useState<IDepositTableRow[]>([]);
   const [withdrawRows, setWithdrawRows] = useState<IWtithdrawTableRow[]>([]);
 
-  const [recentWithdraw, setRecentWithdraw] = useState("")
-  const [recentDeposit, setRecentDeposit] = useState("")
+  const [recentWithdraw, setRecentWithdraw] = useState("");
+  const [recentDeposit, setRecentDeposit] = useState("");
+
+  const [trades, setTrades] = useState<ITrade[]>([]);
 
   useEffect(() => {
     if (userContext?.user) {
@@ -91,7 +115,10 @@ export default function WalletPage() {
 
   useEffect(() => {
     const visibleDepositTableData = depositRows.filter((data, index) => {
-      if (index >= depositPage * depositRowsPerPage && index < (depositPage + 1) * depositRowsPerPage) {
+      if (
+        index >= depositPage * depositRowsPerPage &&
+        index < (depositPage + 1) * depositRowsPerPage
+      ) {
         return data;
       }
     });
@@ -101,7 +128,10 @@ export default function WalletPage() {
 
   useEffect(() => {
     const visibleWithdrawTableData = withdrawRows.filter((data, index) => {
-      if (index >= withdrawPage * withdrawRowsPerPage && index < (withdrawPage + 1) * withdrawRowsPerPage) {
+      if (
+        index >= withdrawPage * withdrawRowsPerPage &&
+        index < (withdrawPage + 1) * withdrawRowsPerPage
+      ) {
         return data;
       }
     });
@@ -112,6 +142,7 @@ export default function WalletPage() {
   useEffect(() => {
     if (userContext?.user) {
       fetchBalance(userContext.user?._id);
+      fetchTrades(userContext.user?._id);
     }
   }, [userContext?.user]);
 
@@ -122,31 +153,53 @@ export default function WalletPage() {
       if (response.ok) {
         const data = await response.json();
 
-        const deposits = data.map((deposit: {
-          _id: string;
-          userId: string;
-          amount: number;
-          usdtDepositFilePath: string;
-          status: string;
-          createdAt: string;
-          updatedAt: string;
-        }) => ({
-          id: deposit._id,
-          userId: deposit.userId,
-          amount: deposit.amount,
-          usdtDepositFilePath: deposit.usdtDepositFilePath,
-          status: deposit.status,
-          createdAt: deposit.createdAt,
-          updatedAt: deposit.updatedAt
-        }));
+        const deposits = data.map(
+          (deposit: {
+            _id: string;
+            userId: string;
+            amount: number;
+            usdtDepositFilePath: string;
+            status: string;
+            createdAt: string;
+            updatedAt: string;
+          }) => ({
+            id: deposit._id,
+            userId: deposit.userId,
+            amount: deposit.amount,
+            usdtDepositFilePath: deposit.usdtDepositFilePath,
+            status: deposit.status,
+            createdAt: deposit.createdAt,
+            updatedAt: deposit.updatedAt,
+          }),
+        );
 
-        deposits.sort((a: IDepositTableRow, b: IDepositTableRow) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        deposits.sort(
+          (a: IDepositTableRow, b: IDepositTableRow) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
 
         const latestDeposit = deposits.length > 0 ? deposits[0].amount : "0.00";
 
-        setRecentDeposit(latestDeposit)
+        setRecentDeposit(latestDeposit);
 
         setDepositRows(deposits);
+      } else {
+        // TODO: Display an error message.
+      }
+    } catch (error: any) {
+      console.error(error);
+
+      // TODO: Display an error message.
+    }
+  };
+
+  const fetchTrades = async (userId: string) => {
+    try {
+      const response = await fetch(`/api/trades/${userId}`);
+
+      if (response.ok) {
+        const data = await response.json();
+        setTrades(data);
       } else {
         // TODO: Display an error message.
       }
@@ -164,27 +217,33 @@ export default function WalletPage() {
       if (response.ok) {
         const data = await response.json();
 
-        const withdraws = data.map((withdraw: {
-          _id: string;
-          userId: string;
-          amount: number;
-          status: string;
-          createdAt: string;
-          updatedAt: string;
-        }) => ({
-          id: withdraw._id,
-          userId: withdraw.userId,
-          amount: withdraw.amount,
-          status: withdraw.status,
-          createdAt: withdraw.createdAt,
-          updatedAt: withdraw.updatedAt
-        }));
+        const withdraws = data.map(
+          (withdraw: {
+            _id: string;
+            userId: string;
+            amount: number;
+            status: string;
+            createdAt: string;
+            updatedAt: string;
+          }) => ({
+            id: withdraw._id,
+            userId: withdraw.userId,
+            amount: withdraw.amount,
+            status: withdraw.status,
+            createdAt: withdraw.createdAt,
+            updatedAt: withdraw.updatedAt,
+          }),
+        );
 
-        withdraws.sort((a: IDepositTableRow, b: IDepositTableRow) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        withdraws.sort(
+          (a: IDepositTableRow, b: IDepositTableRow) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
 
-        const latestWithdraw = withdraws.length > 0 ? withdraws[0].amount : "0.00";
+        const latestWithdraw =
+          withdraws.length > 0 ? withdraws[0].amount : "0.00";
 
-        setRecentWithdraw(latestWithdraw)
+        setRecentWithdraw(latestWithdraw);
 
         setWithdrawRows(withdraws);
       } else {
@@ -201,7 +260,9 @@ export default function WalletPage() {
     setDepositPage(newPage);
   };
 
-  const handleDepositRowsPerPageChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleDepositRowsPerPageChange = (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
     setDepositRowsPerPage(parseInt(event.target.value, 10));
     setDepositPage(0);
   };
@@ -210,13 +271,19 @@ export default function WalletPage() {
     setWithdrawPage(newPage);
   };
 
-  const handleWithdrawRowsPerPageChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleWithdrawRowsPerPageChange = (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
     setWithdrawRowsPerPage(parseInt(event.target.value, 10));
     setWithdrawPage(0);
   };
 
   const handleChangeTab = (_event: SyntheticEvent, value: number) => {
     setTabIndex(value);
+  };
+
+  const handleChangeTradeFakeTab = (_event: SyntheticEvent, value: number) => {
+    setTradeFakeTabIndex(value);
   };
 
   const handleOpenDialog = () => {
@@ -236,7 +303,7 @@ export default function WalletPage() {
         const data = await response.json();
         setBalance({
           value: data.balance,
-          symbol: "$"
+          symbol: "$",
         });
       }
     } catch (error: any) {
@@ -244,13 +311,17 @@ export default function WalletPage() {
     }
   };
 
-  const handleChangeUsdtDepositFile = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleChangeUsdtDepositFile = (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
     if (event.target.files && event.target.files.length > 0) {
       setUsdtDepositFile(event.target.files[0]);
     }
   };
 
-  const handleChangeBankTranserDepositFile = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleChangeBankTranserDepositFile = (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
     if (event.target.files && event.target.files.length > 0) {
       setBankTransferDepositFile(event.target.files[0]);
     }
@@ -369,12 +440,12 @@ export default function WalletPage() {
       const response = await fetch("/api/withdraws", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           userId: userContext.user._id,
-          amount: parseFloat(withdrawAmount)
-        })
+          amount: parseFloat(withdrawAmount),
+        }),
       });
 
       if (response.ok) {
@@ -393,32 +464,46 @@ export default function WalletPage() {
 
   const convertBalance = (balance: number, type: string) => {
     let symbol = type === "EUR" ? "€" : type === "INR" ? "₹" : "$";
-    let convertRate = type == "EUR" ? 1 : type == "INR" ? 1 : 1
+    let convertRate = type == "EUR" ? 1 : type == "INR" ? 1 : 1;
     let newValue = (balance * convertRate).toString();
-    setBalance({ value: newValue, symbol: symbol })
-  }
+    setBalance({ value: newValue, symbol: symbol });
+  };
 
   const handleCurrencyChange = async (event: SelectChangeEvent<string>) => {
-    convertBalance(parseFloat(balance.value), event.target.value)
+    convertBalance(parseFloat(balance.value), event.target.value);
   };
 
   return (
     <>
-      <Box sx={{ position: "absolute", left: "50%", top: 0, transform: "translateX(-50%)" }}>
+      <Box
+        sx={{
+          position: "absolute",
+          left: "50%",
+          top: 0,
+          transform: "translateX(-50%)",
+        }}
+      >
         <Slide in={showPopUp} container={containerRef.current}>
           <Alert severity="success">{popUpMessage}</Alert>
         </Slide>
       </Box>
 
       <Box>
-        <Dialog open={isDialogOpen} onClose={handleCloseDialog} fullWidth maxWidth="sm">
+        <Dialog
+          open={isDialogOpen}
+          onClose={handleCloseDialog}
+          fullWidth
+          maxWidth="sm"
+        >
           {trueForDepositFalseForWithdraw ? (
             <>
               <DialogTitle>Deposit</DialogTitle>
 
               <Tabs
                 value={dialogTabIndex}
-                onChange={(_event: SyntheticEvent, value: number) => setDialogTabIndex(value)}
+                onChange={(_event: SyntheticEvent, value: number) =>
+                  setDialogTabIndex(value)
+                }
                 indicatorColor="primary"
                 textColor="primary"
                 sx={{ borderBottom: "1px solid #ccc" }}
@@ -429,19 +514,31 @@ export default function WalletPage() {
 
               <DialogContent sx={{ padding: "24px" }}>
                 {dialogTabIndex === 0 && (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "2rem",
+                    }}
+                  >
                     <Typography variant="body1" gutterBottom>
                       Wallet Address: <strong>1234-5678-9012-3456</strong>
                     </Typography>
 
                     {usdtDepositFile && (
                       <Box>
-                        <Typography>Selected File: {usdtDepositFile.name}</Typography>
+                        <Typography>
+                          Selected File: {usdtDepositFile.name}
+                        </Typography>
                         {usdtDepositFile.type.startsWith("image/") && (
                           <img
                             src={URL.createObjectURL(usdtDepositFile)}
                             alt="Selected Deposit Slip"
-                            style={{ height: "100px", objectFit: "cover", marginTop: "10px" }}
+                            style={{
+                              height: "100px",
+                              objectFit: "cover",
+                              marginTop: "10px",
+                            }}
                           />
                         )}
                       </Box>
@@ -455,7 +552,13 @@ export default function WalletPage() {
                       onChange={(e) => setDepositAmount(e.target.value)}
                     />
 
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "2rem",
+                      }}
+                    >
                       <Typography variant="body1" gutterBottom>
                         Upload Bank Slip:
                       </Typography>
@@ -469,7 +572,8 @@ export default function WalletPage() {
                         Select File
                         <input
                           type="file"
-                          hidden accept="image/*,application/pdf"
+                          hidden
+                          accept="image/*,application/pdf"
                           onChange={handleChangeUsdtDepositFile}
                         />
                       </Button>
@@ -477,7 +581,9 @@ export default function WalletPage() {
 
                     <Button
                       fullWidth
-                      disabled={usdtDepositFile === null || depositAmount.length === 0}
+                      disabled={
+                        usdtDepositFile === null || depositAmount.length === 0
+                      }
                       variant="contained"
                       color="primary"
                       onClick={handleSubmitUSDTDeposit}
@@ -487,25 +593,35 @@ export default function WalletPage() {
                   </Box>
                 )}
                 {dialogTabIndex === 1 && (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-
-                    <Typography variant="body1" >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "2rem",
+                    }}
+                  >
+                    <Typography variant="body1">
                       Contact admin to get bank details.
                     </Typography>
 
                     {bankTransferDepositFile && (
                       <Box>
-                        <Typography>Selected File: {bankTransferDepositFile.name}</Typography>
+                        <Typography>
+                          Selected File: {bankTransferDepositFile.name}
+                        </Typography>
                         {bankTransferDepositFile.type.startsWith("image/") && (
                           <img
                             src={URL.createObjectURL(bankTransferDepositFile)}
                             alt="Selected Bank Slip"
-                            style={{ height: "100px", objectFit: "cover", marginTop: "10px" }}
+                            style={{
+                              height: "100px",
+                              objectFit: "cover",
+                              marginTop: "10px",
+                            }}
                           />
                         )}
                       </Box>
                     )}
-
 
                     <TextField
                       variant="outlined"
@@ -515,7 +631,13 @@ export default function WalletPage() {
                       onChange={(e) => setDepositAmount(e.target.value)}
                     />
 
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "2rem",
+                      }}
+                    >
                       <Typography variant="body1" gutterBottom>
                         Upload Slip:
                       </Typography>
@@ -529,7 +651,8 @@ export default function WalletPage() {
                         Select File
                         <input
                           type="file"
-                          hidden accept="image/*,application/pdf"
+                          hidden
+                          accept="image/*,application/pdf"
                           onChange={handleChangeBankTranserDepositFile}
                         />
                       </Button>
@@ -537,7 +660,10 @@ export default function WalletPage() {
 
                     <Button
                       fullWidth
-                      disabled={bankTransferDepositFile === null || depositAmount.length === 0}
+                      disabled={
+                        bankTransferDepositFile === null ||
+                        depositAmount.length === 0
+                      }
                       variant="contained"
                       color="primary"
                       onClick={handleSubmitBankTransformDeposit}
@@ -554,7 +680,9 @@ export default function WalletPage() {
 
               <Tabs
                 value={dialogTabIndex}
-                onChange={(_event: SyntheticEvent, value: number) => setDialogTabIndex(value)}
+                onChange={(_event: SyntheticEvent, value: number) =>
+                  setDialogTabIndex(value)
+                }
                 indicatorColor="primary"
                 textColor="primary"
                 sx={{ borderBottom: "1px solid #ccc" }}
@@ -564,7 +692,13 @@ export default function WalletPage() {
 
               <DialogContent sx={{ padding: "24px" }}>
                 {dialogTabIndex === 0 && (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "2rem",
+                    }}
+                  >
                     <TextField
                       variant="outlined"
                       label="Amount"
@@ -575,7 +709,9 @@ export default function WalletPage() {
 
                     <Button
                       fullWidth
-                      disabled={withdrawAmount.length === 0 && usdtWithdrawFile !== null}
+                      disabled={
+                        withdrawAmount.length === 0 && usdtWithdrawFile !== null
+                      }
                       variant="contained"
                       color="primary"
                       onClick={handleSubmitWithdraw}
@@ -682,7 +818,7 @@ export default function WalletPage() {
                   fontSize: 14,
                   paddingX: 1.5,
                 },
-                cursor: "pointer"
+                cursor: "pointer",
               }}
             >
               <Box
@@ -716,7 +852,7 @@ export default function WalletPage() {
                   paddingX: 1.5,
                   paddingY: 0.5,
                 },
-                cursor: "pointer"
+                cursor: "pointer",
               }}
             >
               <Box
@@ -733,15 +869,21 @@ export default function WalletPage() {
           </Stack>
         </Stack>
 
-        <Tabs sx={{ marginTop: 16 }} value={tabIndex} onChange={handleChangeTab}>
+        <Tabs
+          sx={{ marginTop: 16 }}
+          value={tabIndex}
+          onChange={handleChangeTab}
+        >
           <Tab label="Deposits" />
           <Tab label="Withdrawals" />
         </Tabs>
 
-        {tabIndex === 0 &&
+        {tabIndex === 0 && (
           <Paper sx={{ background: "none" }}>
             <TableContainer>
-              <Table sx={{ borderCollapse: "separate", borderSpacing: "0 8px" }}>
+              <Table
+                sx={{ borderCollapse: "separate", borderSpacing: "0 8px" }}
+              >
                 <TableHead>
                   <TableRow>
                     <TableCell>ID</TableCell>
@@ -754,29 +896,39 @@ export default function WalletPage() {
                 <TableBody>
                   {depositTableData.map((data) => {
                     const date = new Date(data.createdAt);
-                    return <TableRow key={data.id} sx={{ borderBottom: "1px solid #ccc" }}>
-                      <TableCell>{data.id}</TableCell>
-                      <TableCell>{date.getDate()}/{date.getMonth() + 1}/{date.getFullYear()}</TableCell>
-                      <TableCell>{parseFloat(data.amount).toFixed(2)}</TableCell>
-                      <TableCell>
-                        <Box
-                          sx={{
-                            width: 'max-content',
-                            borderRadius: "32px",
-                            padding: "8px 16px",
-                            backgroundColor:
-                              data.status === "Accepted"
-                                ? "green"
-                                : data.status === "Rejected"
-                                  ? "red"
-                                  : "orange",
-                            color: "white",
-                          }}
-                        >
-                          {data.status}
-                        </Box>
-                      </TableCell>
-                    </TableRow>
+                    return (
+                      <TableRow
+                        key={data.id}
+                        sx={{ borderBottom: "1px solid #ccc" }}
+                      >
+                        <TableCell>{data.id}</TableCell>
+                        <TableCell>
+                          {date.getDate()}/{date.getMonth() + 1}/
+                          {date.getFullYear()}
+                        </TableCell>
+                        <TableCell>
+                          {parseFloat(data.amount).toFixed(2)}
+                        </TableCell>
+                        <TableCell>
+                          <Box
+                            sx={{
+                              width: "max-content",
+                              borderRadius: "32px",
+                              padding: "8px 16px",
+                              backgroundColor:
+                                data.status === "Accepted"
+                                  ? "green"
+                                  : data.status === "Rejected"
+                                    ? "red"
+                                    : "orange",
+                              color: "white",
+                            }}
+                          >
+                            {data.status}
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    );
                   })}
                 </TableBody>
               </Table>
@@ -792,12 +944,14 @@ export default function WalletPage() {
               onRowsPerPageChange={handleDepositRowsPerPageChange}
             />
           </Paper>
-        }
+        )}
 
-        {tabIndex === 1 &&
+        {tabIndex === 1 && (
           <Paper sx={{ background: "none" }}>
             <TableContainer>
-              <Table sx={{ borderCollapse: "separate", borderSpacing: "0 8px" }}>
+              <Table
+                sx={{ borderCollapse: "separate", borderSpacing: "0 8px" }}
+              >
                 <TableHead>
                   <TableRow>
                     <TableCell>ID</TableCell>
@@ -810,29 +964,39 @@ export default function WalletPage() {
                 <TableBody>
                   {withdrawTableData.map((data) => {
                     const date = new Date(data.createdAt);
-                    return <TableRow key={data.id} sx={{ borderBottom: "1px solid #ccc" }}>
-                      <TableCell>{data.id}</TableCell>
-                      <TableCell>{date.getDate()}/{date.getMonth() + 1}/{date.getFullYear()}</TableCell>
-                      <TableCell>$ {parseFloat(data.amount).toFixed(2)}</TableCell>
-                      <TableCell>
-                        <Box
-                          sx={{
-                            width: 'max-content',
-                            borderRadius: "32px",
-                            padding: "8px 16px",
-                            backgroundColor:
-                              data.status === "Accepted"
-                                ? "green"
-                                : data.status === "Rejected"
-                                  ? "red"
-                                  : "orange",
-                            color: "white",
-                          }}
-                        >
-                          {data.status}
-                        </Box>
-                      </TableCell>
-                    </TableRow>
+                    return (
+                      <TableRow
+                        key={data.id}
+                        sx={{ borderBottom: "1px solid #ccc" }}
+                      >
+                        <TableCell>{data.id}</TableCell>
+                        <TableCell>
+                          {date.getDate()}/{date.getMonth() + 1}/
+                          {date.getFullYear()}
+                        </TableCell>
+                        <TableCell>
+                          $ {parseFloat(data.amount).toFixed(2)}
+                        </TableCell>
+                        <TableCell>
+                          <Box
+                            sx={{
+                              width: "max-content",
+                              borderRadius: "32px",
+                              padding: "8px 16px",
+                              backgroundColor:
+                                data.status === "Accepted"
+                                  ? "green"
+                                  : data.status === "Rejected"
+                                    ? "red"
+                                    : "orange",
+                              color: "white",
+                            }}
+                          >
+                            {data.status}
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    );
                   })}
                 </TableBody>
               </Table>
@@ -848,8 +1012,70 @@ export default function WalletPage() {
               onRowsPerPageChange={handleWithdrawRowsPerPageChange}
             />
           </Paper>
-        }
+        )}
       </Box>
+
+      <Divider sx={{ my: 8 }} />
+
+      <Paper sx={{ background: "none" }}>
+        <Tabs
+          sx={{ marginTop: 16 }}
+          tabIndex={0}
+          onChange={handleChangeTradeFakeTab}
+        >
+          <Tab label="Trade History" />
+        </Tabs>
+
+        <TableContainer>
+          <Table sx={{ borderCollapse: "separate", borderSpacing: "0 8px" }}>
+            <TableHead>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Date</TableCell>
+                <TableCell>BTC1</TableCell>
+                <TableCell>BTC2</TableCell>
+                <TableCell>BTC3</TableCell>
+                <TableCell>BTC4</TableCell>
+                <TableCell>BTC5</TableCell>
+                <TableCell>Amount</TableCell>
+                <TableCell>Remarks</TableCell>
+              </TableRow>
+            </TableHead>
+
+            <TableBody>
+              {trades.map((trade) => {
+                const date = new Date(trade.createdAt);
+                return (
+                  <TableRow>
+                    <TableCell>{trade._id}</TableCell>
+                    <TableCell>
+                      {date.getDate()}/{date.getMonth() + 1}/
+                      {date.getFullYear()}
+                    </TableCell>
+                    <TableCell>{trade.btc1}</TableCell>
+                    <TableCell>{trade.btc2}</TableCell>
+                    <TableCell>{trade.btc3}</TableCell>
+                    <TableCell>{trade.btc4}</TableCell>
+                    <TableCell>{trade.btc5}</TableCell>
+                    <TableCell>{trade.amount}</TableCell>
+                    <TableCell>{trade.remarks}</TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={withdrawTableData.length}
+          rowsPerPage={withdrawRowsPerPage}
+          page={withdrawPage}
+          onPageChange={handleWithdrawPageChange}
+          onRowsPerPageChange={handleWithdrawRowsPerPageChange}
+        />
+      </Paper>
     </>
   );
 }

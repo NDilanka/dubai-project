@@ -1,6 +1,22 @@
-import { Divider, Paper, Stack, Button, Table, TableBody, TableCell, TableContainer, 
-         TableHead, TablePagination, TableRow, TextField, Dialog, DialogTitle, 
-         DialogContent, DialogActions, DialogContentText } from "@mui/material";
+import {
+  Divider,
+  Paper,
+  Stack,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
 
@@ -25,7 +41,7 @@ interface ITableRow {
     roleId: string;
     date: string;
     active: boolean;
-  }
+  };
 }
 
 export default function TradeReportPage() {
@@ -37,7 +53,7 @@ export default function TradeReportPage() {
   const [open, setOpen] = useState(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState(-1);
   const [searchText, setSearchText] = useState("");
-  
+
   useEffect(() => {
     fetchTradeReport();
   }, []);
@@ -54,20 +70,20 @@ export default function TradeReportPage() {
   }, [rowsPerPage, page, filtredRows]);
 
   useEffect(() => {
-      const filteredRows = applyFilter();
-      setFilteredRows(filteredRows);
+    const filteredRows = applyFilter();
+    setFilteredRows(filteredRows);
   }, [rows, searchText]);
 
   const applyFilter = (): ITableRow[] => {
-      const searchEmail = rows.filter(row => {
-        return row.user.email.includes(searchText);
-      });
+    const searchEmail = rows.filter((row) => {
+      return row.user.email.includes(searchText);
+    });
 
-      if (searchEmail.length > 0) {
-        return searchEmail;
-      }
+    if (searchEmail.length > 0) {
+      return searchEmail;
+    }
 
-      return [];
+    return [];
   };
 
   const fetchTradeReport = async () => {
@@ -77,9 +93,9 @@ export default function TradeReportPage() {
       if (response.ok) {
         const data = await response.json();
 
-        const trades = data.map((trade: ITableRow) => (trade));
+        const trades = data.map((trade: ITableRow) => trade);
 
-          setRows(trades);
+        setRows(trades);
       } else {
         // TODO: Add an alert.
       }
@@ -117,14 +133,20 @@ export default function TradeReportPage() {
   return (
     <Paper variant="outlined">
       <Stack direction="row" margin={2}>
-        <TextField 
-          label="Search" 
-          size="small" 
+        <TextField
+          label="Search"
+          size="small"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
         />
 
-        <EditForm open={open} onClose={handleClose} onFinish={handleFinishEdit} data={tableData} selectedRowIndex={selectedRowIndex} />
+        <EditForm
+          open={open}
+          onClose={handleClose}
+          onFinish={handleFinishEdit}
+          data={tableData}
+          selectedRowIndex={selectedRowIndex}
+        />
       </Stack>
 
       <Divider />
@@ -158,7 +180,11 @@ export default function TradeReportPage() {
                 <TableCell>$ {data.amount.toFixed(2)}</TableCell>
 
                 <TableCell>
-                  <Button variant="contained" color="primary" onClick={() => handleClickEdit(index)}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleClickEdit(index)}
+                  >
                     Edit
                   </Button>
                 </TableCell>
@@ -181,13 +207,13 @@ export default function TradeReportPage() {
   );
 }
 
-function EditForm({ 
+function EditForm({
   open,
   onClose,
   data,
   selectedRowIndex,
-  onFinish
-}: { 
+  onFinish,
+}: {
   open: boolean;
   onClose: () => void;
   data: ITableRow[];
@@ -205,7 +231,7 @@ function EditForm({
   });
 
   useEffect(() => {
-    if (selectedRowIndex !== -1) {
+    if (selectedRowIndex !== -1 && data.length > 0) {
       setTradeFormData({
         btc1: data[selectedRowIndex].btc1.toString(),
         btc2: data[selectedRowIndex].btc2.toString(),
@@ -213,7 +239,7 @@ function EditForm({
         btc4: data[selectedRowIndex].btc4.toString(),
         btc5: data[selectedRowIndex].btc5.toString(),
         amount: data[selectedRowIndex].amount.toString(),
-        remarks: data[selectedRowIndex].remarks.toString()
+        remarks: data[selectedRowIndex].remarks.toString(),
       });
     }
   }, [open]);
@@ -223,7 +249,7 @@ function EditForm({
       const response = await fetch("/api/trades", {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           id: data[selectedRowIndex]._id,
@@ -234,7 +260,7 @@ function EditForm({
           btc5: tradeFormData.btc5,
           amount: tradeFormData.amount,
           //remarks: tradeFormData.remarks
-        })
+        }),
       });
 
       if (response.ok) {
@@ -264,7 +290,9 @@ function EditForm({
           type="number"
           fullWidth
           value={tradeFormData.btc1}
-          onChange={(event) => setTradeFormData({ ...tradeFormData, btc1: event.target.value })}
+          onChange={(event) =>
+            setTradeFormData({ ...tradeFormData, btc1: event.target.value })
+          }
         />
 
         <TextField
@@ -274,7 +302,9 @@ function EditForm({
           type="number"
           fullWidth
           value={tradeFormData.btc2}
-          onChange={(event) => setTradeFormData({ ...tradeFormData, btc2: event.target.value })}
+          onChange={(event) =>
+            setTradeFormData({ ...tradeFormData, btc2: event.target.value })
+          }
         />
 
         <TextField
@@ -284,7 +314,9 @@ function EditForm({
           type="number"
           fullWidth
           value={tradeFormData.btc3}
-          onChange={(event) => setTradeFormData({ ...tradeFormData, btc3: event.target.value })}
+          onChange={(event) =>
+            setTradeFormData({ ...tradeFormData, btc3: event.target.value })
+          }
         />
 
         <TextField
@@ -294,7 +326,9 @@ function EditForm({
           type="number"
           fullWidth
           value={tradeFormData.btc4}
-          onChange={(event) => setTradeFormData({ ...tradeFormData, btc4: event.target.value })}
+          onChange={(event) =>
+            setTradeFormData({ ...tradeFormData, btc4: event.target.value })
+          }
         />
 
         <TextField
@@ -304,7 +338,9 @@ function EditForm({
           type="number"
           fullWidth
           value={tradeFormData.btc5}
-          onChange={(event) => setTradeFormData({ ...tradeFormData, btc5: event.target.value })}
+          onChange={(event) =>
+            setTradeFormData({ ...tradeFormData, btc5: event.target.value })
+          }
         />
 
         <TextField
@@ -314,7 +350,9 @@ function EditForm({
           type="number"
           fullWidth
           value={tradeFormData.amount}
-          onChange={(event) => setTradeFormData({ ...tradeFormData, amount: event.target.value })}
+          onChange={(event) =>
+            setTradeFormData({ ...tradeFormData, amount: event.target.value })
+          }
         />
 
         {/*<TextField
@@ -327,12 +365,15 @@ function EditForm({
           value={tradeFormData.remarks}
           onChange={(event) => setTradeFormData({ ...tradeFormData, remarks: event.target.value })}
         />*/}
-
       </DialogContent>
 
       <DialogActions>
-        <Button variant="contained" onClick={handleClickUpdate}>Update</Button>
-        <Button variant="outlined" onClick={onClose}>Cancel</Button>
+        <Button variant="contained" onClick={handleClickUpdate}>
+          Update
+        </Button>
+        <Button variant="outlined" onClick={onClose}>
+          Cancel
+        </Button>
       </DialogActions>
     </Dialog>
   );

@@ -20,7 +20,7 @@ export default function TradePage() {
     const appendScript = (
       containerSelector: string,
       src: string,
-      config: object
+      config: object,
     ) => {
       const container = document.querySelector(containerSelector);
       if (container) {
@@ -54,7 +54,7 @@ export default function TradePage() {
         allow_symbol_change: true,
         calendar: false,
         support_host: "https://www.tradingview.com",
-      }
+      },
     );
 
     return () => {
@@ -124,7 +124,7 @@ export default function TradePage() {
 
   return (
     <Box sx={{ p: { xs: 2, md: 0 } }}>
-      <Stack direction={{ xs: 'column', md: 'row' }} gap={{ xs: 4, md: 8 }}>
+      <Stack direction={{ xs: "column", md: "row" }} gap={{ xs: 4, md: 8 }}>
         <Box
           className="chart"
           borderRadius={2}
@@ -132,14 +132,14 @@ export default function TradePage() {
           border={1}
           borderColor="#434651"
           sx={{
-            width: { xs: '100%', md: 1000 },
-            height: { xs: 300, md: 600 }
+            width: { xs: "100%", md: 1000 },
+            height: { xs: 300, md: 600 },
           }}
         />
 
-        <Stack gap={3} sx={{ width: { xs: '100%', md: 'auto' } }}>
-        <Stack justifyContent="space-between" gap={2} sx={{ flex: 1 }}>
-            {['btc1', 'btc2', 'btc3', 'btc4', 'btc5'].map((field) => (
+        <Stack gap={3} sx={{ width: { xs: "100%", md: "auto" } }}>
+          <Stack justifyContent="space-between" gap={2} sx={{ flex: 1 }}>
+            {["btc1", "btc2", "btc3", "btc4", "btc5"].map((field) => (
               <TextField
                 key={field}
                 variant="outlined"
@@ -163,10 +163,7 @@ export default function TradePage() {
             />
           </Stack>
 
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            gap={{ xs: 2, md: 3 }}
-          >
+          <Stack direction={{ xs: "column", md: "row" }} gap={{ xs: 2, md: 3 }}>
             <Button
               variant="contained"
               color="error"

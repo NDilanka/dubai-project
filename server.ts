@@ -8,7 +8,9 @@ import verifyTokenController from "./api/controllers/verifyTokenController.ts";
 import tradeController from "./api/controllers/tradeController.ts";
 import walletController from "./api/controllers/walletController.ts";
 import signoutController from "./api/controllers/signoutController.ts";
-import userController, { saveUserChanges } from "./api/controllers/userController.ts";
+import userController, {
+  saveUserChanges,
+} from "./api/controllers/userController.ts";
 import depositController from "./api/controllers/depositeController.ts";
 import withdrawController from "./api/controllers/withdrawController.ts";
 import dashboardController from "./api/controllers/dashboardController.ts";
@@ -40,34 +42,34 @@ const server = Bun.serve({
     "/admin/trade-report": adminPage,
     "/admin/faq-messages": adminPage,
   },
-  development: false,
+  development: true,
   websocket: {
-    message: () => { }
+    message: () => {},
   },
   async fetch(req) {
     const url = new URL(req.url);
 
     if (url.pathname.startsWith("/api")) {
       if (url.pathname === "/api/sign-up") {
-          return await signUpController(req, db);
+        return await signUpController(req, db);
       } else if (url.pathname === "/api/sign-in") {
-          return await signInController(req, db);
+        return await signInController(req, db);
       } else if (url.pathname === "/api/sign-out") {
         return await signoutController(req);
       } else if (url.pathname === "/api/verify-token") {
-          return await verifyTokenController(req);
+        return await verifyTokenController(req);
       } else if (url.pathname === "/api/users/save-changes") {
-          return await saveUserChanges(req, db);
+        return await saveUserChanges(req, db);
       } else if (url.pathname.startsWith("/api/users")) {
-          return await userController(req, db);
+        return await userController(req, db);
       } else if (url.pathname === "/api/wallet") {
-          return await walletController(req, db);
-      } else if (url.pathname === "/api/trades") {
-          return await tradeController(req, db);
+        return await walletController(req, db);
+      } else if (url.pathname.startsWith("/api/trades")) {
+        return await tradeController(req, db);
       } else if (url.pathname.startsWith("/api/deposits")) {
-          return await depositController(req, db);
+        return await depositController(req, db);
       } else if (url.pathname.startsWith("/api/withdraws")) {
-          return await withdrawController(req, db);
+        return await withdrawController(req, db);
       } else if (url.pathname === "/api/dashboard") {
         return await dashboardController(req, db);
       } else if (url.pathname === "/api/check-role") {
@@ -77,7 +79,7 @@ const server = Bun.serve({
       } else if (url.pathname === "/api/super-admin") {
         return await suuperAdminController(req, db);
       } else {
-          return new Response("AutoFX API is working!");
+        return new Response("AutoFX API is working!");
       }
     }
 
@@ -88,7 +90,7 @@ const server = Bun.serve({
 
       if (await file.exists()) {
         return new Response(file, {
-          headers: { "Content-Type": "image/svg+xml" }
+          headers: { "Content-Type": "image/svg+xml" },
         });
       }
 
@@ -100,5 +102,5 @@ const server = Bun.serve({
     }
 
     return new Response("AutoFX is working!");
-  }
+  },
 });
