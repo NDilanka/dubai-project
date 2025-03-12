@@ -44,7 +44,7 @@ const server = Bun.serve({
   },
   development: true,
   websocket: {
-    message: () => {},
+    message: () => { },
   },
   async fetch(req) {
     const url = new URL(req.url);
@@ -84,14 +84,48 @@ const server = Bun.serve({
     }
 
     const filePath = `./assets${url.pathname}`;
+    const folder = filePath.split("/");
 
     try {
       const file = Bun.file(filePath);
 
       if (await file.exists()) {
-        return new Response(file, {
-          headers: { "Content-Type": "image/svg+xml" },
-        });
+        switch (folder[2]) {
+          case "svgs": {
+            return new Response(file, {
+              headers: { "Content-Type": "image/svg+xml" },
+            });
+          }
+
+          case "uploads": {
+            if (file.name?.endsWith("jpg")) {
+              return new Response(file, {
+                headers: { "Content-Type": "image/jpg" },
+              });
+            } else if (file.name?.endsWith("jpeg")) {
+              return new Response(file, {
+                headers: { "Content-Type": "image/jpeg" },
+              });
+            } else if (file.name?.endsWith("png")) {
+              return new Response(file, {
+                headers: { "Content-Type": "image/png" },
+              });
+            } else {
+              return new Response(
+                JSON.stringify({ message: "Invalid file!" }),
+                {
+                  headers: { "Content-Type": "application/json" },
+                },
+              );
+            }
+          }
+
+          default: {
+            return new Response(JSON.stringify({ message: "Invalid file!" }), {
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+        }
       }
 
       return new Response("Not found", { status: 404 });

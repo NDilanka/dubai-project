@@ -181,7 +181,7 @@ export default function DepositeRequestsPage() {
   };
 
   const handleClickViewImage = (filePath: string) => {
-    const fullPath = `http://localhost:8000/${filePath.replace("./", "")}`;
+    const fullPath = `http://localhost:8000/${filePath.split("./assets/")[1]}`;
     setSelectedImage(fullPath);
     setOpenDialog(true);
   };
@@ -250,6 +250,7 @@ export default function DepositeRequestsPage() {
                         onClickReject={handleClickReject}
                         onClickViewImage={handleClickViewImage}
                         rowId={data.id}
+                        filePath={data.filePath}
                       />
                     </TableCell>
                   </TableRow>
@@ -289,11 +290,13 @@ function Actions({
   onClickReject,
   onClickViewImage,
   rowId,
+  filePath,
 }: {
   onClickAccept: (rowId: string) => void;
   onClickReject: (rowId: string) => void;
   onClickViewImage: (filePath: string) => void;
   rowId: string;
+  filePath: string;
 }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openModel = Boolean(anchorEl);
@@ -345,7 +348,7 @@ function Actions({
         </MenuItem>
         <MenuItem
           onClick={() => {
-            onClickViewImage(rowId);
+            onClickViewImage(filePath);
             handleClose();
           }}
         >

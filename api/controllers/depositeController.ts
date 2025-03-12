@@ -8,53 +8,57 @@ export default async function depositController(request: Request, db: Db) {
   try {
     if (request.method === "GET") {
       if (splitedUrl.length === 5) {
-        const deposits = await db.collection("deposits").aggregate([
-          {
-            $lookup: {
-              from: "users",
-              localField: "userId",
-              foreignField: "_id",
-              as: "user"
-            }
-          },
-          {
-            $unwind: "$user"
-          },
-          {
-            $project: {
-              _id: 1,
-              filePath: 1,
-              amount: 1,
-              createdAt: 1,
-              updatedAt: 1,
-              status: 1,
-              user: {
+        const deposits = await db
+          .collection("deposits")
+          .aggregate([
+            {
+              $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "user",
+              },
+            },
+            {
+              $unwind: "$user",
+            },
+            {
+              $project: {
                 _id: 1,
-                autoFXId: 1,
-                email: 1
-              }
-            }
-          }
-        ]).toArray();
+                filePath: 1,
+                amount: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                status: 1,
+                user: {
+                  _id: 1,
+                  autoFXId: 1,
+                  email: 1,
+                },
+              },
+            },
+          ])
+          .toArray();
 
         return new Response(JSON.stringify(deposits), {
           status: 200,
-          headers: {"Content-Type": "application/json"}
+          headers: { "Content-Type": "application/json" },
         });
       } else if (splitedUrl.length === 6) {
         const userId = splitedUrl[5];
-        const deposits = await db.collection("deposits")
-                                  .find({userId: new ObjectId(userId)})
-                                  .toArray();
+        const deposits = await db
+          .collection("deposits")
+          .find({ userId: new ObjectId(userId) })
+          .toArray();
 
         return new Response(JSON.stringify(deposits), {
           status: 200,
-          headers: {"Content-Type": "application/json"}
+          headers: { "Content-Type": "application/json" },
         });
       } else {
-        return new Response(JSON.stringify({message: "Invalid URL!"}), {
+        return new Response(JSON.stringify({ message: "Invalid URL!" }), {
           status: 400,
-          headers: {"Content-Type": "application/json"}
+          headers: { "Content-Type": "application/json" },
         });
       }
     } else if (request.method === "POST") {
@@ -65,40 +69,66 @@ export default async function depositController(request: Request, db: Db) {
       const amount = formData.get("amount") as string | null;
 
       if (!file) {
-        return new Response(JSON.stringify({message: "Please upload the file!"}), {
-          status: 400,
-          headers: {"Content-Type": "application/json"}
-        });
+        return new Response(
+          JSON.stringify({ message: "Please upload the file!" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
       }
 
       if (!userId) {
-        return new Response(JSON.stringify({message: "User id is not provided!"}), {
-          status: 400,
-          headers: {"Content-Type": "application/json"}
-        });
+        return new Response(
+          JSON.stringify({ message: "User id is not provided!" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
       }
 
       if (!method) {
-        return new Response(JSON.stringify({message: "Method is not provided!"}), {
-          status: 400,
-          headers: {"Content-Type": "application/json"}
-        });
+        return new Response(
+          JSON.stringify({ message: "Method is not provided!" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
       }
 
-
       if (!amount) {
-        return new Response(JSON.stringify({message: "Please enter the deposit amount!"}), {
-          status: 400,
-          headers: {"Content-Type": "application/json"}
-        });
+        return new Response(
+          JSON.stringify({ message: "Please enter the deposit amount!" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
       }
 
       const fileBuffer = await file.arrayBuffer();
       const timestamp = Date.now(); // Generate timestamp
       const fileExtension = file.name.split(".").pop(); // Extract file extension
       const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, ""); // Remove extension from original filename
-      const filePath = `./uploads/${fileNameWithoutExt}-${timestamp}.${fileExtension}`;
-      
+      const filePath = `./assets/uploads/${fileNameWithoutExt}-${timestamp}.${fileExtension}`;
+
+      // Check if the file path is valid.
+      const regex = /[^a-zA-Z0-9_-]/; // matches anything not a letter, number, hyphen, or underscore
+
+      if (!regex.test(filePath)) {
+        return new Response(
+          JSON.stringify({
+            message: "File name should contain only letters and numbers!",
+          }),
+          {
+            status: 200,
+            headers: { "Contet-Type": "application/json" },
+          },
+        );
+      }
+
       // Save the file
       await Bun.write(filePath, new Uint8Array(fileBuffer));
 
@@ -110,56 +140,71 @@ export default async function depositController(request: Request, db: Db) {
         filePath,
         status: "Pending",
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
 
       if (!savedDeposite) {
-        return new Response(JSON.stringify({message: "Failed to make the deposit!"}), {
-          status: 500,
-          headers: {"Content-Type": "application/json"}
-        });
+        return new Response(
+          JSON.stringify({ message: "Failed to make the deposit!" }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
       }
 
-      return new Response(JSON.stringify({message: "Deposit request successful!"}), {
-        status: 201,
-        headers: {"Content-Type": "application/json"}
-      });
+      return new Response(
+        JSON.stringify({ message: "Deposit request successful!" }),
+        {
+          status: 201,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     } else if (request.method === "PATCH") {
       const data = await request.json();
 
       // TODO: Validate data (input from the client).
 
       // Update the deposit status.
-      const result = await db.collection("deposits").updateOne({ _id : new ObjectId(data.id) }, {
-        $set: {
-          status: data.status,
-          updatedAt: new Date()
-        }
-      });
+      const result = await db.collection("deposits").updateOne(
+        { _id: new ObjectId(data.id) },
+        {
+          $set: {
+            status: data.status,
+            updatedAt: new Date(),
+          },
+        },
+      );
 
       if (result.modifiedCount === 1) {
-        return new Response(JSON.stringify({message: "Deposit status change successful!"}), {
-          status: 200,
-          headers: {"Content-Type": "application/json"}
-        });
+        return new Response(
+          JSON.stringify({ message: "Deposit status change successful!" }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
       }
 
-      return new Response(JSON.stringify({message: "Failed to change the deposit status!"}), {
-        status: 500,
-        headers: {"Content-Type": "application/json"}
-      });
+      return new Response(
+        JSON.stringify({ message: "Failed to change the deposit status!" }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     } else {
-      return new Response(JSON.stringify({message: "Method not allowed!"}), {
+      return new Response(JSON.stringify({ message: "Method not allowed!" }), {
         status: 405,
-        headers: {"Content-Type": "application/json"}
+        headers: { "Content-Type": "application/json" },
       });
     }
   } catch (error: any) {
     console.error(error);
 
-    return new Response(JSON.stringify({message: "Something went wrong!"}), {
+    return new Response(JSON.stringify({ message: "Something went wrong!" }), {
       status: 500,
-      headers: {"Content-Type": "application/json"}
+      headers: { "Content-Type": "application/json" },
     });
   }
 }

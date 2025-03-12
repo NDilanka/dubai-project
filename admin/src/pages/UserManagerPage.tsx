@@ -172,7 +172,6 @@ export default function UserPage() {
   };
 
   const handleSaveChanges = async () => {
-    console.log("Save Changes clicked", editUser);
     try {
       const response = await fetch(`/api/users/save-changes`, {
         method: "PUT",

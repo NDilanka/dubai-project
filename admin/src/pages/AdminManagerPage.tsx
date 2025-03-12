@@ -200,7 +200,7 @@ export default function AdminManagerPage() {
   };
 
   const handleSelectedRowIndex = (index: number) => {
-    setSelectedRowIndex(index);
+    setSelectedRowIndex(index + rowsPerPage * page);
   };
 
   const handleFinishAddAdmin = () => {

@@ -123,7 +123,7 @@ export default function TradeReportPage() {
   };
 
   const handleClickEdit = (selectedIndex: number) => {
-    setSelectedRowIndex(selectedIndex);
+    setSelectedRowIndex(selectedIndex + rowsPerPage * page);
     handleClickOpen();
   };
 

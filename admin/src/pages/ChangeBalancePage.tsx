@@ -120,7 +120,7 @@ export default function ChangeBalancePage() {
 
   const handleClickChange = (rowIndex: number) => {
     setOpen(true);
-    setSelectedRowIndex(rowIndex);
+    setSelectedRowIndex(rowIndex + rowsPerPage * page);
   };
 
   const handleFinish = (message: string) => {
