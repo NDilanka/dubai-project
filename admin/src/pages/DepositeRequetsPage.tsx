@@ -181,7 +181,7 @@ export default function DepositeRequestsPage() {
   };
 
   const handleClickViewImage = (filePath: string) => {
-    const fullPath = `http://localhost:8000/${filePath.split("./assets/")[1]}`;
+    const fullPath = `https://www.ucoinrec.com/${filePath.split("./assets/")[1]}`;
     setSelectedImage(fullPath);
     setOpenDialog(true);
   };

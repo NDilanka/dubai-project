@@ -220,7 +220,7 @@ export default function WithdrawRequestsPage() {
                     },
                   }}
                 >
-                  <TableCell>{data.autoFXId}</TableCell>
+                  <TableCell>{data.id}</TableCell>
                   <TableCell>{data.email}</TableCell>
                   <TableCell>
                     {date.getDate()}/{date.getMonth() + 1}/{date.getFullYear()}
