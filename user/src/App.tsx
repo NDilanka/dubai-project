@@ -3,13 +3,18 @@ import HomePage from "./pages/HomePage";
 import ProfilePage from "./pages/ProfilePage";
 import WalletPage from "./pages/WalletPage";
 import Navbar from "./components/Navbar/Navbar";
-import { Container, createTheme, CssBaseline, ThemeProvider } from "@mui/material";
+import {
+  Container,
+  createTheme,
+  CssBaseline,
+  ThemeProvider,
+} from "@mui/material";
 import Footer from "./components/Footer";
 import TradePage from "./pages/TradePage";
 import Background from "./components/Background";
 import UserContextProvider from "../../auth/src/context/UserContext";
 
-function App() {
+export default function App() {
   const theme = createTheme({
     palette: {
       mode: "dark",
@@ -56,5 +61,3 @@ function App() {
     </ThemeProvider>
   );
 }
-
-export default App;

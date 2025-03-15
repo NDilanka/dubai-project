@@ -42,7 +42,7 @@ const server = Bun.serve({
     "/admin/trade-report": adminPage,
     "/admin/faq-messages": adminPage,
   },
-  development: false,
+  development: true,
   websocket: {
     message: () => { },
   },

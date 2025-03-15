@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState } from "react";
-import type { Dispatch, ReactNode, SetStateAction} from "react";
+import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { checkAuth } from "../services/authService";
 
 export interface User {
@@ -8,7 +8,7 @@ export interface User {
   firstName: string;
   lastName: string;
   mobileNo: string; // TODO: Assign data to this. It has a bug.
-  role: string;     // TODO: Add the role id as well. Maybe add other role data too.
+  role: string; // TODO: Add the role id as well. Maybe add other role data too.
   loaded: boolean;
 }
 
@@ -18,7 +18,7 @@ export interface UserContextType {
 }
 
 export const UserContext = createContext<UserContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export default function UserContextProvider({
@@ -35,13 +35,18 @@ export default function UserContextProvider({
   const checkIfAlreadySignedIn = async () => {
     const result = await checkAuth();
 
+    if (!result.success) {
+      return;
+    }
+
     setUser({
       _id: result.userData._id,
       firstName: result.userData.firstName,
       lastName: result.userData.lastName,
       email: result.userData.email,
       mobileNo: result.userData.mobileNo,
-      loaded: true
+      role: "",
+      loaded: true,
     });
   };
 
