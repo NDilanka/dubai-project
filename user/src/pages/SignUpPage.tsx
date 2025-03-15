@@ -149,6 +149,7 @@ export default function SignUpPage() {
             >
               <MenuItem value="USD">USD</MenuItem>
               <MenuItem value="CAD">CAD</MenuItem>
+              <MenuItem value="INR">CAD</MenuItem>
             </Select>
           </FormControl>
 
