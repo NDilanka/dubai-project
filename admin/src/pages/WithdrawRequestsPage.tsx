@@ -56,6 +56,14 @@ export default function WithdrawRequestsPage() {
   }, [rows, searchText]);
 
   const applyFilter = (): ITableRow[] => {
+    const searchId = rows.filter((row) => {
+      return row.id.includes(searchText);
+    });
+
+    if (searchId.length > 0) {
+      return searchId;
+    }
+
     const searchEmail = rows.filter((row) => {
       return row.email.includes(searchText);
     });

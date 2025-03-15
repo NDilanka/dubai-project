@@ -33,7 +33,7 @@ interface ITableRow {
   updatedAt: string;
   user: {
     _id: string;
-    autoFXId: string;
+    autoFXId: number;
     firstName: string;
     lastName: string;
     email: string;
@@ -76,6 +76,14 @@ export default function TradeReportPage() {
   }, [rows, searchText]);
 
   const applyFilter = (): ITableRow[] => {
+    const searchId = rows.filter((row) => {
+      return row.user.autoFXId.toString().includes(searchText);
+    });
+
+    if (searchId.length > 0) {
+      return searchId;
+    }
+
     const searchEmail = rows.filter((row) => {
       return row.user.email.includes(searchText);
     });

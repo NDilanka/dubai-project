@@ -29,7 +29,7 @@ import type { ChangeEvent } from "react";
 
 interface ITableRow {
   id: string;
-  autoFXId: string;
+  autoFXId: number;
   firstName: string;
   lastName: string;
   email: string;
@@ -73,6 +73,14 @@ export default function AdminManagerPage() {
   }, [rows, searchText]);
 
   const applyFilter = (): ITableRow[] => {
+    const searchId = rows.filter((row) => {
+      return row.autoFXId.toString().includes(searchText);
+    });
+
+    if (searchId.length > 0) {
+      return searchId;
+    }
+
     const searchFirstName = rows.filter((row) => {
       return row.firstName.includes(searchText);
     });
