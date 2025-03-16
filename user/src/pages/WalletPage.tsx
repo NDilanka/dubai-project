@@ -90,6 +90,13 @@ export default function WalletPage() {
   const [recentWithdraw, setRecentWithdraw] = useState("");
   const [recentDeposit, setRecentDeposit] = useState("");
 
+  const [username, setUsername] = useState("")
+  const [bankName, setBankName] = useState("")
+  const [accountnumber, setAccountnumber] = useState("")
+  const [IFSC, setIFSC] = useState("")
+  const [branch, setBranch] = useState("")
+  const [upiAddress, setUpiAddress] = useState("")
+
   useEffect(() => {
     if (userContext?.user) {
       fetchDeposits(userContext.user._id);
@@ -407,6 +414,52 @@ export default function WalletPage() {
         body: JSON.stringify({
           userId: userContext.user._id,
           amount: parseFloat(withdrawAmount),
+          method: "USDT"
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPopUpMessage(data.message);
+        setShowPopUp(true);
+        setDialogOpen(false);
+        await fetchWithdrawals(userContext.user._id);
+      } else {
+        // TODO: Display an error.
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleSubmitBankTransferWithdraw = async () => {
+    if (!userContext || !userContext.user) {
+      return;
+    }
+
+    if (withdrawAmount.length === 0) {
+      setPopUpMessage("Please enter the amount!");
+      setShowPopUp(true);
+
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/withdraws", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: userContext.user._id,
+          amount: parseFloat(withdrawAmount),
+          username: username,
+          bankName: bankName,
+          accountnumber: accountnumber,
+          IFSC: IFSC,
+          branch: branch,
+          upiAddress: upiAddress,
+          method: "BankTransfer"
         }),
       });
 
@@ -650,6 +703,7 @@ export default function WalletPage() {
                 sx={{ borderBottom: "1px solid #ccc" }}
               >
                 <Tab label="USDT" />
+                <Tab label="BANK TRANSFER" />
               </Tabs>
 
               <DialogContent sx={{ padding: "24px" }}>
@@ -682,9 +736,77 @@ export default function WalletPage() {
                     </Button>
                   </Box>
                 )}
-                {dialogTabIndex === 2 && (
+                {dialogTabIndex === 1 && (
                   <Box>
-                    <Typography>Payment Gateway</Typography>
+                    <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "2rem",
+                    }}
+                  >
+                    <TextField
+                      variant="outlined"
+                      label="Name"
+                      type="text"
+                      value={withdrawAmount}
+                      onChange={(e) => setUsername(e.target.value)}
+                    />
+                    <TextField
+                      variant="outlined"
+                      label="Bank Name"
+                      type="text"
+                      value={withdrawAmount}
+                      onChange={(e) => setBankName(e.target.value)}
+                    />
+                    <TextField
+                      variant="outlined"
+                      label="Account Number"
+                      type="text"
+                      value={withdrawAmount}
+                      onChange={(e) => setAccountnumber(e.target.value)}
+                    />
+                    <TextField
+                      variant="outlined"
+                      label="IFSC"
+                      type="text"
+                      value={withdrawAmount}
+                      onChange={(e) => setIFSC(e.target.value)}
+                    />
+                    <TextField
+                      variant="outlined"
+                      label="Branch"
+                      type="text"
+                      value={withdrawAmount}
+                      onChange={(e) => setBranch(e.target.value)}
+                    />
+                    <TextField
+                      variant="outlined"
+                      label="UPI Address"
+                      type="text"
+                      value={withdrawAmount}
+                      onChange={(e) => setUpiAddress(e.target.value)}
+                    />
+                    <TextField
+                      variant="outlined"
+                      label="Amount"
+                      type="number"
+                      value={withdrawAmount}
+                      onChange={(e) => setWithdrawAmount(e.target.value)}
+                    />
+
+                    <Button
+                      fullWidth
+                      disabled={
+                        withdrawAmount.length === 0 && usdtWithdrawFile !== null
+                      }
+                      variant="contained"
+                      color="primary"
+                      onClick={handleSubmitBankTransferWithdraw}
+                    >
+                      Submit Withdraw
+                    </Button>
+                  </Box>
                   </Box>
                 )}
               </DialogContent>
