@@ -13,6 +13,12 @@ import {
   TablePagination,
   TableRow,
   TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useEffect, useState } from "react";
@@ -26,6 +32,13 @@ interface ITableRow {
   updatedAt: string;
   amount: number;
   status: string;
+  method?: string; // Optional field to differentiate between USDT and Bank Transfer
+  uname?: string; // For Bank Transfer
+  bankname?: string; // For Bank Transfer
+  accountnumber?: string; // For Bank Transfer
+  IFSC?: string; // For Bank Transfer
+  branch?: string; // For Bank Transfer
+  UPIAddress?: string; // For Bank Transfer
 }
 
 export default function WithdrawRequestsPage() {
@@ -35,6 +48,8 @@ export default function WithdrawRequestsPage() {
   const [rows, setRows] = useState<ITableRow[]>([]);
   const [filteredRows, setFilteredRows] = useState<ITableRow[]>([]);
   const [searchText, setSearchText] = useState("");
+  const [selectedRequest, setSelectedRequest] = useState<ITableRow | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   useEffect(() => {
     fetchWithdraws();
@@ -94,6 +109,13 @@ export default function WithdrawRequestsPage() {
               autoFXId: string;
               email: string;
             };
+            method?: string;
+            uname?: string;
+            bankname?: string;
+            accountnumber?: string;
+            IFSC?: string;
+            branch?: string;
+            UPIAddress?: string;
           }) => ({
             id: withdraw._id,
             autoFXId: withdraw.user.autoFXId,
@@ -102,6 +124,13 @@ export default function WithdrawRequestsPage() {
             status: withdraw.status,
             createdAt: withdraw.createdAt,
             updatedAt: withdraw.updatedAt,
+            method: withdraw.method,
+            uname: withdraw.uname,
+            bankname: withdraw.bankname,
+            accountnumber: withdraw.accountnumber,
+            IFSC: withdraw.IFSC,
+            branch: withdraw.branch,
+            UPIAddress: withdraw.UPIAddress,
           }),
         );
 
@@ -179,6 +208,16 @@ export default function WithdrawRequestsPage() {
     }
   };
 
+  const handleClickViewRequest = (row: ITableRow) => {
+    setSelectedRequest(row);
+    setIsViewModalOpen(true);
+  };
+
+  const handleCloseViewModal = () => {
+    setIsViewModalOpen(false);
+    setSelectedRequest(null);
+  };
+
   return (
     <Paper variant="outlined">
       <Box margin={2}>
@@ -240,6 +279,7 @@ export default function WithdrawRequestsPage() {
                     <Actions
                       onClickAccept={handleClickAccept}
                       onClickReject={handleClickReject}
+                      onClickViewRequest={() => handleClickViewRequest(data)}
                       rowId={data.id}
                       state={false}
                     />
@@ -260,6 +300,124 @@ export default function WithdrawRequestsPage() {
         onPageChange={handlePageChange}
         onRowsPerPageChange={handleRowsPerPageChange}
       />
+
+      <Dialog open={isViewModalOpen} onClose={handleCloseViewModal}>
+        <DialogTitle sx={{ backgroundColor: "#f5f5f5", fontWeight: "bold" }}>
+          Withdraw Request Details
+        </DialogTitle>
+        <DialogContent sx={{ padding: "20px", minWidth: "400px" }}>
+          {selectedRequest && (
+            <>
+              <Box sx={{ marginBottom: "16px" }}>
+                <DialogContentText sx={{ fontWeight: "bold", color: "#333" }}>
+                  ID:
+                </DialogContentText>
+                <DialogContentText>{selectedRequest.id}</DialogContentText>
+              </Box>
+
+              <Box sx={{ marginBottom: "16px" }}>
+                <DialogContentText sx={{ fontWeight: "bold", color: "#333" }}>
+                  Email:
+                </DialogContentText>
+                <DialogContentText>{selectedRequest.email}</DialogContentText>
+              </Box>
+
+              <Box sx={{ marginBottom: "16px" }}>
+                <DialogContentText sx={{ fontWeight: "bold", color: "#333" }}>
+                  Date:
+                </DialogContentText>
+                <DialogContentText>
+                  {new Date(selectedRequest.createdAt).toLocaleDateString()}
+                </DialogContentText>
+              </Box>
+
+              <Box sx={{ marginBottom: "16px" }}>
+                <DialogContentText sx={{ fontWeight: "bold", color: "#333" }}>
+                  Amount:
+                </DialogContentText>
+                <DialogContentText>
+                  $ {selectedRequest.amount.toFixed(2)}
+                </DialogContentText>
+              </Box>
+
+              <Box sx={{ marginBottom: "16px" }}>
+                <DialogContentText sx={{ fontWeight: "bold", color: "#333" }}>
+                  Status:
+                </DialogContentText>
+                <DialogContentText
+                  sx={{
+                    color:
+                      selectedRequest.status === "Accepted"
+                        ? "green"
+                        : selectedRequest.status === "Rejected"
+                          ? "red"
+                          : "inherit",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {selectedRequest.status}
+                </DialogContentText>
+              </Box>
+
+              {selectedRequest.method === "BankTransfer" && (
+                <>
+                  <Box sx={{ marginBottom: "16px" }}>
+                    <DialogContentText sx={{ fontWeight: "bold", color: "#333" }}>
+                      Username:
+                    </DialogContentText>
+                    <DialogContentText>{selectedRequest.uname}</DialogContentText>
+                  </Box>
+
+                  <Box sx={{ marginBottom: "16px" }}>
+                    <DialogContentText sx={{ fontWeight: "bold", color: "#333" }}>
+                      Bank Name:
+                    </DialogContentText>
+                    <DialogContentText>{selectedRequest.bankname}</DialogContentText>
+                  </Box>
+
+                  <Box sx={{ marginBottom: "16px" }}>
+                    <DialogContentText sx={{ fontWeight: "bold", color: "#333" }}>
+                      Account Number:
+                    </DialogContentText>
+                    <DialogContentText>
+                      {selectedRequest.accountnumber}
+                    </DialogContentText>
+                  </Box>
+
+                  <Box sx={{ marginBottom: "16px" }}>
+                    <DialogContentText sx={{ fontWeight: "bold", color: "#333" }}>
+                      IFSC:
+                    </DialogContentText>
+                    <DialogContentText>{selectedRequest.IFSC}</DialogContentText>
+                  </Box>
+
+                  <Box sx={{ marginBottom: "16px" }}>
+                    <DialogContentText sx={{ fontWeight: "bold", color: "#333" }}>
+                      Branch:
+                    </DialogContentText>
+                    <DialogContentText>{selectedRequest.branch}</DialogContentText>
+                  </Box>
+
+                  <Box sx={{ marginBottom: "16px" }}>
+                    <DialogContentText sx={{ fontWeight: "bold", color: "#333" }}>
+                      UPI Address:
+                    </DialogContentText>
+                    <DialogContentText>{selectedRequest.UPIAddress}</DialogContentText>
+                  </Box>
+                </>
+              )}
+            </>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ padding: "16px", backgroundColor: "#f5f5f5" }}>
+          <Button
+            onClick={handleCloseViewModal}
+            sx={{ color: "#333", fontWeight: "bold" }}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 }
@@ -267,12 +425,15 @@ export default function WithdrawRequestsPage() {
 function Actions({
   onClickAccept,
   onClickReject,
+  onClickViewRequest,
   rowId,
+  state,
 }: {
   onClickAccept: (rowId: string) => void;
   onClickReject: (rowId: string) => void;
+  onClickViewRequest: () => void;
   rowId: string;
-  state: boolean; // true -> Active, false -> Inactive
+  state: boolean;
 }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openModel = Boolean(anchorEl);
@@ -318,6 +479,7 @@ function Actions({
       >
         <MenuItem onClick={handleClickAccept}>Accept</MenuItem>
         <MenuItem onClick={handleClickReject}>Reject</MenuItem>
+        <MenuItem onClick={onClickViewRequest}>View Request</MenuItem>
       </Menu>
     </Box>
   );
