@@ -113,7 +113,7 @@ export default function ProfilePage() {
     <Stack gap={4}>
       <Stack>
         <Typography variant="h5" alignSelf="center" mb={4}>
-          <Box component="span" fontWeight="bold">AutoFX ID:</Box> {userData.autoFXId}
+          <Box component="span" fontWeight="bold">UCoin ID:</Box> {userData.autoFXId}
         </Typography>
 
         <TextField 
