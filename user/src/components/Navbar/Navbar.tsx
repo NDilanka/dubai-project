@@ -102,7 +102,7 @@ export default function Navbar() {
       >
         <Box component="img" src="/svgs/lemlistlogo_2.svg" />
         <Box component="span" fontSize={20} fontWeight={700}>
-          AutoFX
+          UCoin
         </Box>
       </Box>
 

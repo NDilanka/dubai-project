@@ -1,6 +1,8 @@
-import { Alert, Box, Button, IconButton, Slide, TextField,
-         Typography } from "@mui/material";
-import {  useRef, useState, useContext, useEffect } from "react";
+import {
+  Alert, Box, Button, IconButton, Slide, TextField,
+  Typography
+} from "@mui/material";
+import { useRef, useState, useContext, useEffect } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { signIn } from "../services/authService";
@@ -53,7 +55,7 @@ export default function SignInPage() {
     <>
       <Box sx={{ position: "absolute", left: "50%", transform: "translateX(-50%)" }}>
         <Slide in={showPopUp} container={containerRef.current}>
-          <Alert severity="success">Sign up successfull!</Alert>
+          <Alert severity="success">Sign up successful!</Alert>
         </Slide>
       </Box>
 
@@ -62,38 +64,59 @@ export default function SignInPage() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          height: "100vh",
+          minHeight: "100vh",
+          p: 2, // Added padding for mobile
         }}
       >
         <IconButton
           onClick={handleBackClick}
           sx={{
             position: "absolute",
-            left: "16px",
-            top: "16px",
+            left: { xs: 1, sm: 2 }, // Responsive left positioning
+            top: { xs: 1, sm: 2 },  // Responsive top positioning
             zIndex: 1,
-            color: "white",
+            color: "text.primary",
           }}
         >
           <ArrowBackIcon />
         </IconButton>
 
-        <Box component="form"
+        <Box
+          component="form"
           sx={{
             display: "flex",
             flexDirection: "column",
             gap: "1rem",
-            minWidth: "40rem",
+            width: { xs: "100%", sm: "90%", md: "40rem" }, // Responsive width
+            maxWidth: "40rem",
+            p: { xs: 2, sm: 4 }, // Responsive padding
+            borderRadius: 2,
+            boxShadow: { xs: 0, sm: 3 }, // Shadow only on larger screens
           }}
           onSubmit={handleSubmit}
         >
-          <Typography variant="h2" fontWeight="bold" textAlign="center"
-            mb={4}>Sign Into AutoFX</Typography>
+          <Typography
+            variant="h2"
+            fontWeight="bold"
+            textAlign="center"
+            sx={{
+              fontSize: { xs: '1.8rem', sm: '2.4rem' }, // Responsive font size
+              mb: { xs: 2, sm: 4 }
+            }}
+          >
+            Sign Into UCoin
+          </Typography>
 
           <TextField
             label="Email"
             variant="outlined"
             type="email"
+            size="small"
+            sx={{
+              '& .MuiInputBase-root': {
+                height: { xs: 48, sm: 56 } // Responsive input height
+              }
+            }}
             value={signInFormData.email}
             onChange={(e) => setSignInData({ ...signInFormData, email: e.target.value })}
           />
@@ -102,17 +125,41 @@ export default function SignInPage() {
             label="Password"
             variant="outlined"
             type="password"
+            size="small"
+            sx={{
+              '& .MuiInputBase-root': {
+                height: { xs: 48, sm: 56 } // Consistent height with email field
+              }
+            }}
             value={signInFormData.password}
             onChange={(e) => setSignInData({ ...signInFormData, password: e.target.value })}
           />
 
-          <Button variant="contained" type="submit" loading={loading}>
-            Sign In
+          <Button
+            variant="contained"
+            type="submit"
+            disabled={loading}
+            sx={{
+              height: { xs: 48, sm: 56 },
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
+          >
+            {loading ? 'Loading...' : 'Sign In'}
           </Button>
 
-          <Typography mx="auto">Don't have an account?</Typography>
+          <Typography mx="auto" textAlign="center" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+            Don't have an account?
+          </Typography>
 
-          <Button component={Link} variant="outlined" to="/sign-up">
+          <Button
+            component={Link}
+            variant="outlined"
+            to="/sign-up"
+            sx={{
+              height: { xs: 48, sm: 56 },
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
+          >
             Sign Up
           </Button>
         </Box>

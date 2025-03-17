@@ -93,7 +93,7 @@ export default function SignUpPage() {
           onSubmit={handleSubmit}
         >
           <Typography variant="h2" fontWeight="bold" textAlign="center"
-            mb={4}>Create New AutoFX account</Typography>
+            mb={4}>Create New UCoin account</Typography>
 
           <TextField
             label="First Name"
