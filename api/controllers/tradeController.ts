@@ -212,14 +212,12 @@ export default async function tradeController(request: Request, db: Db) {
           );
         }
 
-        /*
-        if (data.remarks) {
+        if (!data.remarks) {
           return new Response(JSON.stringify({message: "Please provide the remarks"}), {
             status: 400,
             headers: {"Content-Type": "application/json"}
           });
         }
-        */
 
         const result = await db.collection("trades").updateOne(
           { _id: new ObjectId(`${data.id}`) },

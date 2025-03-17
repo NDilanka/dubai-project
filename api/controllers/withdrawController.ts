@@ -22,15 +22,8 @@ export default async function withdrawController(request: Request, db: Db) {
           },
           {
             $project: {
-              _id: 1,
-              amount: 1,
-              status: 1,
-              createdAt: 1,
-              updatedAt: 1,
               user: {
-                _id: 1,
-                autoFXId: 1,
-                email: 1
+                password: 0,
               },
             }
           }
@@ -57,7 +50,6 @@ export default async function withdrawController(request: Request, db: Db) {
         });
       }
     } else if (request.method === "POST") {
-      console.log("POST");
       const data = await request.json();
 
       // Save the record in the database.
@@ -65,6 +57,7 @@ export default async function withdrawController(request: Request, db: Db) {
         userId: new ObjectId(`${data.userId}`),
         amount: data.amount,
         status: "Pending",
+        remarks: "",
         createdAt: new Date(),
         updatedAt: new Date()
       });
