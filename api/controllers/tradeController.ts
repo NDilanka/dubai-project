@@ -80,41 +80,6 @@ export default async function tradeController(request: Request, db: Db) {
         );
       }
 
-      if (!data.btc1) {
-        return new Response(JSON.stringify({ message: "BTC1 not provided!" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-
-      if (!data.btc2) {
-        return new Response(JSON.stringify({ message: "BTC2 not provided!" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-
-      if (!data.btc3) {
-        return new Response(JSON.stringify({ message: "BTC3 not provided!" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-
-      if (!data.btc4) {
-        return new Response(JSON.stringify({ message: "BTC4 not provided!" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-
-      if (!data.btc5) {
-        return new Response(JSON.stringify({ message: "BTC5 not provided!" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-
       const timestamp = new Date().toUTCString();
 
       const savedTrade = await db.collection("trades").insertOne({
