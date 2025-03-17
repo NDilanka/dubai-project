@@ -140,9 +140,6 @@ export default function TradePage() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("lllllllllllllllll");
-        console.log(userId, data);
-        console.log("lllllllllllllllll");
         setTrades(data);
       } else {
         // TODO: Display an error message.

@@ -91,6 +91,7 @@ export default async function tradeController(request: Request, db: Db) {
         btc4: data.btc4,
         btc5: data.btc5,
         isAccepted: false,
+        action: data.action,
         remarks: "",
         createdAt: timestamp,
         updatedAt: timestamp,
@@ -177,13 +178,6 @@ export default async function tradeController(request: Request, db: Db) {
           );
         }
 
-        if (!data.remarks) {
-          return new Response(JSON.stringify({message: "Please provide the remarks"}), {
-            status: 400,
-            headers: {"Content-Type": "application/json"}
-          });
-        }
-
         const result = await db.collection("trades").updateOne(
           { _id: new ObjectId(`${data.id}`) },
           {
@@ -194,6 +188,7 @@ export default async function tradeController(request: Request, db: Db) {
               btc4: data.btc4,
               btc5: data.btc5,
               amount: data.amount,
+              action: data.action,
               remarks: data.remarks,
               updatedAt: new Date().toUTCString(),
               isAccepted: data.isAccepted

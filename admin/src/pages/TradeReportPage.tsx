@@ -16,6 +16,11 @@ import {
   DialogContent,
   DialogActions,
   DialogContentText,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Box,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
@@ -28,6 +33,7 @@ interface ITableRow {
   btc3: number;
   btc4: number;
   btc5: number;
+  action: string;
   remarks: string;
   createdAt: string;
   updatedAt: string;
@@ -61,7 +67,6 @@ export default function TradeReportPage() {
 
   useEffect(() => {
     const visibleTableData = filtredRows.filter((data, index) => {
-      console.log(page);
       if (index >= page * rowsPerPage && index < (page + 1) * rowsPerPage) {
         return data;
       }
@@ -172,33 +177,37 @@ export default function TradeReportPage() {
               <TableCell>BTC4</TableCell>
               <TableCell>BTC5</TableCell>
               <TableCell>Amount</TableCell>
+              <TableCell>Type</TableCell>
               <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
-            {tableData.map((data, index) => (
-              <TableRow key={data._id}>
-                <TableCell>{data.user.autoFXId}</TableCell>
-                <TableCell>{data.user.email}</TableCell>
-                <TableCell>{data.btc1}</TableCell>
-                <TableCell>{data.btc2}</TableCell>
-                <TableCell>{data.btc3}</TableCell>
-                <TableCell>{data.btc4}</TableCell>
-                <TableCell>{data.btc5}</TableCell>
-                <TableCell>$ {parseFloat(data.amount).toFixed(2)}</TableCell>
+            {tableData.map((data, index) => {
+              return (
+                <TableRow key={data._id}>
+                  <TableCell>{data.user.autoFXId}</TableCell>
+                  <TableCell>{data.user.email}</TableCell>
+                  <TableCell>{data.btc1}</TableCell>
+                  <TableCell>{data.btc2}</TableCell>
+                  <TableCell>{data.btc3}</TableCell>
+                  <TableCell>{data.btc4}</TableCell>
+                  <TableCell>{data.btc5}</TableCell>
+                  <TableCell>$ {parseFloat(data.amount).toFixed(2)}</TableCell>
+                  <TableCell>{data.action.toUpperCase()}</TableCell>
 
-                <TableCell>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleClickEdit(index)}
-                  >
-                    Edit
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => handleClickEdit(index)}
+                    >
+                      Edit
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
@@ -236,6 +245,7 @@ function EditForm({
     btc4: "",
     btc5: "",
     amount: "",
+    action: "",
     remarks: "",
   });
 
@@ -248,7 +258,11 @@ function EditForm({
         btc4: data[selectedRowIndex].btc4.toString(),
         btc5: data[selectedRowIndex].btc5.toString(),
         amount: data[selectedRowIndex].amount.toString(),
-        remarks: data[selectedRowIndex].remarks !== null? data[selectedRowIndex].remarks.toString() : "",
+        action: data[selectedRowIndex].action,
+        remarks:
+          data[selectedRowIndex].remarks !== null
+            ? data[selectedRowIndex].remarks.toString()
+            : "",
       });
     }
   }, [open]);
@@ -268,8 +282,9 @@ function EditForm({
           btc4: parseFloat(tradeFormData.btc4),
           btc5: parseFloat(tradeFormData.btc5),
           amount: parseFloat(tradeFormData.amount),
+          action: tradeFormData.action,
           remarks: tradeFormData.remarks,
-          isAccepted: true
+          isAccepted: true,
         }),
       });
 
@@ -286,13 +301,7 @@ function EditForm({
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Add New Admin</DialogTitle>
-
       <DialogContent>
-        <DialogContentText>
-          To add a new admin, please fill out the form below.
-        </DialogContentText>
-
         <TextField
           autoFocus
           margin="dense"
@@ -365,6 +374,26 @@ function EditForm({
           }
         />
 
+        <FormControl variant="outlined" fullWidth size="small" margin="dense">
+          <InputLabel id="trade-type-label">Trade Type</InputLabel>
+          <Select
+            labelId="trade-type-label"
+            value={tradeFormData.action}
+            onChange={(e) =>
+              setTradeFormData({ ...tradeFormData, action: e.target.value })
+            }
+            label="Trade Type"
+            sx={{
+              "& .MuiSelect-select": {
+                height: { xs: "48px !important", sm: "56px !important" },
+              },
+            }}
+          >
+            <MenuItem value="buy">Buy</MenuItem>
+            <MenuItem value="sell">Sell</MenuItem>
+          </Select>
+        </FormControl>
+
         <TextField
           autoFocus
           multiline
@@ -373,7 +402,9 @@ function EditForm({
           type="text"
           fullWidth
           value={tradeFormData.remarks}
-          onChange={(event) => setTradeFormData({ ...tradeFormData, remarks: event.target.value })}
+          onChange={(event) =>
+            setTradeFormData({ ...tradeFormData, remarks: event.target.value })
+          }
         />
       </DialogContent>
 
