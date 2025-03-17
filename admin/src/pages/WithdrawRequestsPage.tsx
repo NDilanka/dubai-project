@@ -614,7 +614,7 @@ function Actions({
         <MenuItem onClick={handleClickAccept}>Accept</MenuItem>
         <MenuItem onClick={handleClickReject}>Reject</MenuItem>
         <MenuItem onClick={onClickViewRequest}>View Request</MenuItem>
-        <MenuItem onClick={onClickAddRemarks}>Add Remarks</MenuItem>
+        <MenuItem onClick={onClickAddRemarks}>Add or Update Remarks</MenuItem>
       </Menu>
     </Box>
   );

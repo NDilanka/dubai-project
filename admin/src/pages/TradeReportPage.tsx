@@ -248,7 +248,7 @@ function EditForm({
         btc4: data[selectedRowIndex].btc4.toString(),
         btc5: data[selectedRowIndex].btc5.toString(),
         amount: data[selectedRowIndex].amount.toString(),
-        remarks: data[selectedRowIndex].remarks.toString(),
+        remarks: data[selectedRowIndex].remarks !== null? data[selectedRowIndex].remarks.toString() : "",
       });
     }
   }, [open]);
@@ -268,7 +268,7 @@ function EditForm({
           btc4: parseFloat(tradeFormData.btc4),
           btc5: parseFloat(tradeFormData.btc5),
           amount: parseFloat(tradeFormData.amount),
-          remarks: parseFloat(tradeFormData.remarks),
+          remarks: tradeFormData.remarks,
           isAccepted: true
         }),
       });
