@@ -6,7 +6,7 @@ export default async function postTradeService(trade: {
   btc3: number;
   btc4: number;
   btc5: number;
-  action: "sell" | "buy";
+  action: "Sell" | "Buy";
 }) {
   try {
     const response = await fetch("/api/trades", {

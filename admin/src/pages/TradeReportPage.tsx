@@ -194,7 +194,7 @@ export default function TradeReportPage() {
                   <TableCell>{data.btc4}</TableCell>
                   <TableCell>{data.btc5}</TableCell>
                   <TableCell>$ {parseFloat(data.amount).toFixed(2)}</TableCell>
-                  <TableCell>{data.action.toUpperCase()}</TableCell>
+                  <TableCell>{data.action}</TableCell>
 
                   <TableCell>
                     <Button
@@ -389,8 +389,8 @@ function EditForm({
               },
             }}
           >
-            <MenuItem value="buy">Buy</MenuItem>
-            <MenuItem value="sell">Sell</MenuItem>
+            <MenuItem value="Buy">Buy</MenuItem>
+            <MenuItem value="Sell">Sell</MenuItem>
           </Select>
         </FormControl>
 

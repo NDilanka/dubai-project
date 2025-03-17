@@ -28,6 +28,7 @@ interface ITrade {
   btc4: number;
   btc5: number;
   amount: number;
+  action: string;
   createdAt: string;
   updatedAt: string;
   remarks: string;
@@ -115,7 +116,7 @@ export default function TradePage() {
         btc3: parseInt(tradeData.btc3),
         btc4: parseInt(tradeData.btc4),
         btc5: parseInt(tradeData.btc5),
-        action: "sell",
+        action: "Sell",
       });
 
       if (result.success) {
@@ -161,7 +162,7 @@ export default function TradePage() {
         btc3: parseInt(tradeData.btc3),
         btc4: parseInt(tradeData.btc4),
         btc5: parseInt(tradeData.btc5),
-        action: "buy",
+        action: "Buy",
       });
 
       if (result.success) {
@@ -281,6 +282,7 @@ export default function TradePage() {
                 <TableCell>BTC4</TableCell>
                 <TableCell>BTC5</TableCell>
                 <TableCell>Amount</TableCell>
+                <TableCell>Trade Type</TableCell>
                 <TableCell>Remarks</TableCell>
               </TableRow>
             </TableHead>
@@ -301,6 +303,7 @@ export default function TradePage() {
                     <TableCell>{trade.btc4}</TableCell>
                     <TableCell>{trade.btc5}</TableCell>
                     <TableCell>{trade.amount}</TableCell>
+                    <TableCell>{trade.action}</TableCell>
                     <TableCell>{trade.remarks}</TableCell>
                   </TableRow>
                 );
