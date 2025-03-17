@@ -21,16 +21,14 @@ export default function Footer() {
       }}
     >
       <Box>
-        <Box component="h3">AutoFX</Box>
+        <Box component="h3">UCoin</Box>
         <Box component="p" sx={{width: {xs: "100%", md: "400px"}}}>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ornare
-          cursus sed nunc eget dictum Sed ornare cursus sed nunc eget dictumd
-          nunc eget dictum Sed ornare cursus sed nunc eget dictum
+        U Coin, India’s most valuable crypto investment app, is dedicated to make crypto accessible in a simple way. Established in 2019, U Coin has solved numerous problems faced by the Indian crypto community with solutions around crypto investing, Refunding crypto trading & crypto literacy.
         </Box>
       </Box>
 
       <Box sx={{display: "flex", flexDirection: "column", alignItems: { xs: "flex-start", md: "flex-end" }}}>
-        <Box component="h3">AutoFX</Box>
+        <Box component="h3">UCoin</Box>
         <Box>
         {userContext?.user !== null ? (
           <>

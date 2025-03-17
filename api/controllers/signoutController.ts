@@ -16,7 +16,8 @@ export default async function signoutController(req: Request) {
     const headers = new Headers({
       "Content-Type": "application/json",
       "Set-Cookie":
-        "autoFXToken=; Path=/; HttpOnly; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=Strict"
+        "autoFXToken=; Path=/; Domain=ucoinrec.com; HttpOnly; Secure;" +
+        "Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict"
     });
   
     // Return a response indicating that signout was successful.

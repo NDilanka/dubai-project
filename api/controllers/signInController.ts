@@ -67,7 +67,7 @@ export default async function signInController(request: Request, db: Db) {
         headers: {
           "Content-Type": "application/json",
           // TODO: Add 'Secure;' when using https `autoFXToken=${token}; Path=/; HttpOnly; Secure; SameSite=Strict`.
-          "Set-Cookie": `autoFXToken=${token}; Path=/; HttpOnly; SameSite=Strict`
+          "Set-Cookie": `autoFXToken=${token}; Path=/; HttpOnly; Secure; SameSite=Strict`
         }
       });
     } else {

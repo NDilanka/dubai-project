@@ -23,7 +23,6 @@ import {
   Select,
   MenuItem,
   Divider,
-  Modal,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
 import { useContext, useEffect, useRef, useState } from "react";
@@ -520,10 +519,7 @@ export default function WalletPage() {
       </Box>
 
       <Box>
-        <Dialog
-          open={showRemarksPopUp}
-          onClose={handleCloseRemarksPopUp}
-        >
+        <Dialog open={showRemarksPopUp} onClose={handleCloseRemarksPopUp}>
           <DialogTitle>{selectedRowRemarks}</DialogTitle>
         </Dialog>
       </Box>
@@ -1012,16 +1008,13 @@ export default function WalletPage() {
                         sx={{ borderBottom: "1px solid #ccc" }}
                       >
                         <TableCell>{data.id}</TableCell>
-
                         <TableCell>
                           {date.getDate()}/{date.getMonth() + 1}/
                           {date.getFullYear()}
                         </TableCell>
-
                         <TableCell>
                           {parseFloat(data.amount).toFixed(2)}
                         </TableCell>
-
                         <TableCell>
                           <Box
                             sx={{
@@ -1084,16 +1077,13 @@ export default function WalletPage() {
                         sx={{ borderBottom: "1px solid #ccc" }}
                       >
                         <TableCell>{data.id}</TableCell>
-
                         <TableCell>
                           {date.getDate()}/{date.getMonth() + 1}/
                           {date.getFullYear()}
                         </TableCell>
-
                         <TableCell>
                           $ {parseFloat(data.amount).toFixed(2)}
                         </TableCell>
-
                         <TableCell>
                           <Box
                             sx={{
@@ -1112,7 +1102,6 @@ export default function WalletPage() {
                             {data.status}
                           </Box>
                         </TableCell>
-
                         <TableCell>
                           <Button
                             variant="contained"

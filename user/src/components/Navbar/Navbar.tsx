@@ -102,7 +102,7 @@ export default function Navbar() {
       >
         <Box component="img" src="/svgs/lemlistlogo_2.svg" />
         <Box component="span" fontSize={20} fontWeight={700}>
-          AutoFX
+          UCoin
         </Box>
       </Box>
 
@@ -119,13 +119,18 @@ export default function Navbar() {
           paddingY={2}
           paddingX={4}
           borderRadius={999}
-          border={1}
+          // border={1}
           color="white"
           sx={{
             background: `radial-gradient(ellipse 8rem 4rem at center, ${theme.palette.background.default}, ${theme.palette.primary.main})`,
             borderImage: `linear-gradient(0deg, ${theme.palette.background.default}, ${theme.palette.primary.main}) 1`,
-            [theme.breakpoints.down("sm")]: { display: "none" },
+            mask: `linear-gradient(0deg, ${theme.palette.background.default}0 0)`,
+            maskComposite: "exclude",
             textDecoration: "none",
+            "&:hover": {
+              background: `radial-gradient(ellipse 4rem 2rem at center, ${theme.palette.background.default}, ${theme.palette.primary.main})`,
+            },
+            [theme.breakpoints.down("sm")]: { display: "none" },
           }}
         >
           Sign In
