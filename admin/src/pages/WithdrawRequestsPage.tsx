@@ -34,7 +34,7 @@ interface ITableRow {
   status: string;
   method?: string; // Optional field to differentiate between USDT and Bank Transfer
   uname?: string; // For Bank Transfer
-  bankname?: string; // For Bank Transfer
+  bankName?: string; // For Bank Transfer
   accountnumber?: string; // For Bank Transfer
   IFSC?: string; // For Bank Transfer
   branch?: string; // For Bank Transfer
@@ -123,8 +123,8 @@ export default function WithdrawRequestsPage() {
               email: string;
             };
             method?: string;
-            uname?: string;
-            bankname?: string;
+            username?: string;
+            bankName?: string;
             accountnumber?: string;
             IFSC?: string;
             branch?: string;
@@ -139,8 +139,8 @@ export default function WithdrawRequestsPage() {
             createdAt: withdraw.createdAt,
             updatedAt: withdraw.updatedAt,
             method: withdraw.method,
-            uname: withdraw.uname,
-            bankname: withdraw.bankname,
+            uname: withdraw.username,
+            bankName: withdraw.bankName,
             accountnumber: withdraw.accountnumber,
             IFSC: withdraw.IFSC,
             branch: withdraw.branch,
@@ -444,7 +444,7 @@ export default function WithdrawRequestsPage() {
                       Bank Name:
                     </DialogContentText>
                     <DialogContentText>
-                      {selectedRequest.bankname}
+                      {selectedRequest.bankName}
                     </DialogContentText>
                   </Box>
 

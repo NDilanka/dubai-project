@@ -22,16 +22,8 @@ export default async function withdrawController(request: Request, db: Db) {
           },
           {
             $project: {
-              _id: 1,
-              amount: 1,
-              status: 1,
-              remarks: 1,
-              createdAt: 1,
-              updatedAt: 1,
               user: {
-                _id: 1,
-                autoFXId: 1,
-                email: 1
+                password: 0,
               },
             }
           }

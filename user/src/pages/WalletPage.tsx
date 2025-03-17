@@ -451,7 +451,7 @@ export default function WalletPage() {
     }
 
     try {
-      const response = await fetch("/api/withdraws", {
+      const response = await fetch("/api/withdraw-bank-transfer-request", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
