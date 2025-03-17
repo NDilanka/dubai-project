@@ -770,42 +770,42 @@ export default function WalletPage() {
                         variant="outlined"
                         label="Name"
                         type="text"
-                        value={withdrawAmount}
+                        value={username}
                         onChange={(e) => setUsername(e.target.value)}
                       />
                       <TextField
                         variant="outlined"
                         label="Bank Name"
                         type="text"
-                        value={withdrawAmount}
+                        value={bankName}
                         onChange={(e) => setBankName(e.target.value)}
                       />
                       <TextField
                         variant="outlined"
                         label="Account Number"
                         type="text"
-                        value={withdrawAmount}
+                        value={accountnumber}
                         onChange={(e) => setAccountnumber(e.target.value)}
                       />
                       <TextField
                         variant="outlined"
                         label="IFSC"
                         type="text"
-                        value={withdrawAmount}
+                        value={IFSC}
                         onChange={(e) => setIFSC(e.target.value)}
                       />
                       <TextField
                         variant="outlined"
                         label="Branch"
                         type="text"
-                        value={withdrawAmount}
+                        value={branch}
                         onChange={(e) => setBranch(e.target.value)}
                       />
                       <TextField
                         variant="outlined"
                         label="UPI Address"
                         type="text"
-                        value={withdrawAmount}
+                        value={upiAddress}
                         onChange={(e) => setUpiAddress(e.target.value)}
                       />
                       <TextField

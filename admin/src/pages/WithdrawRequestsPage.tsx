@@ -78,6 +78,10 @@ export default function WithdrawRequestsPage() {
     setFilteredRows(filteredRows);
   }, [rows, searchText]);
 
+  useEffect(() => {
+    console.log(selectedRequest);
+  }, [selectedRequest]);
+
   const applyFilter = (): ITableRow[] => {
     const searchId = rows.filter((row) => {
       return row.id.includes(searchText);
