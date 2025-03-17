@@ -25,6 +25,7 @@ export default async function withdrawController(request: Request, db: Db) {
               _id: 1,
               amount: 1,
               status: 1,
+              remarks: 1,
               createdAt: 1,
               updatedAt: 1,
               user: {
@@ -57,7 +58,6 @@ export default async function withdrawController(request: Request, db: Db) {
         });
       }
     } else if (request.method === "POST") {
-      console.log("POST");
       const data = await request.json();
 
       // Save the record in the database.
@@ -65,6 +65,7 @@ export default async function withdrawController(request: Request, db: Db) {
         userId: new ObjectId(`${data.userId}`),
         amount: data.amount,
         status: "Pending",
+        remarks: "",
         createdAt: new Date(),
         updatedAt: new Date()
       });

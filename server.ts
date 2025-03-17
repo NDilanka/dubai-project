@@ -17,6 +17,7 @@ import dashboardController from "./api/controllers/dashboardController.ts";
 import userRoleController from "./api/controllers/userRoleController.ts";
 import passwordController from "./api/controllers/passwordController.ts";
 import suuperAdminController from "./api/controllers/superAdminController.ts";
+import withdrawRemarksController from "./api/controllers/withdrawRemarksController.ts";
 import { MongoClient, Db } from "mongodb";
 
 const client: MongoClient = await MongoClient.connect(db_uri);
@@ -78,6 +79,8 @@ const server = Bun.serve({
         return await passwordController(req, db);
       } else if (url.pathname === "/api/super-admin") {
         return await suuperAdminController(req, db);
+      } else if (url.pathname === "/api/withdraw-remarks") {
+        return await withdrawRemarksController(req, db);
       } else {
         return new Response("AutoFX API is working!");
       }

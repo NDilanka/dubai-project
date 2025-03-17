@@ -23,6 +23,7 @@ import {
   Select,
   MenuItem,
   Divider,
+  Modal,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
 import { useContext, useEffect, useRef, useState } from "react";
@@ -43,6 +44,7 @@ interface IWtithdrawTableRow {
   id: string;
   amount: string;
   status: "Accepted" | "Pending" | "Rejected";
+  remarks: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -90,12 +92,15 @@ export default function WalletPage() {
   const [recentWithdraw, setRecentWithdraw] = useState("");
   const [recentDeposit, setRecentDeposit] = useState("");
 
-  const [username, setUsername] = useState("")
-  const [bankName, setBankName] = useState("")
-  const [accountnumber, setAccountnumber] = useState("")
-  const [IFSC, setIFSC] = useState("")
-  const [branch, setBranch] = useState("")
-  const [upiAddress, setUpiAddress] = useState("")
+  const [username, setUsername] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [accountnumber, setAccountnumber] = useState("");
+  const [IFSC, setIFSC] = useState("");
+  const [branch, setBranch] = useState("");
+  const [upiAddress, setUpiAddress] = useState("");
+
+  const [showRemarksPopUp, setShowRemarksPopUp] = useState(false);
+  const [selectedRowRemarks, setSelectedRowRemarks] = useState("");
 
   useEffect(() => {
     if (userContext?.user) {
@@ -196,6 +201,7 @@ export default function WalletPage() {
             userId: string;
             amount: number;
             status: string;
+            remarks: string;
             createdAt: string;
             updatedAt: string;
           }) => ({
@@ -203,6 +209,7 @@ export default function WalletPage() {
             userId: withdraw.userId,
             amount: withdraw.amount,
             status: withdraw.status,
+            remarks: withdraw.remarks,
             createdAt: withdraw.createdAt,
             updatedAt: withdraw.updatedAt,
           }),
@@ -414,7 +421,7 @@ export default function WalletPage() {
         body: JSON.stringify({
           userId: userContext.user._id,
           amount: parseFloat(withdrawAmount),
-          method: "USDT"
+          method: "USDT",
         }),
       });
 
@@ -459,7 +466,7 @@ export default function WalletPage() {
           IFSC: IFSC,
           branch: branch,
           upiAddress: upiAddress,
-          method: "BankTransfer"
+          method: "BankTransfer",
         }),
       });
 
@@ -488,6 +495,15 @@ export default function WalletPage() {
     convertBalance(parseFloat(balance.value), event.target.value);
   };
 
+  const handleCloseRemarksPopUp = () => {
+    setShowRemarksPopUp(false);
+  };
+
+  const handleClickViewRemarks = (remarks: string) => {
+    setSelectedRowRemarks(remarks);
+    setShowRemarksPopUp(true);
+  };
+
   return (
     <>
       <Box
@@ -501,6 +517,15 @@ export default function WalletPage() {
         <Slide in={showPopUp} container={containerRef.current}>
           <Alert severity="success">{popUpMessage}</Alert>
         </Slide>
+      </Box>
+
+      <Box>
+        <Dialog
+          open={showRemarksPopUp}
+          onClose={handleCloseRemarksPopUp}
+        >
+          <DialogTitle>{selectedRowRemarks}</DialogTitle>
+        </Dialog>
       </Box>
 
       <Box>
@@ -739,74 +764,75 @@ export default function WalletPage() {
                 {dialogTabIndex === 1 && (
                   <Box>
                     <Box
-                    sx={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "2rem",
-                    }}
-                  >
-                    <TextField
-                      variant="outlined"
-                      label="Name"
-                      type="text"
-                      value={withdrawAmount}
-                      onChange={(e) => setUsername(e.target.value)}
-                    />
-                    <TextField
-                      variant="outlined"
-                      label="Bank Name"
-                      type="text"
-                      value={withdrawAmount}
-                      onChange={(e) => setBankName(e.target.value)}
-                    />
-                    <TextField
-                      variant="outlined"
-                      label="Account Number"
-                      type="text"
-                      value={withdrawAmount}
-                      onChange={(e) => setAccountnumber(e.target.value)}
-                    />
-                    <TextField
-                      variant="outlined"
-                      label="IFSC"
-                      type="text"
-                      value={withdrawAmount}
-                      onChange={(e) => setIFSC(e.target.value)}
-                    />
-                    <TextField
-                      variant="outlined"
-                      label="Branch"
-                      type="text"
-                      value={withdrawAmount}
-                      onChange={(e) => setBranch(e.target.value)}
-                    />
-                    <TextField
-                      variant="outlined"
-                      label="UPI Address"
-                      type="text"
-                      value={withdrawAmount}
-                      onChange={(e) => setUpiAddress(e.target.value)}
-                    />
-                    <TextField
-                      variant="outlined"
-                      label="Amount"
-                      type="number"
-                      value={withdrawAmount}
-                      onChange={(e) => setWithdrawAmount(e.target.value)}
-                    />
-
-                    <Button
-                      fullWidth
-                      disabled={
-                        withdrawAmount.length === 0 && usdtWithdrawFile !== null
-                      }
-                      variant="contained"
-                      color="primary"
-                      onClick={handleSubmitBankTransferWithdraw}
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "2rem",
+                      }}
                     >
-                      Submit Withdraw
-                    </Button>
-                  </Box>
+                      <TextField
+                        variant="outlined"
+                        label="Name"
+                        type="text"
+                        value={withdrawAmount}
+                        onChange={(e) => setUsername(e.target.value)}
+                      />
+                      <TextField
+                        variant="outlined"
+                        label="Bank Name"
+                        type="text"
+                        value={withdrawAmount}
+                        onChange={(e) => setBankName(e.target.value)}
+                      />
+                      <TextField
+                        variant="outlined"
+                        label="Account Number"
+                        type="text"
+                        value={withdrawAmount}
+                        onChange={(e) => setAccountnumber(e.target.value)}
+                      />
+                      <TextField
+                        variant="outlined"
+                        label="IFSC"
+                        type="text"
+                        value={withdrawAmount}
+                        onChange={(e) => setIFSC(e.target.value)}
+                      />
+                      <TextField
+                        variant="outlined"
+                        label="Branch"
+                        type="text"
+                        value={withdrawAmount}
+                        onChange={(e) => setBranch(e.target.value)}
+                      />
+                      <TextField
+                        variant="outlined"
+                        label="UPI Address"
+                        type="text"
+                        value={withdrawAmount}
+                        onChange={(e) => setUpiAddress(e.target.value)}
+                      />
+                      <TextField
+                        variant="outlined"
+                        label="Amount"
+                        type="number"
+                        value={withdrawAmount}
+                        onChange={(e) => setWithdrawAmount(e.target.value)}
+                      />
+
+                      <Button
+                        fullWidth
+                        disabled={
+                          withdrawAmount.length === 0 &&
+                          usdtWithdrawFile !== null
+                        }
+                        variant="contained"
+                        color="primary"
+                        onClick={handleSubmitBankTransferWithdraw}
+                      >
+                        Submit Withdraw
+                      </Button>
+                    </Box>
                   </Box>
                 )}
               </DialogContent>
@@ -986,13 +1012,16 @@ export default function WalletPage() {
                         sx={{ borderBottom: "1px solid #ccc" }}
                       >
                         <TableCell>{data.id}</TableCell>
+
                         <TableCell>
                           {date.getDate()}/{date.getMonth() + 1}/
                           {date.getFullYear()}
                         </TableCell>
+
                         <TableCell>
                           {parseFloat(data.amount).toFixed(2)}
                         </TableCell>
+
                         <TableCell>
                           <Box
                             sx={{
@@ -1042,6 +1071,7 @@ export default function WalletPage() {
                     <TableCell>Date</TableCell>
                     <TableCell>Amount</TableCell>
                     <TableCell>Status</TableCell>
+                    <TableCell>Remarks</TableCell>
                   </TableRow>
                 </TableHead>
 
@@ -1054,13 +1084,16 @@ export default function WalletPage() {
                         sx={{ borderBottom: "1px solid #ccc" }}
                       >
                         <TableCell>{data.id}</TableCell>
+
                         <TableCell>
                           {date.getDate()}/{date.getMonth() + 1}/
                           {date.getFullYear()}
                         </TableCell>
+
                         <TableCell>
                           $ {parseFloat(data.amount).toFixed(2)}
                         </TableCell>
+
                         <TableCell>
                           <Box
                             sx={{
@@ -1078,6 +1111,15 @@ export default function WalletPage() {
                           >
                             {data.status}
                           </Box>
+                        </TableCell>
+
+                        <TableCell>
+                          <Button
+                            variant="contained"
+                            onClick={() => handleClickViewRemarks(data.remarks)}
+                          >
+                            View
+                          </Button>
                         </TableCell>
                       </TableRow>
                     );
