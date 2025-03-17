@@ -100,8 +100,9 @@ export default function Navbar() {
         color="white"
         sx={{ textDecoration: "none" }}
       >
-        <Box component="img" src="/svgs/lemlistlogo_2.svg" />
+        <Box component="img" src="/svgs/logo.svg"  height={36}  width={36} borderRadius={1}/>
         <Box component="span" fontSize={20} fontWeight={700}>
+          &nbsp;
           UCoin
         </Box>
       </Box>
