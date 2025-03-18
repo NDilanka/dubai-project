@@ -849,6 +849,7 @@ export default function WalletPage() {
             >
               Balance
             </Typography>
+            {/*
             <Select
               variant="standard"
               disableUnderline
@@ -860,6 +861,7 @@ export default function WalletPage() {
               <MenuItem value="EUR">EUR</MenuItem>
               <MenuItem value="INR">INR</MenuItem>
             </Select>
+            */}
           </Stack>
 
           <Typography
