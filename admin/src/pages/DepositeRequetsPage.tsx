@@ -114,6 +114,8 @@ export default function DepositeRequestsPage() {
           }),
         );
 
+        deposits.reverse();
+
         setRows(deposits);
       } else {
         // TODO: Display an error message.

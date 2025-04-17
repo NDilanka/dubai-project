@@ -148,6 +148,8 @@ export default function WithdrawRequestsPage() {
           }),
         );
 
+        withdraws.reverse();
+
         setRows(withdraws);
       } else {
         // TODO: Display an error message.

@@ -109,6 +109,8 @@ export default function TradeReportPage() {
 
         const trades = data.map((trade: ITableRow) => trade);
 
+        trades.reverse();
+
         setRows(trades);
       } else {
         // TODO: Add an alert.
