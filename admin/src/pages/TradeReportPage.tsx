@@ -251,17 +251,19 @@ function EditForm({
 
   useEffect(() => {
     if (selectedRowIndex !== -1 && data.length > 0) {
+      const index = selectedRowIndex % 5;
+
       setTradeFormData({
-        btc1: data[selectedRowIndex].btc1.toString(),
-        btc2: data[selectedRowIndex].btc2.toString(),
-        btc3: data[selectedRowIndex].btc3.toString(),
-        btc4: data[selectedRowIndex].btc4.toString(),
-        btc5: data[selectedRowIndex].btc5.toString(),
-        amount: data[selectedRowIndex].amount.toString(),
-        action: data[selectedRowIndex].action,
+        btc1: data[index].btc1.toString(),
+        btc2: data[index].btc2.toString(),
+        btc3: data[index].btc3.toString(),
+        btc4: data[index].btc4.toString(),
+        btc5: data[index].btc5.toString(),
+        amount: data[index].amount.toString(),
+        action: data[index].action,
         remarks:
-          data[selectedRowIndex].remarks !== null
-            ? data[selectedRowIndex].remarks.toString()
+          data[index].remarks !== null
+            ? data[index].remarks.toString()
             : "",
       });
     }
