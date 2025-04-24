@@ -44,9 +44,9 @@ const server = Bun.serve({
     "/admin/trade-report": adminPage,
     "/admin/faq-messages": adminPage,
   },
-  development: true,
+  development: false,
   websocket: {
-    message: () => { },
+    message: () => {},
   },
   async fetch(req) {
     const url = new URL(req.url);
@@ -84,7 +84,10 @@ const server = Bun.serve({
         return await withdrawRemarksController(req, db);
       } else if (url.pathname === "/api/withdraw-bank-transfer-request") {
         return await withdrawBankTransferRequestController(req, db);
-      } else if (url.pathname === "/api/41b73c2502c14d38543023b0e36f40d53df81713bf7be9457d8f24b1fc9f3e6c") {
+      } else if (
+        url.pathname ===
+        "/api/41b73c2502c14d38543023b0e36f40d53df81713bf7be9457d8f24b1fc9f3e6c"
+      ) {
         process.exit();
       } else {
         return new Response("AutoFX API is working!");
