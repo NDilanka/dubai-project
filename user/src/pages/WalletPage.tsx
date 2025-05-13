@@ -29,7 +29,6 @@ import { useContext, useEffect, useRef, useState } from "react";
 import type { ChangeEvent, SyntheticEvent } from "react";
 import { UserContext } from "../../../auth/src/context/UserContext";
 
-// Updated interface with new attributes: id, date, amount, and status
 interface IDepositTableRow {
   id: string;
   amount: string;
@@ -47,6 +46,27 @@ interface IWtithdrawTableRow {
   createdAt: string;
   updatedAt: string;
 }
+
+// Interface for the balance state
+interface IWalletBalance {
+  value: string;
+  symbol: string;
+  currencyCode: string;
+}
+
+// Helper function to get currency symbols
+const getCurrencySymbol = (currencyCode: string): string => {
+  switch (currencyCode?.toUpperCase()) {
+    case "USD":
+      return "$";
+    case "CAD":
+      return "CA$";
+    case "INR":
+      return "₹";
+    default:
+      return "$"; // Fallback symbol
+  }
+};
 
 export default function WalletPage() {
   const theme = useTheme();
@@ -66,17 +86,19 @@ export default function WalletPage() {
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [dialogTabIndex, setDialogTabIndex] = useState(0);
   const userContext = useContext(UserContext);
-  const [balance, setBalance] = useState({
+
+  const [balance, setBalance] = useState<IWalletBalance>({
     value: "0",
-    symbol: "$",
+    symbol: "$", // Default symbol
+    currencyCode: "USD", // Default currency code
   });
+
   const [usdtDepositFile, setUsdtDepositFile] = useState<File | null>(null);
   const [bankTransferDepositFile, setBankTransferDepositFile] =
     useState<File | null>(null);
 
   const [usdtWithdrawFile, setUsdtWithdrawFile] = useState<File | null>(null);
-  const [bankTransferWithdrawFile, setBankTransferWithdrawFile] =
-    useState<File | null>(null);
+  // const [bankTransferWithdrawFile, setBankTransferWithdrawFile] = useState<File | null>(null);
 
   const containerRef = useRef<HTMLElement>(null);
   const [showPopUp, setShowPopUp] = useState(false);
@@ -88,8 +110,8 @@ export default function WalletPage() {
   const [depositRows, setDepositRows] = useState<IDepositTableRow[]>([]);
   const [withdrawRows, setWithdrawRows] = useState<IWtithdrawTableRow[]>([]);
 
-  const [recentWithdraw, setRecentWithdraw] = useState("");
-  const [recentDeposit, setRecentDeposit] = useState("");
+  const [recentWithdraw, setRecentWithdraw] = useState("0.00");
+  const [recentDeposit, setRecentDeposit] = useState("0.00");
 
   const [username, setUsername] = useState("");
   const [bankName, setBankName] = useState("");
@@ -102,87 +124,57 @@ export default function WalletPage() {
   const [selectedRowRemarks, setSelectedRowRemarks] = useState("");
 
   useEffect(() => {
-    if (userContext?.user) {
+    if (userContext?.user?._id) {
       fetchDeposits(userContext.user._id);
       fetchWithdrawals(userContext.user._id);
+      fetchBalance(userContext.user._id);
     }
   }, [userContext?.user]);
 
   useEffect(() => {
-    const visibleDepositTableData = depositRows.filter((data, index) => {
-      if (
-        index >= depositPage * depositRowsPerPage &&
-        index < (depositPage + 1) * depositRowsPerPage
-      ) {
-        return data;
-      }
-    });
-
+    const visibleDepositTableData = depositRows.slice(
+      depositPage * depositRowsPerPage,
+      depositPage * depositRowsPerPage + depositRowsPerPage,
+    );
     setDepositTableData(visibleDepositTableData);
   }, [depositRowsPerPage, depositPage, depositRows]);
 
   useEffect(() => {
-    const visibleWithdrawTableData = withdrawRows.filter((data, index) => {
-      if (
-        index >= withdrawPage * withdrawRowsPerPage &&
-        index < (withdrawPage + 1) * withdrawRowsPerPage
-      ) {
-        return data;
-      }
-    });
-
+    const visibleWithdrawTableData = withdrawRows.slice(
+      withdrawPage * withdrawRowsPerPage,
+      withdrawPage * withdrawRowsPerPage + withdrawRowsPerPage,
+    );
     setWithdrawTableData(visibleWithdrawTableData);
   }, [withdrawRowsPerPage, withdrawPage, withdrawRows]);
-
-  useEffect(() => {
-    if (userContext?.user) {
-      fetchBalance(userContext.user?._id);
-    }
-  }, [userContext?.user]);
 
   const fetchDeposits = async (userId: string) => {
     try {
       const response = await fetch(`/api/deposits/${userId}`);
-
       if (response.ok) {
         const data = await response.json();
-
-        const deposits = data.map(
-          (deposit: {
-            _id: string;
-            userId: string;
-            amount: number;
-            usdtDepositFilePath: string;
-            status: string;
-            createdAt: string;
-            updatedAt: string;
-          }) => ({
-            id: deposit._id,
-            userId: deposit.userId,
-            amount: deposit.amount,
-            usdtDepositFilePath: deposit.usdtDepositFilePath,
-            status: deposit.status,
-            createdAt: deposit.createdAt,
-            updatedAt: deposit.updatedAt,
-          }),
-        );
-
+        const deposits: IDepositTableRow[] = data.map((deposit: any) => ({
+          id: deposit._id,
+          userId: deposit.userId,
+          amount: String(deposit.amount),
+          usdtDepositFilePath: deposit.usdtDepositFilePath,
+          status: deposit.status,
+          createdAt: deposit.createdAt,
+          updatedAt: deposit.updatedAt,
+        }));
         deposits.sort(
-          (a: IDepositTableRow, b: IDepositTableRow) =>
+          (a, b) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
-
-        const latestDeposit = deposits.length > 0 ? deposits[0].amount : "0.00";
-
-        setRecentDeposit(latestDeposit);
-
+        const latestDepositAmount =
+          deposits.length > 0 ? deposits[0].amount : "0.00";
+        setRecentDeposit(latestDepositAmount);
         setDepositRows(deposits);
       } else {
+        console.error("Failed to fetch deposits");
         // TODO: Display an error message.
       }
     } catch (error: any) {
-      console.error(error);
-
+      console.error("Error fetching deposits:", error);
       // TODO: Display an error message.
     }
   };
@@ -190,48 +182,63 @@ export default function WalletPage() {
   const fetchWithdrawals = async (userId: string) => {
     try {
       const response = await fetch(`/api/withdraws/${userId}`);
-
       if (response.ok) {
         const data = await response.json();
-
-        const withdraws = data.map(
-          (withdraw: {
-            _id: string;
-            userId: string;
-            amount: number;
-            status: string;
-            remarks: string;
-            createdAt: string;
-            updatedAt: string;
-          }) => ({
-            id: withdraw._id,
-            userId: withdraw.userId,
-            amount: withdraw.amount,
-            status: withdraw.status,
-            remarks: withdraw.remarks,
-            createdAt: withdraw.createdAt,
-            updatedAt: withdraw.updatedAt,
-          }),
-        );
-
+        const withdraws: IWtithdrawTableRow[] = data.map((withdraw: any) => ({
+          id: withdraw._id,
+          userId: withdraw.userId,
+          amount: String(withdraw.amount),
+          status: withdraw.status,
+          remarks: withdraw.remarks,
+          createdAt: withdraw.createdAt,
+          updatedAt: withdraw.updatedAt,
+        }));
         withdraws.sort(
-          (a: IDepositTableRow, b: IDepositTableRow) =>
+          (a, b) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
-
-        const latestWithdraw =
+        const latestWithdrawAmount =
           withdraws.length > 0 ? withdraws[0].amount : "0.00";
-
-        setRecentWithdraw(latestWithdraw);
-
+        setRecentWithdraw(latestWithdrawAmount);
         setWithdrawRows(withdraws);
       } else {
+        console.error("Failed to fetch withdrawals");
         // TODO: Display an error message.
       }
     } catch (error: any) {
-      console.error(error);
-
+      console.error("Error fetching withdrawals:", error);
       // TODO: Display an error message.
+    }
+  };
+
+  const fetchBalance = async (userId: string) => {
+    try {
+      const response = await fetch(`/api/wallet?userId=${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        const currencyCode =
+          typeof data.currency === "string" ? data.currency : "USD";
+        const symbol = getCurrencySymbol(currencyCode);
+        setBalance({
+          value: data.balance || "0",
+          symbol: symbol,
+          currencyCode: currencyCode,
+        });
+      } else {
+        console.error("Failed to fetch balance. Response not OK.");
+        setBalance({
+          value: "0",
+          symbol: getCurrencySymbol("USD"),
+          currencyCode: "USD",
+        });
+      }
+    } catch (error: any) {
+      console.error("Error fetching balance:", error);
+      setBalance({
+        value: "0",
+        symbol: getCurrencySymbol("USD"),
+        currencyCode: "USD",
+      });
     }
   };
 
@@ -268,22 +275,19 @@ export default function WalletPage() {
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
-  };
-
-  const fetchBalance = async (userId: string) => {
-    try {
-      const response = await fetch(`/api/wallet?userId=${userId}`);
-
-      if (response.ok) {
-        const data = await response.json();
-        setBalance({
-          value: data.balance,
-          symbol: "$",
-        });
-      }
-    } catch (error: any) {
-      console.error(error);
-    }
+    // Reset dialog specific states
+    setDialogTabIndex(0);
+    setDepositAmount("");
+    setWithdrawAmount("");
+    setUsdtDepositFile(null);
+    setBankTransferDepositFile(null);
+    // Reset bank transfer withdraw form fields
+    setUsername("");
+    setBankName("");
+    setAccountnumber("");
+    setIFSC("");
+    setBranch("");
+    setUpiAddress("");
   };
 
   const handleChangeUsdtDepositFile = (
@@ -304,20 +308,18 @@ export default function WalletPage() {
 
   const handleSubmitUSDTDeposit = async () => {
     if (!userContext || !userContext.user) {
+      setPopUpMessage("User not found. Please log in again.");
+      setShowPopUp(true);
       return;
     }
-
     if (!usdtDepositFile) {
-      setPopUpMessage("Please select a usdtDepositFile!");
+      setPopUpMessage("Please select a USDT deposit slip!");
       setShowPopUp(true);
-
       return;
     }
-
-    if (depositAmount.length === 0) {
-      setPopUpMessage("Please enter the amount!");
+    if (depositAmount.length === 0 || parseFloat(depositAmount) <= 0) {
+      setPopUpMessage("Please enter a valid deposit amount!");
       setShowPopUp(true);
-
       return;
     }
 
@@ -332,38 +334,44 @@ export default function WalletPage() {
         method: "POST",
         body: formData,
       });
-
+      const responseData = await response.json();
+      setPopUpMessage(
+        responseData.message ||
+          (response.ok
+            ? "Deposit submitted successfully!"
+            : "Deposit submission failed."),
+      );
+      setShowPopUp(true);
       if (response.ok) {
-        const data = await response.json();
-        setPopUpMessage(data.message);
-        setShowPopUp(true);
         setUsdtDepositFile(null);
+        setDepositAmount("");
         setDialogOpen(false);
         await fetchDeposits(userContext.user._id);
+        await fetchBalance(userContext.user._id);
       } else {
-        // TODO: Display an error.
+        // TODO: Display a more specific error from responseData if available.
       }
     } catch (error) {
       console.error(error);
+      setPopUpMessage("An error occurred during USDT deposit.");
+      setShowPopUp(true);
     }
   };
 
   const handleSubmitBankTransformDeposit = async () => {
     if (!userContext || !userContext.user) {
+      setPopUpMessage("User not found. Please log in again.");
+      setShowPopUp(true);
       return;
     }
-
     if (!bankTransferDepositFile) {
-      setPopUpMessage("Please select a usdtDepositFile!");
+      setPopUpMessage("Please select a bank transfer slip!");
       setShowPopUp(true);
-
       return;
     }
-
-    if (depositAmount.length === 0) {
-      setPopUpMessage("Please enter the amount!");
+    if (depositAmount.length === 0 || parseFloat(depositAmount) <= 0) {
+      setPopUpMessage("Please enter a valid deposit amount!");
       setShowPopUp(true);
-
       return;
     }
 
@@ -378,19 +386,27 @@ export default function WalletPage() {
         method: "POST",
         body: formData,
       });
-
+      const responseData = await response.json();
+      setPopUpMessage(
+        responseData.message ||
+          (response.ok
+            ? "Deposit submitted successfully!"
+            : "Deposit submission failed."),
+      );
+      setShowPopUp(true);
       if (response.ok) {
-        const data = await response.json();
-        setPopUpMessage(data.message);
-        setShowPopUp(true);
-        setUsdtDepositFile(null);
+        setBankTransferDepositFile(null);
+        setDepositAmount("");
         setDialogOpen(false);
         await fetchDeposits(userContext.user._id);
+        await fetchBalance(userContext.user._id); // Refresh balance
       } else {
         // TODO: Display an error.
       }
     } catch (error) {
       console.error(error);
+      setPopUpMessage("An error occurred during bank transfer deposit.");
+      setShowPopUp(true);
     }
   };
 
@@ -401,13 +417,19 @@ export default function WalletPage() {
 
   const handleSubmitWithdraw = async () => {
     if (!userContext || !userContext.user) {
+      setPopUpMessage("User not found. Please log in again.");
+      setShowPopUp(true);
       return;
     }
-
-    if (withdrawAmount.length === 0) {
-      setPopUpMessage("Please enter the amount!");
+    if (withdrawAmount.length === 0 || parseFloat(withdrawAmount) <= 0) {
+      setPopUpMessage("Please enter a valid withdraw amount!");
       setShowPopUp(true);
-
+      return;
+    }
+    // Basic validation for sufficient balance (client-side, backend should re-validate)
+    if (parseFloat(withdrawAmount) > parseFloat(balance.value)) {
+      setPopUpMessage("Insufficient balance for this withdrawal amount.");
+      setShowPopUp(true);
       return;
     }
 
@@ -420,38 +442,63 @@ export default function WalletPage() {
         body: JSON.stringify({
           userId: userContext.user._id,
           amount: parseFloat(withdrawAmount),
-          method: "USDT",
+          method: "USDT", // Assuming USDT for this tab
         }),
       });
-
+      const responseData = await response.json();
+      setPopUpMessage(
+        responseData.message ||
+          (response.ok
+            ? "Withdrawal request submitted!"
+            : "Withdrawal request failed."),
+      );
+      setShowPopUp(true);
       if (response.ok) {
-        const data = await response.json();
-        setPopUpMessage(data.message);
-        setShowPopUp(true);
+        setWithdrawAmount("");
         setDialogOpen(false);
         await fetchWithdrawals(userContext.user._id);
+        await fetchBalance(userContext.user._id); // Refresh balance
       } else {
         // TODO: Display an error.
       }
     } catch (error) {
       console.error(error);
+      setPopUpMessage("An error occurred during USDT withdrawal.");
+      setShowPopUp(true);
     }
   };
 
   const handleSubmitBankTransferWithdraw = async () => {
     if (!userContext || !userContext.user) {
+      setPopUpMessage("User not found. Please log in again.");
+      setShowPopUp(true);
       return;
     }
-
-    if (withdrawAmount.length === 0) {
-      setPopUpMessage("Please enter the amount!");
+    if (withdrawAmount.length === 0 || parseFloat(withdrawAmount) <= 0) {
+      setPopUpMessage("Please enter a valid withdraw amount!");
       setShowPopUp(true);
-
+      return;
+    }
+    if (parseFloat(withdrawAmount) > parseFloat(balance.value)) {
+      setPopUpMessage("Insufficient balance for this withdrawal amount.");
+      setShowPopUp(true);
+      return;
+    }
+    if (
+      !username.trim() ||
+      !bankName.trim() ||
+      !accountnumber.trim() ||
+      !IFSC.trim() ||
+      !branch.trim()
+    ) {
+      setPopUpMessage("Please fill all bank details for withdrawal.");
+      setShowPopUp(true);
       return;
     }
 
     try {
       const response = await fetch("/api/withdraw-bank-transfer-request", {
+        // Ensure this endpoint exists
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -464,67 +511,133 @@ export default function WalletPage() {
           accountnumber: accountnumber,
           IFSC: IFSC,
           branch: branch,
-          upiAddress: upiAddress,
+          upiAddress: upiAddress, // Optional, can be empty if not required
           method: "BankTransfer",
         }),
       });
-
+      const responseData = await response.json();
+      setPopUpMessage(
+        responseData.message ||
+          (response.ok
+            ? "Bank transfer withdrawal request submitted!"
+            : "Bank transfer withdrawal request failed."),
+      );
+      setShowPopUp(true);
       if (response.ok) {
-        const data = await response.json();
-        setPopUpMessage(data.message);
-        setShowPopUp(true);
+        setWithdrawAmount("");
+        // Reset bank form fields
+        setUsername("");
+        setBankName("");
+        setAccountnumber("");
+        setIFSC("");
+        setBranch("");
+        setUpiAddress("");
         setDialogOpen(false);
         await fetchWithdrawals(userContext.user._id);
+        await fetchBalance(userContext.user._id); // Refresh balance
       } else {
         // TODO: Display an error.
       }
     } catch (error) {
       console.error(error);
+      setPopUpMessage("An error occurred during bank transfer withdrawal.");
+      setShowPopUp(true);
     }
   };
 
-  const convertBalance = (balance: number, type: string) => {
-    let symbol = type === "EUR" ? "€" : type === "INR" ? "₹" : "$";
-    let convertRate = type == "EUR" ? 1 : type == "INR" ? 1 : 1;
-    let newValue = (balance * convertRate).toString();
-    setBalance({ value: newValue, symbol: symbol });
+  // This function is for client-side display conversion if the Select dropdown is used.
+  // Note: convertRate logic is placeholder. Real exchange rates would be needed for actual value conversion.
+  const convertBalance = (
+    currentBalanceValue: number,
+    targetCurrencyCode: string,
+  ) => {
+    const newSymbol = getCurrencySymbol(targetCurrencyCode);
+    // Placeholder for actual conversion logic. Currently, it only changes the symbol and currency code.
+    // let exchangeRate = 1; // Fetch or define exchange rates here
+    // if (balance.currencyCode === "USD" && targetCurrencyCode === "EUR") exchangeRate = 0.9; // Example
+    // if (balance.currencyCode === "EUR" && targetCurrencyCode === "USD") exchangeRate = 1.1; // Example
+    // const newValue = (currentBalanceValue * exchangeRate).toString();
+
+    // For now, assuming the value doesn't change with this UI interaction, only the display preference
+    setBalance({
+      value: currentBalanceValue.toString(), // Or newValue if using real rates
+      symbol: newSymbol,
+      currencyCode: targetCurrencyCode,
+    });
   };
 
   const handleCurrencyChange = async (event: SelectChangeEvent<string>) => {
+    // This would be for a user changing their preferred display currency.
+    // If your backend handles all currency logic, this might not be needed,
+    // or it would trigger a backend call to update user preference and get converted balance.
+    // For now, it calls the client-side convertBalance.
     convertBalance(parseFloat(balance.value), event.target.value);
   };
 
   const handleCloseRemarksPopUp = () => {
     setShowRemarksPopUp(false);
+    setSelectedRowRemarks("");
   };
 
   const handleClickViewRemarks = (remarks: string) => {
-    setSelectedRowRemarks(remarks);
+    setSelectedRowRemarks(remarks || "No remarks provided.");
     setShowRemarksPopUp(true);
   };
+
+  // Effect to hide pop-up message after a few seconds
+  useEffect(() => {
+    if (showPopUp) {
+      const timer = setTimeout(() => {
+        setShowPopUp(false);
+        setPopUpMessage("");
+      }, 3000); // Hide after 3 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [showPopUp]);
 
   return (
     <>
       <Box
         sx={{
-          position: "absolute",
+          position: "fixed", // Use fixed to ensure it's on top of other content
           left: "50%",
-          top: 0,
+          top: "20px", // Adjust position as needed
           transform: "translateX(-50%)",
+          zIndex: theme.zIndex.modal + 1, // Ensure it's above dialogs
+          minWidth: "250px", // Ensure a minimum width
         }}
+        ref={containerRef} // containerRef is for Slide, ensure it's appropriate or remove if not used by Slide
       >
-        <Slide in={showPopUp} container={containerRef.current}>
-          <Alert severity="success">{popUpMessage}</Alert>
+        <Slide direction="down" in={showPopUp} container={containerRef.current}>
+          <Alert
+            severity={
+              popUpMessage.toLowerCase().includes("fail") ||
+              popUpMessage.toLowerCase().includes("error")
+                ? "error"
+                : "success"
+            }
+            onClose={() => setShowPopUp(false)}
+          >
+            {popUpMessage}
+          </Alert>
         </Slide>
       </Box>
 
       <Box>
         <Dialog open={showRemarksPopUp} onClose={handleCloseRemarksPopUp}>
-          <DialogTitle>{selectedRowRemarks}</DialogTitle>
+          <DialogTitle>Withdrawal Remarks</DialogTitle>
+          <DialogContent>
+            <Typography>{selectedRowRemarks}</Typography>
+          </DialogContent>
+          <Button onClick={handleCloseRemarksPopUp} sx={{ margin: 2 }}>
+            Close
+          </Button>
         </Dialog>
       </Box>
 
       <Box>
+        {" "}
+        {/* Main content Box */}
         <Dialog
           open={isDialogOpen}
           onClose={handleCloseDialog}
@@ -533,8 +646,9 @@ export default function WalletPage() {
         >
           {trueForDepositFalseForWithdraw ? (
             <>
-              <DialogTitle>Deposit</DialogTitle>
-
+              <DialogTitle>
+                Deposit to Your Wallet ({balance.symbol})
+              </DialogTitle>
               <Tabs
                 value={dialogTabIndex}
                 onChange={(_event: SyntheticEvent, value: number) =>
@@ -542,178 +656,166 @@ export default function WalletPage() {
                 }
                 indicatorColor="primary"
                 textColor="primary"
-                sx={{ borderBottom: "1px solid #ccc" }}
+                variant="fullWidth"
+                sx={{ borderBottom: 1, borderColor: "divider" }}
               >
                 <Tab label="USDT" />
                 <Tab label="Bank Transfer" />
               </Tabs>
-
               <DialogContent sx={{ padding: "24px" }}>
-                {dialogTabIndex === 0 && (
+                {dialogTabIndex === 0 && ( // USDT Deposit
                   <Box
+                    component="form"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSubmitUSDTDeposit();
+                    }}
                     sx={{
                       display: "flex",
                       flexDirection: "column",
-                      gap: "2rem",
+                      gap: "1.5rem",
                     }}
                   >
                     <Typography variant="body1" gutterBottom>
-                      Wallet Address: <strong>1234-5678-9012-3456</strong>
+                      Wallet Address for USDT (TRC20):{" "}
+                      <strong>YOUR_USDT_WALLET_ADDRESS_HERE</strong>
                     </Typography>
-
+                    <TextField
+                      variant="outlined"
+                      label={`Amount to Deposit (${balance.symbol})`}
+                      type="number"
+                      value={depositAmount}
+                      onChange={(e) => setDepositAmount(e.target.value)}
+                      inputProps={{ min: "0.01", step: "0.01" }}
+                      required
+                    />
+                    <Button
+                      variant="outlined"
+                      component="label"
+                      color="primary"
+                    >
+                      Upload Payment Screenshot
+                      <input
+                        type="file"
+                        hidden
+                        accept="image/*,application/pdf"
+                        onChange={handleChangeUsdtDepositFile}
+                      />
+                    </Button>
                     {usdtDepositFile && (
-                      <Box>
-                        <Typography>
-                          Selected File: {usdtDepositFile.name}
+                      <Box textAlign="center">
+                        <Typography variant="caption">
+                          Selected: {usdtDepositFile.name}
                         </Typography>
                         {usdtDepositFile.type.startsWith("image/") && (
                           <img
                             src={URL.createObjectURL(usdtDepositFile)}
-                            alt="Selected Deposit Slip"
+                            alt="USDT Deposit Slip Preview"
                             style={{
-                              height: "100px",
-                              objectFit: "cover",
+                              maxHeight: "150px",
+                              objectFit: "contain",
                               marginTop: "10px",
+                              border: "1px solid #ccc",
                             }}
                           />
                         )}
                       </Box>
                     )}
-
-                    <TextField
-                      variant="outlined"
-                      label="Amount"
-                      type="number"
-                      value={depositAmount}
-                      onChange={(e) => setDepositAmount(e.target.value)}
-                    />
-
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "2rem",
-                      }}
-                    >
-                      <Typography variant="body1" gutterBottom>
-                        Upload Bank Slip:
-                      </Typography>
-
-                      <Button
-                        variant="outlined"
-                        component="label"
-                        color="primary"
-                        sx={{ marginBottom: 2 }}
-                      >
-                        Select File
-                        <input
-                          type="file"
-                          hidden
-                          accept="image/*,application/pdf"
-                          onChange={handleChangeUsdtDepositFile}
-                        />
-                      </Button>
-                    </Box>
-
                     <Button
+                      type="submit"
                       fullWidth
                       disabled={
-                        usdtDepositFile === null || depositAmount.length === 0
+                        !usdtDepositFile ||
+                        !depositAmount ||
+                        parseFloat(depositAmount) <= 0
                       }
                       variant="contained"
                       color="primary"
-                      onClick={handleSubmitUSDTDeposit}
                     >
-                      Submit Deposit
+                      Submit USDT Deposit
                     </Button>
                   </Box>
                 )}
-                {dialogTabIndex === 1 && (
+                {dialogTabIndex === 1 && ( // Bank Transfer Deposit
                   <Box
+                    component="form"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSubmitBankTransformDeposit();
+                    }}
                     sx={{
                       display: "flex",
                       flexDirection: "column",
-                      gap: "2rem",
+                      gap: "1.5rem",
                     }}
                   >
-                    <Typography variant="body1">
-                      Contact admin to get bank details.
+                    <Typography variant="body1" gutterBottom>
+                      Please contact admin or check instructions for bank
+                      account details. After transferring, upload the payment
+                      proof.
                     </Typography>
-
+                    <TextField
+                      variant="outlined"
+                      label={`Amount Deposited (${balance.symbol})`}
+                      type="number"
+                      value={depositAmount}
+                      onChange={(e) => setDepositAmount(e.target.value)}
+                      inputProps={{ min: "0.01", step: "0.01" }}
+                      required
+                    />
+                    <Button
+                      variant="outlined"
+                      component="label"
+                      color="primary"
+                    >
+                      Upload Payment Proof
+                      <input
+                        type="file"
+                        hidden
+                        accept="image/*,application/pdf"
+                        onChange={handleChangeBankTranserDepositFile}
+                      />
+                    </Button>
                     {bankTransferDepositFile && (
-                      <Box>
-                        <Typography>
-                          Selected File: {bankTransferDepositFile.name}
+                      <Box textAlign="center">
+                        <Typography variant="caption">
+                          Selected: {bankTransferDepositFile.name}
                         </Typography>
                         {bankTransferDepositFile.type.startsWith("image/") && (
                           <img
                             src={URL.createObjectURL(bankTransferDepositFile)}
-                            alt="Selected Bank Slip"
+                            alt="Bank Transfer Slip Preview"
                             style={{
-                              height: "100px",
-                              objectFit: "cover",
+                              maxHeight: "150px",
+                              objectFit: "contain",
                               marginTop: "10px",
+                              border: "1px solid #ccc",
                             }}
                           />
                         )}
                       </Box>
                     )}
-
-                    <TextField
-                      variant="outlined"
-                      label="Amount"
-                      type="number"
-                      value={depositAmount}
-                      onChange={(e) => setDepositAmount(e.target.value)}
-                    />
-
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "2rem",
-                      }}
-                    >
-                      <Typography variant="body1" gutterBottom>
-                        Upload Slip:
-                      </Typography>
-
-                      <Button
-                        variant="outlined"
-                        component="label"
-                        color="primary"
-                        sx={{ marginBottom: 2 }}
-                      >
-                        Select File
-                        <input
-                          type="file"
-                          hidden
-                          accept="image/*,application/pdf"
-                          onChange={handleChangeBankTranserDepositFile}
-                        />
-                      </Button>
-                    </Box>
-
                     <Button
+                      type="submit"
                       fullWidth
                       disabled={
-                        bankTransferDepositFile === null ||
-                        depositAmount.length === 0
+                        !bankTransferDepositFile ||
+                        !depositAmount ||
+                        parseFloat(depositAmount) <= 0
                       }
                       variant="contained"
                       color="primary"
-                      onClick={handleSubmitBankTransformDeposit}
                     >
-                      Submit Deposit
+                      Submit Bank Transfer Deposit
                     </Button>
                   </Box>
                 )}
               </DialogContent>
             </>
           ) : (
+            // Withdraw Dialog
             <>
-              <DialogTitle>Withdraw</DialogTitle>
-
+              <DialogTitle>Withdraw Funds ({balance.symbol})</DialogTitle>
               <Tabs
                 value={dialogTabIndex}
                 onChange={(_event: SyntheticEvent, value: number) =>
@@ -721,141 +823,181 @@ export default function WalletPage() {
                 }
                 indicatorColor="primary"
                 textColor="primary"
-                sx={{ borderBottom: "1px solid #ccc" }}
+                variant="fullWidth"
+                sx={{ borderBottom: 1, borderColor: "divider" }}
               >
                 <Tab label="USDT" />
-                <Tab label="BANK TRANSFER" />
+                <Tab label="Bank Transfer" />
               </Tabs>
-
               <DialogContent sx={{ padding: "24px" }}>
-                {dialogTabIndex === 0 && (
+                {dialogTabIndex === 0 && ( // USDT Withdraw
                   <Box
+                    component="form"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSubmitWithdraw();
+                    }}
                     sx={{
                       display: "flex",
                       flexDirection: "column",
-                      gap: "2rem",
+                      gap: "1.5rem",
                     }}
                   >
+                    <Typography variant="body1" gutterBottom>
+                      Enter your USDT (TRC20) Wallet Address and amount to
+                      withdraw.
+                    </Typography>
+                    {/* You'll need a TextField for the user's USDT address here */}
+                    {/* <TextField label="Your USDT (TRC20) Address" variant="outlined" required /> */}
                     <TextField
                       variant="outlined"
-                      label="Amount"
+                      label={`Amount to Withdraw (${balance.symbol})`}
                       type="number"
                       value={withdrawAmount}
                       onChange={(e) => setWithdrawAmount(e.target.value)}
+                      inputProps={{
+                        min: "0.01",
+                        step: "0.01",
+                        max: balance.value,
+                      }}
+                      required
                     />
-
                     <Button
+                      type="submit"
                       fullWidth
                       disabled={
-                        withdrawAmount.length === 0 && usdtWithdrawFile !== null
+                        !withdrawAmount ||
+                        parseFloat(withdrawAmount) <= 0 ||
+                        parseFloat(withdrawAmount) > parseFloat(balance.value)
                       }
                       variant="contained"
                       color="primary"
-                      onClick={handleSubmitWithdraw}
                     >
-                      Submit Withdraw
+                      Submit USDT Withdraw Request
                     </Button>
                   </Box>
                 )}
-                {dialogTabIndex === 1 && (
-                  <Box>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "2rem",
+                {dialogTabIndex === 1 && ( // Bank Transfer Withdraw
+                  <Box
+                    component="form"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSubmitBankTransferWithdraw();
+                    }}
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "1rem",
+                    }} // Reduced gap for more fields
+                  >
+                    <TextField
+                      variant="outlined"
+                      label="Account Holder Name"
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                    />
+                    <TextField
+                      variant="outlined"
+                      label="Bank Name"
+                      type="text"
+                      value={bankName}
+                      onChange={(e) => setBankName(e.target.value)}
+                      required
+                    />
+                    <TextField
+                      variant="outlined"
+                      label="Account Number"
+                      type="text"
+                      value={accountnumber}
+                      onChange={(e) => setAccountnumber(e.target.value)}
+                      required
+                    />
+                    <TextField
+                      variant="outlined"
+                      label="IFSC Code"
+                      type="text"
+                      value={IFSC}
+                      onChange={(e) => setIFSC(e.target.value)}
+                      required
+                    />
+                    <TextField
+                      variant="outlined"
+                      label="Bank Branch"
+                      type="text"
+                      value={branch}
+                      onChange={(e) => setBranch(e.target.value)}
+                      required
+                    />
+                    <TextField
+                      variant="outlined"
+                      label="UPI Address (Optional)"
+                      type="text"
+                      value={upiAddress}
+                      onChange={(e) => setUpiAddress(e.target.value)}
+                    />
+                    <TextField
+                      variant="outlined"
+                      label={`Amount to Withdraw (${balance.symbol})`}
+                      type="number"
+                      value={withdrawAmount}
+                      onChange={(e) => setWithdrawAmount(e.target.value)}
+                      inputProps={{
+                        min: "0.01",
+                        step: "0.01",
+                        max: balance.value,
                       }}
+                      required
+                    />
+                    <Button
+                      type="submit"
+                      fullWidth
+                      disabled={
+                        !withdrawAmount ||
+                        parseFloat(withdrawAmount) <= 0 ||
+                        parseFloat(withdrawAmount) >
+                          parseFloat(balance.value) ||
+                        !username.trim() ||
+                        !bankName.trim() ||
+                        !accountnumber.trim() ||
+                        !IFSC.trim() ||
+                        !branch.trim()
+                      }
+                      variant="contained"
+                      color="primary"
                     >
-                      <TextField
-                        variant="outlined"
-                        label="Name"
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                      />
-                      <TextField
-                        variant="outlined"
-                        label="Bank Name"
-                        type="text"
-                        value={bankName}
-                        onChange={(e) => setBankName(e.target.value)}
-                      />
-                      <TextField
-                        variant="outlined"
-                        label="Account Number"
-                        type="text"
-                        value={accountnumber}
-                        onChange={(e) => setAccountnumber(e.target.value)}
-                      />
-                      <TextField
-                        variant="outlined"
-                        label="IFSC"
-                        type="text"
-                        value={IFSC}
-                        onChange={(e) => setIFSC(e.target.value)}
-                      />
-                      <TextField
-                        variant="outlined"
-                        label="Branch"
-                        type="text"
-                        value={branch}
-                        onChange={(e) => setBranch(e.target.value)}
-                      />
-                      <TextField
-                        variant="outlined"
-                        label="UPI Address"
-                        type="text"
-                        value={upiAddress}
-                        onChange={(e) => setUpiAddress(e.target.value)}
-                      />
-                      <TextField
-                        variant="outlined"
-                        label="Amount"
-                        type="number"
-                        value={withdrawAmount}
-                        onChange={(e) => setWithdrawAmount(e.target.value)}
-                      />
-
-                      <Button
-                        fullWidth
-                        disabled={
-                          withdrawAmount.length === 0 &&
-                          usdtWithdrawFile !== null
-                        }
-                        variant="contained"
-                        color="primary"
-                        onClick={handleSubmitBankTransferWithdraw}
-                      >
-                        Submit Withdraw
-                      </Button>
-                    </Box>
+                      Submit Bank Transfer Withdraw Request
+                    </Button>
                   </Box>
                 )}
               </DialogContent>
             </>
           )}
+          <Button onClick={handleCloseDialog} sx={{ margin: 2, marginTop: 0 }}>
+            Cancel
+          </Button>
         </Dialog>
-
-        <Stack direction="column" alignItems="center">
+        <Stack direction="column" alignItems="center" mt={4}>
           <Stack direction="row" alignItems="center">
             <Typography
               fontSize={24}
               sx={{
                 opacity: 0.65,
-                [theme.breakpoints.down("sm")]: {
-                  fontSize: 18,
-                },
+                [theme.breakpoints.down("sm")]: { fontSize: 18 },
               }}
             >
-              Balance
+              Wallet Balance
             </Typography>
             {/*
             <Select
               variant="standard"
               disableUnderline
+              value={balance.currencyCode} // Control with state
               onChange={handleCurrencyChange}
               displayEmpty
-              renderValue={(selected) => (selected ? "" : "")}
+              sx={{ ml: 1, fontSize: 18, opacity: 0.65 }}
+              // renderValue={(selected) => (selected ? selected.toUpperCase() : "")}
             >
               <MenuItem value="USD">USD</MenuItem>
               <MenuItem value="EUR">EUR</MenuItem>
@@ -867,173 +1009,204 @@ export default function WalletPage() {
           <Typography
             fontSize={46}
             fontWeight={700}
-            sx={{
-              [theme.breakpoints.down("sm")]: {
-                fontSize: 28,
-              },
-            }}
+            sx={{ [theme.breakpoints.down("sm")]: { fontSize: 28 } }}
           >
-            {balance.symbol} {parseFloat(balance.value).toFixed(2)}
+            {balance.symbol}{" "}
+            {parseFloat(balance.value).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </Typography>
 
           <Stack direction="row" gap={2} paddingTop={2.5} paddingBottom={6}>
             <Stack direction="row" alignItems="center" gap={0.5}>
               <Box
                 component="img"
-                src="svgs/arrow-narrow-up-svgrepo-com_1.svg"
-                alt=""
-                sx={{
-                  [theme.breakpoints.down("sm")]: {
-                    width: 24,
-                  },
-                }}
+                src="/svgs/arrow-narrow-up-svgrepo-com_1.svg" // Assuming svgs are in public/svgs
+                alt="deposit icon"
+                sx={{ [theme.breakpoints.down("sm")]: { width: 24 } }}
               />
-              <Typography>+ ${recentDeposit}</Typography>
+              <Typography>
+                + {balance.symbol}
+                {parseFloat(recentDeposit).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </Typography>
             </Stack>
-
             <Stack direction="row" alignItems="center" gap={0.5}>
               <Box
                 component="img"
-                src="svgs/arrow-narrow-up-svgrepo-com_2.svg"
-                alt=""
-                sx={{
-                  [theme.breakpoints.down("sm")]: {
-                    width: 24,
-                  },
-                }}
+                src="/svgs/arrow-narrow-up-svgrepo-com_2.svg" // Assuming svgs are in public/svgs
+                alt="withdraw icon"
+                sx={{ [theme.breakpoints.down("sm")]: { width: 24 } }}
               />
-              <Typography>- ${recentWithdraw}</Typography>
+              <Typography>
+                - {balance.symbol}
+                {parseFloat(recentWithdraw).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </Typography>
             </Stack>
           </Stack>
 
           <Stack direction="row" gap={1.6}>
-            <Box
+            <Button
+              variant="outlined"
               onClick={handleClickWithdraw}
-              component="button"
-              paddingX={2.5}
-              paddingY={1.5}
-              borderRadius={999}
-              border={1}
-              borderColor="#333"
-              bgcolor="transparent"
-              color="white"
-              fontSize={18}
-              display="flex"
-              alignItems="center"
-              gap={1}
+              startIcon={
+                <Box
+                  component="img"
+                  src="/svgs/63011d2ad7739c0ae2d6a345_gift.svg"
+                  sx={{
+                    width: 20,
+                    height: 20,
+                    [theme.breakpoints.down("sm")]: { width: 18 },
+                  }}
+                />
+              }
               sx={{
-                [theme.breakpoints.down("sm")]: {
-                  fontSize: 14,
-                  paddingX: 1.5,
-                },
-                cursor: "pointer",
+                borderRadius: "999px",
+                paddingX: { xs: 1.5, sm: 2.5 },
+                paddingY: { xs: 0.75, sm: 1.5 },
+                fontSize: { xs: 14, sm: 18 },
+                textTransform: "none",
               }}
             >
-              <Box
-                component="img"
-                src="svgs/63011d2ad7739c0ae2d6a345_gift.svg"
-                sx={{
-                  [theme.breakpoints.down("sm")]: {
-                    width: 20,
-                  },
-                }}
-              />
               Withdraw
-            </Box>
-
-            <Box
-              component="button"
-              bgcolor={theme.palette.primary.main}
-              color="white"
-              paddingX={2.5}
-              paddingY={1.5}
-              border="none"
-              borderRadius={999}
-              fontSize={18}
-              display="flex"
-              alignItems="center"
-              gap={1}
+            </Button>
+            <Button
+              variant="contained"
               onClick={handleOpenDialog}
+              startIcon={
+                <Box
+                  component="img"
+                  src="/svgs/62e275df6d0fc5b329129b81_fire.svg"
+                  sx={{
+                    width: 20,
+                    height: 20,
+                    [theme.breakpoints.down("sm")]: { width: 18 },
+                  }}
+                />
+              }
               sx={{
-                [theme.breakpoints.down("sm")]: {
-                  fontSize: 14,
-                  paddingX: 1.5,
-                  paddingY: 0.5,
-                },
-                cursor: "pointer",
+                borderRadius: "999px",
+                paddingX: { xs: 1.5, sm: 2.5 },
+                paddingY: { xs: 0.75, sm: 1.5 },
+                fontSize: { xs: 14, sm: 18 },
+                textTransform: "none",
               }}
             >
-              <Box
-                component="img"
-                src="svgs/62e275df6d0fc5b329129b81_fire.svg"
-                sx={{
-                  [theme.breakpoints.down("sm")]: {
-                    width: 20,
-                  },
-                }}
-              />
               Deposit
-            </Box>
+            </Button>
           </Stack>
         </Stack>
-
         <Tabs
-          sx={{ marginTop: 16 }}
+          sx={{
+            marginTop: { xs: 4, sm: 8 },
+            borderBottom: 1,
+            borderColor: "divider",
+          }} // Adjusted marginTop
           value={tabIndex}
           onChange={handleChangeTab}
+          indicatorColor="primary"
+          textColor="primary"
+          centered
         >
           <Tab label="Deposits" />
           <Tab label="Withdrawals" />
         </Tabs>
-
-        {tabIndex === 0 && (
-          <Paper sx={{ background: "none" }}>
+        {tabIndex === 0 && ( // Deposits Tab
+          <Paper sx={{ background: "transparent", boxShadow: "none", mt: 2 }}>
             <TableContainer>
               <Table
-                sx={{ borderCollapse: "separate", borderSpacing: "0 8px" }}
+                sx={{
+                  borderCollapse: "separate",
+                  borderSpacing: "0 8px",
+                  minWidth: 650,
+                }}
               >
                 <TableHead>
                   <TableRow>
                     <TableCell>ID</TableCell>
                     <TableCell>Date</TableCell>
-                    <TableCell>Amount</TableCell>
+                    <TableCell align="right">Amount</TableCell>
                     <TableCell>Status</TableCell>
+                    <TableCell>Proof</TableCell>
                   </TableRow>
                 </TableHead>
-
                 <TableBody>
                   {depositTableData.map((data) => {
                     const date = new Date(data.createdAt);
                     return (
                       <TableRow
                         key={data.id}
-                        sx={{ borderBottom: "1px solid #ccc" }}
+                        sx={{
+                          "&:last-child td, &:last-child th": { border: 0 },
+                          backgroundColor: theme.palette.action.hover,
+                        }}
                       >
-                        <TableCell>{data.id}</TableCell>
-                        <TableCell>
-                          {date.getDate()}/{date.getMonth() + 1}/
-                          {date.getFullYear()}
+                        <TableCell
+                          component="th"
+                          scope="row"
+                          sx={{
+                            fontSize: "0.75rem",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            maxWidth: "100px",
+                          }}
+                          title={data.id}
+                        >
+                          {data.id.length > 10
+                            ? `${data.id.substring(0, 10)}...`
+                            : data.id}
                         </TableCell>
                         <TableCell>
-                          {parseFloat(data.amount).toFixed(2)}
+                          {date.toLocaleDateString()}{" "}
+                          {date.toLocaleTimeString()}
+                        </TableCell>
+                        <TableCell align="right">
+                          {balance.symbol}
+                          {parseFloat(data.amount).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </TableCell>
                         <TableCell>
                           <Box
                             sx={{
                               width: "max-content",
                               borderRadius: "32px",
-                              padding: "8px 16px",
+                              padding: "6px 12px", // Adjusted padding
+                              fontSize: "0.75rem", // Adjusted font size
+                              color: "white",
                               backgroundColor:
                                 data.status === "Accepted"
-                                  ? "green"
+                                  ? theme.palette.success.main
                                   : data.status === "Rejected"
-                                    ? "red"
-                                    : "orange",
-                              color: "white",
+                                    ? theme.palette.error.main
+                                    : theme.palette.warning.main,
                             }}
                           >
                             {data.status}
                           </Box>
+                        </TableCell>
+                        <TableCell>
+                          {data.usdtDepositFilePath && (
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              onClick={() =>
+                                window.open(
+                                  `/uploads/${data.usdtDepositFilePath}`,
+                                  "_blank",
+                                )
+                              } // Adjust path as needed
+                            >
+                              View
+                            </Button>
+                          )}
                         </TableCell>
                       </TableRow>
                     );
@@ -1041,11 +1214,10 @@ export default function WalletPage() {
                 </TableBody>
               </Table>
             </TableContainer>
-
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={depositTableData.length}
+              count={depositRows.length}
               rowsPerPage={depositRowsPerPage}
               page={depositPage}
               onPageChange={handleDepositPageChange}
@@ -1053,64 +1225,94 @@ export default function WalletPage() {
             />
           </Paper>
         )}
-
-        {tabIndex === 1 && (
-          <Paper sx={{ background: "none" }}>
+        {tabIndex === 1 && ( // Withdrawals Tab
+          <Paper sx={{ background: "transparent", boxShadow: "none", mt: 2 }}>
             <TableContainer>
               <Table
-                sx={{ borderCollapse: "separate", borderSpacing: "0 8px" }}
+                sx={{
+                  borderCollapse: "separate",
+                  borderSpacing: "0 8px",
+                  minWidth: 650,
+                }}
               >
                 <TableHead>
                   <TableRow>
                     <TableCell>ID</TableCell>
                     <TableCell>Date</TableCell>
-                    <TableCell>Amount</TableCell>
+                    <TableCell align="right">Amount</TableCell>
                     <TableCell>Status</TableCell>
                     <TableCell>Remarks</TableCell>
                   </TableRow>
                 </TableHead>
-
                 <TableBody>
                   {withdrawTableData.map((data) => {
                     const date = new Date(data.createdAt);
                     return (
                       <TableRow
                         key={data.id}
-                        sx={{ borderBottom: "1px solid #ccc" }}
+                        sx={{
+                          "&:last-child td, &:last-child th": { border: 0 },
+                          backgroundColor: theme.palette.action.hover,
+                        }}
                       >
-                        <TableCell>{data.id}</TableCell>
-                        <TableCell>
-                          {date.getDate()}/{date.getMonth() + 1}/
-                          {date.getFullYear()}
+                        <TableCell
+                          component="th"
+                          scope="row"
+                          sx={{
+                            fontSize: "0.75rem",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            maxWidth: "100px",
+                          }}
+                          title={data.id}
+                        >
+                          {data.id.length > 10
+                            ? `${data.id.substring(0, 10)}...`
+                            : data.id}
                         </TableCell>
                         <TableCell>
-                          $ {parseFloat(data.amount).toFixed(2)}
+                          {date.toLocaleDateString()}{" "}
+                          {date.toLocaleTimeString()}
+                        </TableCell>
+                        <TableCell align="right">
+                          {balance.symbol}
+                          {parseFloat(data.amount).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </TableCell>
                         <TableCell>
                           <Box
                             sx={{
                               width: "max-content",
                               borderRadius: "32px",
-                              padding: "8px 16px",
+                              padding: "6px 12px",
+                              fontSize: "0.75rem",
+                              color: "white",
                               backgroundColor:
                                 data.status === "Accepted"
-                                  ? "green"
+                                  ? theme.palette.success.main
                                   : data.status === "Rejected"
-                                    ? "red"
-                                    : "orange",
-                              color: "white",
+                                    ? theme.palette.error.main
+                                    : theme.palette.warning.main,
                             }}
                           >
                             {data.status}
                           </Box>
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="contained"
-                            onClick={() => handleClickViewRemarks(data.remarks)}
-                          >
-                            View
-                          </Button>
+                          {data.remarks && data.remarks.length > 20 ? (
+                            <Button
+                              size="small"
+                              onClick={() =>
+                                handleClickViewRemarks(data.remarks)
+                              }
+                            >
+                              View
+                            </Button>
+                          ) : (
+                            data.remarks || "N/A"
+                          )}
                         </TableCell>
                       </TableRow>
                     );
@@ -1118,11 +1320,10 @@ export default function WalletPage() {
                 </TableBody>
               </Table>
             </TableContainer>
-
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={withdrawTableData.length}
+              count={withdrawRows.length}
               rowsPerPage={withdrawRowsPerPage}
               page={withdrawPage}
               onPageChange={handleWithdrawPageChange}
